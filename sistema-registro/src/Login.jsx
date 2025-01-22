@@ -3,6 +3,12 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './Login.css'
 
+
+import { Button } from 'primereact/button';
+
+
+import { Link } from 'react-router-dom';
+
 function App() {
   const [count, setCount] = useState(0)
 
@@ -28,7 +34,7 @@ function App() {
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
-      <h2>VICTORIA</h2>
+      <Link to={'/usuarios'}> <Button label="Agregar Usuarios" icon="pi pi-person"/> </Link>
     </>
   )
 }

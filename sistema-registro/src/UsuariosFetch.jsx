@@ -17,7 +17,7 @@ import { InputIcon } from "primereact/inputicon";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 
-function FetchData() {
+function UsuariosFetch() {
   let emptyUser = {
     id: null,
     name: "",
@@ -547,4 +547,4 @@ function FetchData() {
     </>
   );
 }
-export default FetchData;
+export default UsuariosFetch;

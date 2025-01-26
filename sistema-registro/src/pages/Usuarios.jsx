@@ -1,11 +1,11 @@
 import React from 'react'
-import FetchData from '../FetchData'
+import UsuariosFetch from '../UsuariosFetch'
 
 
 const Usuarios = () => {
   return (
     <div>
-        <FetchData/>
+        <UsuariosFetch/>
     </div>
   )
 }

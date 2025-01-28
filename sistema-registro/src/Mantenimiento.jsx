@@ -9,7 +9,7 @@ function Mantenimiento() {
     <div className="mantenimiento-container">
       <h1>Registros de Mantenimiento</h1>
       <p>Esta es la página de registros de mantenimiento.</p>
-      <button onClick={() => navigate('/MenuPrincipal')} className="back-button">
+      <button onClick={() => navigate(-1)} className="back-button">
         Volver al Menú Principal
       </button>
     </div>

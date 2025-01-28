@@ -28,7 +28,7 @@ function App() {
   // Lista de usuarios quemados
   // const usuarios = [
   //   { username: 'Calidad01', password: 'ProNuvoCa01' },
-  //   { username: 'Hatchering01', password: 'ProNuvoHa01' },
+  //   { username: 'Hatchery01', password: 'ProNuvoHa01' },
   //   { username: 'Horno01', password: 'ProNuvoHo01' },
   //   { username: 'Dieta01', password: 'ProNuvoDi01' },
   // ];

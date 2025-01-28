@@ -19,16 +19,22 @@ function MenuPrincipal() {
       <div className="botones">
         {/* Solo mostrar "Opción 1" si el usuario es "Calidad01" */}
         {username === 'Calidad01' && (
-          <button onClick={() => navigate('/ruta-1')}>Registros Calidad</button>
+          <button onClick={() => navigate('/Calidad')}>Registros Calidad</button>
         )}
-        {username === 'Hatchering01' && (
-          <button onClick={() => navigate('/ruta-1')}>Registros Hatchering </button>
+        {username === 'Hatchery01' && (
+          <button onClick={() => navigate('/Hatchery')}>Registros Hatchery </button>
         )}
         {username === 'Horno01' && (
-          <button onClick={() => navigate('/ruta-1')}>Registros Horno</button>
+          <button onClick={() => navigate('/Horno')}>Registros Horno </button>
         )}
         {username === 'Dieta01' && (
-          <button onClick={() => navigate('/ruta-1')}>Registros Dieta </button>
+          <button onClick={() => navigate('/Dieta')}>Registros Dieta </button>
+        )}
+        {username === 'Cosecha01' && (
+          <button onClick={() => navigate('/Cosecha')}>Registros Cosecha </button>
+        )}
+        {username === 'Mantenimiento01' && (
+          <button onClick={() => navigate('/Mantenimiento')}>Registros Mantenimiento </button>
         )}
         <button onClick={handleLogout} className="logout-button">
           Cerrar Sesión

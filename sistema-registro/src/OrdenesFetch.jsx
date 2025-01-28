@@ -39,13 +39,16 @@ function OrdenesFetch() {
   const [ordenDialog, setordenDialog] = useState(false);
   const [deleteOrdenDialog, setDeleteOrdenDialog] = useState(false);
   const [deleteOrdenesDialog, setDeleteOrdenesDialog] = useState(false);
+  
 
   const cols = [
     { field: "id", header: "ID" },
     { field: "name", header: "Nombre" },
     { field: "type", header: "Tipo" },
-    { field: "condtruccion", header: "Construcción" },
-    { field: "time", header: "Registrado" },
+    { field: "status", header: "Construcción" },
+    { field: "createddate", header: "Fecha de Registro" },
+    { field: "createdtime", header: "Hora de Registro" },
+    { field: "SKU", header: "Lote" },
   ];
   const tiposOrdenes = [
     { name: "Orden Tipo A", value: "OPC A" },
@@ -318,18 +321,18 @@ function OrdenesFetch() {
   );
 
   //fin de eliminar Orden
-  const exportCSV = () => {
-    //Funcion para exportar la tabla a un archivo CSV (excel)
-    dt.current.exportCSV();
-  };
+  // const exportCSV = () => {
+  //   dt.current.exportCSV()
+  // };
 
   const exportPdf = () => {
     //Funcion para exportar la tabla a un archivo PDF
     import("jspdf").then((jsPDF) => {
       import("jspdf-autotable").then(() => {
         const doc = new jsPDF.default(0, 0);
+        console.log(selectedOrdenes);
 
-        doc.autoTable(exportColumns, Ordenes);
+        doc.autoTable(exportColumns, selectedOrdenes);
         doc.save("Ordenes.pdf");
       });
     });
@@ -400,6 +403,7 @@ function OrdenesFetch() {
         icon="pi pi-upload"
         className="p-button-help"
         onClick={exportPdf}
+        disabled={!selectedOrdenes || !selectedOrdenes.length}
       />
     );
   };
@@ -411,7 +415,7 @@ function OrdenesFetch() {
         <InputIcon className="pi pi-search" />
         <InputText
           type="search"
-          onInput={(e) => setGlobalFilter(e.target.value)}
+          onInput={(e) => {setGlobalFilter(e.target.value); console.log(e.target.value)}}
           placeholder="Search..."
         />
       </IconField>
@@ -510,7 +514,7 @@ function OrdenesFetch() {
           ></Column>
           <Column
             field="SKU"
-            header="SKU"
+            header="Lote"
             // editor={(options) => textEditor(options)}
             sortable
             style={{ minWidth: "16rem" }}

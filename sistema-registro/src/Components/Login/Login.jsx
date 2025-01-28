@@ -1,9 +1,9 @@
 import { useState, useEffect} from 'react';
 import './Login.css';
 import { useNavigate } from 'react-router-dom';
-import logo from './assets/Pronuvo_logos_sin_fondo_6.png green.png';
-import logo2 from './assets/mosca.png';
-import supabase from './supabaseClient';
+import logo from '../../assets/Pronuvo_logos_sin_fondo_6.png green.png';
+import logo2 from '../../assets/mosca.png';
+import supabase from '../../supabaseClient';
 
 function App() {
   const [usuarios, setUsuarios] = useState([]);

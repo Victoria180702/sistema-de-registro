@@ -1,26 +1,55 @@
+* {
+  box-sizing: border-box;
+}
 .ingresoppinvernadero-container {
-    text-align: center;
-    padding: 20px;
-    background-color: #f2f7f1;
-    height: 100vh;
-  }
-  
-  .ingresoppinvernadero-container h1 {
-    color: #556b2f;
-  }
-  
-  .back-button {
-    margin-top: 20px;
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: #556b2f;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .back-button:hover {
-    background-color: #6b8e23;
-  }
+  /* text-align: center; */
+  padding: 20px;
+  background-color: #f2f7f1;
+  height: 100vh;
+}
+
+.ingresoppinvernadero-container h1 {
+  color: #556b2f;
+}
+
+.back-buttontest {
+  font-size: 16px;
+  margin-top: 10px;
+  padding: 10px 10px;
+  background-color: #556b2f;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.back-buttontest:hover {
+  background-color: #6b8e23;
+}
+
+
+.tabla-scroll {
+  max-width: 100%; /* Limita el ancho máximo */
+  max-height: 80vh; /* Define una altura máxima */
+  overflow-x: auto; /* Scroll horizontal */
+  overflow-y: auto; /* Scroll vertical */
+  border: 1px solid #ddd; /* Opcional: Borde alrededor del scroll */
+  padding: 0.5rem;
+}
+
+
+
+
+
+/* Resaltar filas al pasar el ratón */
+.p-datatable-tbody > tr:hover {
+  background-color: #00457e !important; /* Fondo al pasar el ratón */
+}
+.p-datatable-thead > tr:hover {
+  background-color: #00457e !important; /* Fondo al pasar el ratón */
+}
+
+.p-highlight {
+  background-color: #00457e !important; /* Fondo cuando se selecciona la fila */
+}

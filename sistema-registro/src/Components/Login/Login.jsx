@@ -66,7 +66,7 @@ function App() {
   };
 
   return (
-    <div>
+    <div className='Login'>
       <div className="login-container">
 
         <img src={logo2} alt="mosca" className="logo2" /> 

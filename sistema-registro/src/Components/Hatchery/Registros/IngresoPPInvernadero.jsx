@@ -56,13 +56,11 @@ function IngresoPPInvernadero() {
     setIngresoPPs(data || []); //Setea la variable Usuarios con los datos obtenidos o un array vacio si no se obtuvieron datos
   };
 
-
   useEffect(() => {
     //Este useEffect es un hook para que solo se ejecute una sola vez al cargar la pagina
     fetchIngresoPPInvernadero(); //Ejecuta la funcion fetchUsuarios que obtiene los datos de la tabla Usuarios
   }, []);
   //Fin de FETCH REGISTROS
-
 
   //Inicio Formatear la FECHA DE REGISTRO
   const formatDateTime = (date, format = "DD-MM-YYYY hh:mm A") => {
@@ -99,60 +97,58 @@ function IngresoPPInvernadero() {
   };
   //Fin Formatear la FECHA DE REGISTRO
 
-
   // Inicio de EXPORTAR TABLA
-const exportPdf = () => {
-  // Importar las dependencias para generar el PDF
-  import("jspdf").then((jsPDF) => {
-    import("jspdf-autotable").then(() => {
-      const doc = new jsPDF.default(0, 0); // Crear una instancia de jsPDF
+  const exportPdf = () => {
+    // Importar las dependencias para generar el PDF
+    import("jspdf").then((jsPDF) => {
+      import("jspdf-autotable").then(() => {
+        const doc = new jsPDF.default(0, 0); // Crear una instancia de jsPDF
 
-      // Combinar datos seleccionados con el campo "registrado"
-      const exportData = selectedIngresoPPs.map((row) => ({
-        ...row,
-        registrado: `${row.fec_registro || ""} ${row.hor_registro || ""}`, // Combina las fechas
-      }));
+        // Combinar datos seleccionados con el campo "registrado"
+        const exportData = selectedIngresoPPs.map((row) => ({
+          ...row,
+          registrado: `${row.fec_registro || ""} ${row.hor_registro || ""}`, // Combina las fechas
+        }));
 
-      // Generar la tabla en el PDF
-      doc.autoTable({
-        columns: exportColumns, // Define los encabezados
-        body: exportData,       // Pasa los datos con el campo combinado
-        theme: "grid",          // Tema de la tabla
-        styles: {
-          halign: "center", // Centrar texto en celdas
-          valign: "middle", // Centrar verticalmente
-        },
-        headStyles: { fillColor: [85, 107, 47] }, // Color del encabezado
+        // Generar la tabla en el PDF
+        doc.autoTable({
+          columns: exportColumns, // Define los encabezados
+          body: exportData, // Pasa los datos con el campo combinado
+          theme: "grid", // Tema de la tabla
+          styles: {
+            halign: "center", // Centrar texto en celdas
+            valign: "middle", // Centrar verticalmente
+          },
+          headStyles: { fillColor: [85, 107, 47] }, // Color del encabezado
+        });
+
+        // Descargar el archivo PDF
+        doc.save("IngresoPPInvernadero.pdf");
       });
-
-      // Descargar el archivo PDF
-      doc.save("IngresoPPInvernadero.pdf");
     });
-  });
-};
+  };
 
-// Columnas de la tabla para exportar
-const cols = [
-  { field: "fec_ingreso_pp", header: "Ingreso PP" },
-  { field: "lote_cosecha_pp", header: "# Lote" },
-  { field: "nave", header: "Nave" },
-  { field: "cantidad_ur", header: "# UR's" },
-  { field: "kg_pp_modulo", header: "KG PP/Modulo" },
-  { field: "kg_pp_ur", header: "KG PP/UR" },
-  { field: "cantidad_pp_modulo", header: "# PP/Modulo" },
-  { field: "kg_pp_redsea", header: "KG PP/RedSea" },
-  { field: "fec_cam_camas", header: "Cambio Cama Pupado" },
-  { field: "registrado", header: "Agregado" }, // Campo combinado
-];
+  // Columnas de la tabla para exportar
+  const cols = [
+    { field: "fec_ingreso_pp", header: "Ingreso PP" },
+    { field: "lote_cosecha_pp", header: "# Lote" },
+    { field: "nave", header: "Nave" },
+    { field: "cantidad_ur", header: "# UR's" },
+    { field: "kg_pp_modulo", header: "KG PP/Modulo" },
+    { field: "kg_pp_ur", header: "KG PP/UR" },
+    { field: "cantidad_pp_modulo", header: "# PP/Modulo" },
+    { field: "kg_pp_redsea", header: "KG PP/RedSea" },
+    { field: "fec_cam_camas", header: "Cambio Cama Pupado" },
+    { field: "registrado", header: "Agregado" }, // Campo combinado
+  ];
 
-// Mapeo de columnas para jsPDF-Autotable
-const exportColumns = cols.map((col) => ({
-  title: col.header, // Título del encabezado
-  dataKey: col.field, // Llave de datos
-}));
+  // Mapeo de columnas para jsPDF-Autotable
+  const exportColumns = cols.map((col) => ({
+    title: col.header, // Título del encabezado
+    dataKey: col.field, // Llave de datos
+  }));
 
-// Fin de EXPORTAR TABLA
-
+  // Fin de EXPORTAR TABLA
 
   // //Inicio de EDITAR TABLA
   const onRowEditComplete = async (e) => {
@@ -169,12 +165,17 @@ const exportColumns = cols.map((col) => ({
       kg_pp_redsea,
       fec_cam_camas,
     } = newData;
-  
+
     // Convertir fec_cam_camas al formato ISO (yyyy-MM-dd)
     const formattedFecCamCamas = fec_cam_camas
-      ? new Date(fec_cam_camas).toISOString().split("T")[0].split("-").reverse().join("/")
+      ? new Date(fec_cam_camas)
+          .toISOString()
+          .split("T")[0]
+          .split("-")
+          .reverse()
+          .join("/")
       : null;
-  
+
     console.log("Datos enviados para actualizar:", {
       id,
       fec_ingreso_pp,
@@ -186,7 +187,7 @@ const exportColumns = cols.map((col) => ({
       kg_pp_redsea,
       fec_cam_camas: formattedFecCamCamas, // Asegúrate de inspeccionar este valor
     });
-  
+
     try {
       const { error } = await supabase
         .from("Ingreso_PP_Invernadero")
@@ -201,15 +202,16 @@ const exportColumns = cols.map((col) => ({
           fec_cam_camas: formattedFecCamCamas,
         })
         .eq("id", id);
-  
+
       if (error) {
         console.error("Error al actualizar:", error.message);
         return;
       }
-  
+
       console.log(`Fila con ID ${id} actualizada correctamente.`);
-  
+
       // Actualizar solo la fila editada en el estado
+      console.log("IngresoPPs:", IngresoPPs);
       setIngresoPPs(
         IngresoPPs.map((ingresopp) =>
           ingresopp.id === id
@@ -217,11 +219,11 @@ const exportColumns = cols.map((col) => ({
             : ingresopp
         )
       );
+    
     } catch (err) {
       console.error("Error inesperado:", err);
     }
   };
-  
 
   const dateEditor = (options) => {
     return (
@@ -265,7 +267,17 @@ const exportColumns = cols.map((col) => ({
 
   const saveIngresoPP = async () => {
     setSubmitted(true);
-    if (!pupa.fec_ingreso_pp || !pupa.lote_cosecha_pp || !pupa.nave || !pupa.cantidad_ur || !pupa.kg_pp_modulo || !pupa.kg_pp_ur || !pupa.cantidad_pp_modulo || !pupa.kg_pp_redsea || !pupa.fec_cam_camas) {
+    if (
+      !pupa.fec_ingreso_pp ||
+      !pupa.lote_cosecha_pp ||
+      !pupa.nave ||
+      !pupa.cantidad_ur ||
+      !pupa.kg_pp_modulo ||
+      !pupa.kg_pp_ur ||
+      !pupa.cantidad_pp_modulo ||
+      !pupa.kg_pp_redsea ||
+      !pupa.fec_cam_camas
+    ) {
       toast.current.show({
         severity: "error",
         summary: "Error",
@@ -275,38 +287,52 @@ const exportColumns = cols.map((col) => ({
       return;
     }
     try {
-       // Convertir fec_cam_camas al formato dd/mm/yyyy
-    const formattedFecCamCamas = pupa.fec_cam_camas
-    ? new Date(pupa.fec_cam_camas).toISOString().split("T")[0].split("-").reverse().join("/")
-    : null;
+      // Convertir fec_cam_camas al formato dd/mm/yyyy
+      const formattedFecCamCamas = pupa.fec_cam_camas
+        ? new Date(pupa.fec_cam_camas)
+            .toISOString()
+            .split("T")[0]
+            .split("-")
+            .reverse()
+            .join("/")
+        : null;
 
-    const formattedFecIngresoPP = pupa.fec_ingreso_pp
-      ? new Date(pupa.fec_ingreso_pp).toISOString().split("T")[0].split("-").reverse().join("/")
-      : null;
+      const formattedFecIngresoPP = pupa.fec_ingreso_pp
+        ? new Date(pupa.fec_ingreso_pp)
+            .toISOString()
+            .split("T")[0]
+            .split("-")
+            .reverse()
+            .join("/")
+        : null;
 
-    const currentDate = formatDateTime(new Date(), "DD/MM/YYYY"); // Solo fecha
-    const currentTime = formatDateTime(new Date(), "hh:mm A"); // Fecha en formato ISO 8601
-      const { data, error } = await supabase.from("Ingreso_PP_Invernadero").insert([
-        {
-          fec_ingreso_pp: formattedFecIngresoPP,
-          lote_cosecha_pp: pupa.lote_cosecha_pp,
-          nave: pupa.nave,
-          cantidad_ur: pupa.cantidad_ur,
-          kg_pp_modulo: pupa.kg_pp_modulo,
-          kg_pp_ur: pupa.kg_pp_ur,
-          cantidad_pp_modulo: pupa.cantidad_pp_modulo,
-          kg_pp_redsea: pupa.kg_pp_redsea,
-          fec_cam_camas: formattedFecCamCamas,
-          fec_registro: currentDate,
-          hor_registro: currentTime,
-        },
-      ]);
-    
+      const currentDate = formatDateTime(new Date(), "DD/MM/YYYY"); // Solo fecha
+      const currentTime = formatDateTime(new Date(), "hh:mm A"); // Fecha en formato ISO 8601
+      const { data, error } = await supabase
+        .from("Ingreso_PP_Invernadero")
+        .insert([
+          {
+            fec_ingreso_pp: formattedFecIngresoPP,
+            lote_cosecha_pp: pupa.lote_cosecha_pp,
+            nave: pupa.nave,
+            cantidad_ur: pupa.cantidad_ur,
+            kg_pp_modulo: pupa.kg_pp_modulo,
+            kg_pp_ur: pupa.kg_pp_ur,
+            cantidad_pp_modulo: pupa.cantidad_pp_modulo,
+            kg_pp_redsea: pupa.kg_pp_redsea,
+            fec_cam_camas: formattedFecCamCamas,
+            fec_registro: currentDate,
+            hor_registro: currentTime,
+          },
+        ]);
+
       if (error) {
         console.error("Error en Supabase:", error);
-        throw new Error(error.message || "Error desconocido al guardar en Supabase");
+        throw new Error(
+          error.message || "Error desconocido al guardar en Supabase"
+        );
       }
-    
+
       console.log("Datos insertados:", data);
       toast.current.show({
         severity: "success",
@@ -314,7 +340,7 @@ const exportColumns = cols.map((col) => ({
         detail: "Usuario creado correctamente",
         life: 3000,
       });
-    
+
       // Limpia el estado
       setPupa(emptyRegister);
       setPupaDialog(false);
@@ -493,15 +519,15 @@ const exportColumns = cols.map((col) => ({
     <>
       <div className="tabla-container">
         <Toast ref={toast} />
+        <h1>Ingreso Pre-Pupas a Invernadero</h1>
         <button onClick={() => navigate(-1)} className="back-buttontest">
-            Volver
-          </button>
-          <br></br>
-          <button onClick={() => navigate(-2)} className="back-buttontest">
-            Menú Principal
-          </button>
+          Volver
+        </button>
+        <br></br>
+        <button onClick={() => navigate(-2)} className="back-buttontest">
+          Menú Principal
+        </button>
         <div className="tabla-scroll">
-          <h1>Ingreso PP a Invernadero</h1>
           <Toolbar
             className="mb-4"
             left={leftToolbarTemplate}
@@ -632,16 +658,16 @@ const exportColumns = cols.map((col) => ({
         onHide={hideDialog}
       >
         <div className="field">
-          <label htmlFor="Fecha Ingreso PrePupa" className="font-bold">
-            Fecha Ingreso PrePupa{" "}
-            {submitted && !IngresoPPs.fec_ingreso_pp && (
+        <label htmlFor="Fecha Ingreso PrePupa" className="font-bold">
+            FFecha Ingreso PrePupa{" "}
+            {submitted && !pupa.fec_ingreso_pp && (
               <small className="p-error">Requerido.</small>
             )}
           </label>
           <InputText
             type="date"
             id="fec_ingreso_pp"
-            value={IngresoPPs.fec_ingreso_pp}
+            value={pupa.fec_ingreso_pp}
             onChange={(e) => onInputChange(e, "fec_ingreso_pp")}
             required
             autoFocus
@@ -650,13 +676,13 @@ const exportColumns = cols.map((col) => ({
 
           <label htmlFor="Lote Cosecha" className="font-bold">
             Lote Cosecha{" "}
-            {submitted && !IngresoPPs.lote_cosecha_pp && (
+            {submitted && !pupa.lote_cosecha_pp && (
               <small className="p-error">Requerido.</small>
             )}
           </label>
           <InputText
             id="lote_cosecha_pp"
-            value={IngresoPPs.lote_cosecha_pp}
+            value={pupa.lote_cosecha_pp}
             onChange={(e) => onInputChange(e, "lote_cosecha_pp")}
             required
             autoFocus
@@ -665,13 +691,13 @@ const exportColumns = cols.map((col) => ({
           <br />
           <label htmlFor="Nave" className="font-bold">
             Nave{" "}
-            {submitted && !IngresoPPs.nave && (
+            {submitted && !pupa.nave && (
               <small className="p-error">Requerido.</small>
             )}
           </label>
           <InputText
             id="nave"
-            value={IngresoPPs.nave}
+            value={pupa.nave}
             onChange={(e) => onInputChange(e, "nave")}
             required
             autoFocus
@@ -680,14 +706,14 @@ const exportColumns = cols.map((col) => ({
           <br />
           <label htmlFor="Cantidad UR" className="font-bold">
             Cantidad UR{" "}
-            {submitted && !IngresoPPs.cantidad_ur && (
+            {submitted && !pupa.cantidad_ur && (
               <small className="p-error">Requerido.</small>
             )}
           </label>
           <InputText
             type="number"
             id="cantidad_ur"
-            value={IngresoPPs.cantidad_ur}
+            value={pupa.cantidad_ur}
             onChange={(e) => onInputChange(e, "cantidad_ur")}
             required
             autoFocus
@@ -696,14 +722,14 @@ const exportColumns = cols.map((col) => ({
           <br />
           <label htmlFor="KG PrePupa/Modulo" className="font-bold">
             KG PrePupa / Modulo{" "}
-            {submitted && !IngresoPPs.kg_pp_modulo && (
+            {submitted && !pupa.kg_pp_modulo && (
               <small className="p-error">Requerido.</small>
             )}
           </label>
           <InputText
             type="float"
             id="kg_pp_modulo"
-            value={IngresoPPs.kg_pp_modulo}
+            value={pupa.kg_pp_modulo}
             onChange={(e) => onInputChange(e, "kg_pp_modulo")}
             required
             autoFocus
@@ -712,14 +738,14 @@ const exportColumns = cols.map((col) => ({
           <br />
           <label htmlFor="KG PrePupa UR" className="font-bold">
             KG PrePupa UR{" "}
-            {submitted && !IngresoPPs.kg_pp_ur && (
+            {submitted && !pupa.kg_pp_ur && (
               <small className="p-error">Requerido.</small>
             )}
           </label>
           <InputText
             type="float"
             id="kg_pp_ur"
-            value={IngresoPPs.kg_pp_ur}
+            value={pupa.kg_pp_ur}
             onChange={(e) => onInputChange(e, "kg_pp_ur")}
             required
             autoFocus
@@ -728,14 +754,14 @@ const exportColumns = cols.map((col) => ({
           <br />
           <label htmlFor="Cantidad PrePupa Modulo" className="font-bold">
             Cantidad PrePupa Modulo{" "}
-            {submitted && !IngresoPPs.cantidad_pp_modulo && (
+            {submitted && !pupa.cantidad_pp_modulo && (
               <small className="p-error">Requerido.</small>
             )}
           </label>
           <InputText
             type="number"
             id="cantidad_pp_modulo"
-            value={IngresoPPs.cantidad_pp_modulo}
+            value={pupa.cantidad_pp_modulo}
             onChange={(e) => onInputChange(e, "cantidad_pp_modulo")}
             required
             autoFocus
@@ -744,14 +770,14 @@ const exportColumns = cols.map((col) => ({
           <br />
           <label htmlFor="KG PrePupa RedSea" className="font-bold">
             KG PrePupa RedSea{" "}
-            {submitted && !IngresoPPs.kg_pp_redsea && (
+            {submitted && !pupa.kg_pp_redsea && (
               <small className="p-error">Requerido.</small>
             )}
           </label>
           <InputText
             type="float"
             id="kg_pp_redsea"
-            value={IngresoPPs.kg_pp_redsea}
+            value={pupa.kg_pp_redsea}
             onChange={(e) => onInputChange(e, "kg_pp_redsea")}
             required
             autoFocus
@@ -760,19 +786,19 @@ const exportColumns = cols.map((col) => ({
           <br />
           <label htmlFor="Fecha Cambio Camas Pupado" className="font-bold">
             Fecha Cambio Camas Pupado{" "}
-            {submitted && !IngresoPPs.fec_cam_camas && (
+            {submitted && !pupa.fec_cam_camas && (
               <small className="p-error">Requerido.</small>
             )}
           </label>
           <InputText
             type="date"
             id="fec_cam_camas"
-            value={IngresoPPs.fec_cam_camas}
+            value={pupa.fec_cam_camas}
             onChange={(e) => onInputChange(e, "fec_cam_camas")}
             required
             autoFocus
           />
-          <br />
+          
         </div>
       </Dialog>
 
@@ -816,7 +842,7 @@ const exportColumns = cols.map((col) => ({
             </span>
           )}
         </div>
-      </Dialog> */}      
+      </Dialog> */}
     </>
   );
 }

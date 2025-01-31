@@ -23,21 +23,21 @@ function Hatchery() {
               onClick={() => navigate("/Hatchery/IngresoPPInvernadero")}
               className="back-button"
             >
-              Ingreso PP Invernadero
+              1- Ingreso de Pre-Pupas a Invernadero
             </button>
             <br />
             <button
               onClick={() => navigate("/Hatchery/ColectaInvernadero")}
               className="back-button"
             >
-              Colecta de Invernadero -embudo-
+              2- Colecta de Eggies del Invernadero
             </button>
             <br />
             <button
               onClick={() => navigate("/Hatchery/NIB")}
               className="back-button"
             >
-              NIB -neonatos inoculados-
+              3- NIB - Neonatos Inoculados
             </button>
             <br />
             <button onClick={() => navigate(-1)} className="back-button">

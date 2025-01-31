@@ -20,9 +20,8 @@ import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { act } from "react";
 
-
 function NIB() {
-    //Variable de registro vacio
+  //Variable de registro vacio
   let emptyRegister = {
     id: null,
     embudo: "",
@@ -53,20 +52,16 @@ function NIB() {
   //Inicio de FETCH REGISTROS
   const fetchNeonatos = async () => {
     //Funcion asyncrona para obtener los datos de la tabla Usuarios
-    const { data, error } = await supabase
-      .from("Neonatos_Inoculados")
-      .select(); //Constante de data y error que es un await, es decir espera a que reciba una respuesta de la variable supabase, de la tabla "Uusarios" y hace un select de toda la tabla
+    const { data, error } = await supabase.from("Neonatos_Inoculados").select(); //Constante de data y error que es un await, es decir espera a que reciba una respuesta de la variable supabase, de la tabla "Uusarios" y hace un select de toda la tabla
     // console.log(error ? "Error:" : "Datos:", error || data); //YUn console log que nos dice si hay un error o si se obtuvieron los datos
     setNeonatos(data || []); //Setea la variable Usuarios con los datos obtenidos o un array vacio si no se obtuvieron datos
   };
-
 
   useEffect(() => {
     //Este useEffect es un hook para que solo se ejecute una sola vez al cargar la pagina
     fetchNeonatos(); //Ejecuta la funcion fetchUsuarios que obtiene los datos de la tabla Usuarios
   }, []);
   //Fin de FETCH REGISTROS
-
 
   //Inicio Formatear la FECHA DE REGISTRO
   const formatDateTime = (date, format = "DD-MM-YYYY hh:mm A") => {
@@ -103,60 +98,58 @@ function NIB() {
   };
   //Fin Formatear la FECHA DE REGISTRO
 
-
   // Inicio de EXPORTAR TABLA
-const exportPdf = () => {
-  // Importar las dependencias para generar el PDF
-  import("jspdf").then((jsPDF) => {
-    import("jspdf-autotable").then(() => {
-      const doc = new jsPDF.default(0, 0); // Crear una instancia de jsPDF
+  const exportPdf = () => {
+    // Importar las dependencias para generar el PDF
+    import("jspdf").then((jsPDF) => {
+      import("jspdf-autotable").then(() => {
+        const doc = new jsPDF.default(0, 0); // Crear una instancia de jsPDF
 
-      // Combinar datos seleccionados con el campo "registrado"
-      const exportData = selectedNeonatos.map((row) => ({
-        ...row,
-        registrado: `${row.fec_colecta || ""} ${row.hor_colecta || ""}`, // Combina las fechas
-      }));
+        // Combinar datos seleccionados con el campo "registrado"
+        const exportData = selectedNeonatos.map((row) => ({
+          ...row,
+          registrado: `${row.fec_colecta || ""} ${row.hor_colecta || ""}`, // Combina las fechas
+        }));
 
-      // Generar la tabla en el PDF
-      doc.autoTable({
-        columns: exportColumns, // Define los encabezados
-        body: exportData,       // Pasa los datos con el campo combinado
-        theme: "grid",          // Tema de la tabla
-        styles: {
-          halign: "center", // Centrar texto en celdas
-          valign: "middle", // Centrar verticalmente
-        },
-        headStyles: { fillColor: [85, 107, 47] }, // Color del encabezado
+        // Generar la tabla en el PDF
+        doc.autoTable({
+          columns: exportColumns, // Define los encabezados
+          body: exportData, // Pasa los datos con el campo combinado
+          theme: "grid", // Tema de la tabla
+          styles: {
+            halign: "center", // Centrar texto en celdas
+            valign: "middle", // Centrar verticalmente
+          },
+          headStyles: { fillColor: [85, 107, 47] }, // Color del encabezado
+        });
+
+        // Descargar el archivo PDF
+        doc.save("Neonatos Inoculados.pdf");
       });
-
-      // Descargar el archivo PDF
-      doc.save("Neonatos Inoculados.pdf");
     });
-  });
-};
+  };
 
-// Columnas de la tabla para exportar
-const cols = [
-  { header: "ID", field: "id" },
-  { header: "# Embudo", field: "embudo" },
-  { header: "g Colectados", field: "gm_colectados" },
-  { header: "Cajas Inoculadas / Destino", field: "cajas_inoculadas_destino" },
-  { header: "g Neonato x Caja", field: "gm_neonato_caja" },
-  { header: "Cantidad dieta x caja", field: "cantidad_dieta_caja" },
-  { header: "Temperatura ambiental", field: "temp_ambiental" },
-  { header: "Humedad ambiental", field: "hum_ambiental" },
-  { header: "Operario", field: "operario" },
-  { header: "Recolectado", field: "registrado" },
-];
+  // Columnas de la tabla para exportar
+  const cols = [
+    { header: "ID", field: "id" },
+    { header: "# Embudo", field: "embudo" },
+    { header: "g Colectados", field: "gm_colectados" },
+    { header: "Cajas Inoculadas / Destino", field: "cajas_inoculadas_destino" },
+    { header: "g Neonato x Caja", field: "gm_neonato_caja" },
+    { header: "Cantidad dieta x caja", field: "cantidad_dieta_caja" },
+    { header: "Temperatura ambiental", field: "temp_ambiental" },
+    { header: "Humedad ambiental", field: "hum_ambiental" },
+    { header: "Operario", field: "operario" },
+    { header: "Recolectado", field: "registrado" },
+  ];
 
-// Mapeo de columnas para jsPDF-Autotable
-const exportColumns = cols.map((col) => ({
-  title: col.header, // Título del encabezado
-  dataKey: col.field, // Llave de datos
-}));
+  // Mapeo de columnas para jsPDF-Autotable
+  const exportColumns = cols.map((col) => ({
+    title: col.header, // Título del encabezado
+    dataKey: col.field, // Llave de datos
+  }));
 
-// Fin de EXPORTAR TABLA
-
+  // Fin de EXPORTAR TABLA
 
   // //Inicio de EDITAR TABLA
   const onRowEditComplete = async (e) => {
@@ -173,9 +166,8 @@ const exportColumns = cols.map((col) => ({
       operario,
       fec_colecta,
       hor_colecta,
-      
     } = newData;
-  
+
     // console.log("Datos enviados para actualizar:", {
     //   id,
     //   embudo,
@@ -186,9 +178,9 @@ const exportColumns = cols.map((col) => ({
     //   temp_ambiental,
     //   hum_ambiental,
     //   operario,
-      
+
     // });
-  
+
     try {
       const { error } = await supabase
         .from("Neonatos_Inoculados")
@@ -201,24 +193,26 @@ const exportColumns = cols.map((col) => ({
           temp_ambiental,
           hum_ambiental,
           operario,
-          
         })
         .eq("id", id);
-  
+
       if (error) {
         console.error("Error al actualizar:", error.message);
         return;
       }
-  
+
       // console.log(`Fila con ID ${id} actualizada correctamente.`);
-  
+
       // Actualizar solo la fila editada en el estado
-      setNeonatos(newData);
+      setNeonatos(prevneonato => 
+        prevneonato.map(neonato => 
+          neonato.id === id ? { ...neonato, ...newData } : neonato
+        )
+      );
     } catch (err) {
       console.error("Error inesperado:", err);
     }
   };
-  
 
   const dateEditor = (options) => {
     return (
@@ -263,8 +257,17 @@ const exportColumns = cols.map((col) => ({
   const saveNeonatoInoculado = async () => {
     setSubmitted(true);
     // console.log(neonato);
-   if (!neonato.embudo || !neonato.gm_colectados || !neonato.cajas_inoculadas_destino || !neonato.gm_neonato_caja || !neonato.cantidad_dieta_caja || !neonato.temp_ambiental || !neonato.hum_ambiental || !neonato.operario) {
-    toast.current.show({
+    if (
+      !neonato.embudo ||
+      !neonato.gm_colectados ||
+      !neonato.cajas_inoculadas_destino ||
+      !neonato.gm_neonato_caja ||
+      !neonato.cantidad_dieta_caja ||
+      !neonato.temp_ambiental ||
+      !neonato.hum_ambiental ||
+      !neonato.operario
+    ) {
+      toast.current.show({
         severity: "error",
         summary: "Error",
         detail: "Llena todos los campos ",
@@ -272,39 +275,43 @@ const exportColumns = cols.map((col) => ({
       });
       return;
     }
-    
+
     try {
-       // Convertir fec_cam_camas al formato dd/mm/yyyy
-    // const formattedFecCamCamas = neonato.fec_cam_camas
-    // ? new Date(neonato.fec_cam_camas).toISOString().split("T")[0].split("-").reverse().join("/")
-    // : null;
+      // Convertir fec_cam_camas al formato dd/mm/yyyy
+      // const formattedFecCamCamas = neonato.fec_cam_camas
+      // ? new Date(neonato.fec_cam_camas).toISOString().split("T")[0].split("-").reverse().join("/")
+      // : null;
 
-    // const formattedFecIngresoPP = neonato.fec_ingreso_pp
-    //   ? new Date(neonato.fec_ingreso_pp).toISOString().split("T")[0].split("-").reverse().join("/")
-    //   : null;
+      // const formattedFecIngresoPP = neonato.fec_ingreso_pp
+      //   ? new Date(neonato.fec_ingreso_pp).toISOString().split("T")[0].split("-").reverse().join("/")
+      //   : null;
 
-    const currentDate = formatDateTime(new Date(), "DD/MM/YYYY"); // Solo fecha
-    const currentTime = formatDateTime(new Date(), "hh:mm A"); // Fecha en formato ISO 8601
-      const { data, error } = await supabase.from("Neonatos_Inoculados").insert([
-        {
-          embudo: neonato.embudo,
-          gm_colectados: neonato.gm_colectados,
-          cajas_inoculadas_destino: neonato.cajas_inoculadas_destino,
-          gm_neonato_caja: neonato.gm_neonato_caja,
-          cantidad_dieta_caja: neonato.cantidad_dieta_caja,
-          temp_ambiental: neonato.temp_ambiental,
-          hum_ambiental: neonato.hum_ambiental,
-          operario: neonato.operario,          
-          fec_colecta: currentDate,
-          hor_colecta: currentTime,
-        },
-      ]);
-    
+      const currentDate = formatDateTime(new Date(), "DD/MM/YYYY"); // Solo fecha
+      const currentTime = formatDateTime(new Date(), "hh:mm A"); // Fecha en formato ISO 8601
+      const { data, error } = await supabase
+        .from("Neonatos_Inoculados")
+        .insert([
+          {
+            embudo: neonato.embudo,
+            gm_colectados: neonato.gm_colectados,
+            cajas_inoculadas_destino: neonato.cajas_inoculadas_destino,
+            gm_neonato_caja: neonato.gm_neonato_caja,
+            cantidad_dieta_caja: neonato.cantidad_dieta_caja,
+            temp_ambiental: neonato.temp_ambiental,
+            hum_ambiental: neonato.hum_ambiental,
+            operario: neonato.operario,
+            fec_colecta: currentDate,
+            hor_colecta: currentTime,
+          },
+        ]);
+
       if (error) {
         console.error("Error en Supabase:", error);
-        throw new Error(error.message || "Error desconocido al guardar en Supabase");
+        throw new Error(
+          error.message || "Error desconocido al guardar en Supabase"
+        );
       }
-    
+
       // console.log("Datos insertados:", data);
       toast.current.show({
         severity: "success",
@@ -312,7 +319,7 @@ const exportColumns = cols.map((col) => ({
         detail: "Usuario creado correctamente",
         life: 3000,
       });
-    
+
       // Limpia el estado
       setNeonato(emptyRegister);
       setNeonatoDialog(false);
@@ -322,7 +329,7 @@ const exportColumns = cols.map((col) => ({
       toast.current.show({
         severity: "error",
         summary: "Error",
-        detail: error.message|| "Ocurrió un error al crear el usuario",
+        detail: error.message || "Ocurrió un error al crear el usuario",
         life: 3000,
       });
     }
@@ -491,15 +498,15 @@ const exportColumns = cols.map((col) => ({
     <>
       <div className="tabla-container">
         <Toast ref={toast} />
+        <h1>Neonatos Inoculaods</h1>
         <button onClick={() => navigate(-1)} className="back-buttontest">
-            Volver
-          </button>
-          <br></br>
-          <button onClick={() => navigate(-2)} className="back-buttontest">
-            Menú Principal
-          </button>
+          Volver
+        </button>
+        <br></br>
+        <button onClick={() => navigate(-2)} className="back-buttontest">
+          Menú Principal
+        </button>
         <div className="tabla-scroll">
-          <h1>Neonatos Inoculaods</h1>
           <Toolbar
             className="mb-4"
             left={leftToolbarTemplate}
@@ -661,7 +668,7 @@ const exportColumns = cols.map((col) => ({
             )}
           </label>
           <InputText
-          type="number"
+            type="number"
             id="cajas_inoculadas_destino"
             value={neonato.cajas_inoculadas_destino}
             onChange={(e) => onInputChange(e, "cajas_inoculadas_destino")}
@@ -671,7 +678,7 @@ const exportColumns = cols.map((col) => ({
 
           <br />
           <label htmlFor="g neonato x caja" className="font-bold">
-          g neonato x caja{" "}
+            g neonato x caja{" "}
             {submitted && !neonato.gm_neonato_caja && (
               <small className="p-error">Requerido.</small>
             )}
@@ -687,7 +694,7 @@ const exportColumns = cols.map((col) => ({
 
           <br />
           <label htmlFor="Cantidad dieta x caja" className="font-bold">
-          Cantidad dieta x caja{" "}
+            Cantidad dieta x caja{" "}
             {submitted && !neonato.cantidad_dieta_caja && (
               <small className="p-error">Requerido.</small>
             )}
@@ -741,7 +748,6 @@ const exportColumns = cols.map((col) => ({
             )}
           </label>
           <InputText
-            
             id="operario"
             value={neonato.operario}
             onChange={(e) => onInputChange(e, "operario")}
@@ -791,7 +797,7 @@ const exportColumns = cols.map((col) => ({
             </span>
           )}
         </div>
-      </Dialog> */}      
+      </Dialog> */}
     </>
   );
 }

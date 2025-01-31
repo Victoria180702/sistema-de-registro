@@ -24,3 +24,16 @@
   .back-button:hover {
     background-color: #6b8e23;
   }
+
+
+    /* Resaltar filas al pasar el ratón */
+.p-datatable-tbody > tr:hover {
+  background-color: #00457e !important; /* Fondo al pasar el ratón */
+}
+.p-datatable-thead > tr:hover {
+  background-color: #00457e !important; /* Fondo al pasar el ratón */
+}
+
+.p-highlight {
+  background-color: #00457e !important; /* Fondo cuando se selecciona la fila */
+}

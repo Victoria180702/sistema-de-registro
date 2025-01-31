@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './MenuPrincipal.css';
-import logo from './assets/Pronuvo_logos_sin_fondo_6.png green.png';
+import logo from '../../assets/Pronuvo_logos_sin_fondo_6.png green.png';
 
 function MenuPrincipal() {
   const navigate = useNavigate();

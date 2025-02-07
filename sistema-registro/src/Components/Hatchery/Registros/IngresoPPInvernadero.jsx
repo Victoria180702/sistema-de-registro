@@ -520,12 +520,13 @@ function IngresoPPInvernadero() {
       <div className="tabla-container">
         <Toast ref={toast} />
         <h1>Ingreso Pre-Pupas a Invernadero</h1>
-        <button onClick={() => navigate(-1)} className="back-buttontest">
+        <button onClick={() => navigate(-1)} className="back-button">
           Volver
         </button>
-        <br></br>
-        <button onClick={() => navigate(-2)} className="back-buttontest">
-          Menú Principal
+        <br />
+        <br />
+        <button onClick={() => navigate(-2)} className="menu-button">
+          Menú principal
         </button>
         <div className="tabla-scroll">
           <Toolbar
@@ -659,7 +660,7 @@ function IngresoPPInvernadero() {
       >
         <div className="field">
         <label htmlFor="Fecha Ingreso PrePupa" className="font-bold">
-            FFecha Ingreso PrePupa{" "}
+            Fecha Ingreso PrePupa{" "}
             {submitted && !pupa.fec_ingreso_pp && (
               <small className="p-error">Requerido.</small>
             )}

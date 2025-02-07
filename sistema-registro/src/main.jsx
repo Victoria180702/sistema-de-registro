@@ -13,6 +13,7 @@ import Hatchery from './pages/Hatchery/PagesHatchery.jsx';
 import ColectaInvernadero from './pages/Hatchery/Registros/PagesColectaInvernadero.jsx';
 import IngresoPPInvernadero from './pages/Hatchery/Registros/PagesIngresoPPInvernadero.jsx';
 import NIB from './pages/Hatchery/Registros/PagesNIB.jsx';
+import ControlRendimientoCosechaReproduccion from './pages/Hatchery/Registros/PagesControlRendimientoCosechaReproduccion.jsx';
 
 
 
@@ -47,6 +48,10 @@ const router = createBrowserRouter([{
         {
           path: `NIB`,
           element: <NIB />,
+        },
+        {
+          path: `ControlRendimientoCosechaReproduccion`,
+          element: <ControlRendimientoCosechaReproduccion />,
         },
       ],
     }

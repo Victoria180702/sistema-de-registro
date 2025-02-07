@@ -40,6 +40,13 @@ function Hatchery() {
               3- NIB - Neonatos Inoculados
             </button>
             <br />
+            <button
+              onClick={() => navigate("/Hatchery/ControlRendimientoCosechaReproduccion")}
+              className="back-button"
+            >
+              4- Control de Rendimiento Cosecha-Reproducción
+            </button>
+            <br />
             <button onClick={() => navigate(-1)} className="back-button">
               Volver al Menú Principal
             </button>

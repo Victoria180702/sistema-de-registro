@@ -18,6 +18,7 @@ import { InputIcon } from "primereact/inputicon";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { act } from "react";
+import * as XLSX from 'xlsx';
 
 function ColectaInvernadero() {
     //Variable de registro vacio
@@ -47,6 +48,9 @@ function ColectaInvernadero() {
   const [deleteeggieDialog, setDeleteeggieDialog] = useState(false); //Variable de estado que guarda si se muestra el dialogo de eliminar usuario
   const [deleteeggiesDialog, setDeleteeggiesDialog] = useState(false); //Variable de estado que guarda si se muestra el dialogo de eliminar usuarios
   const navigate = useNavigate(); //Variable de navegación
+  const [registros, setRegistros] = useState([]);
+  const [registro, setRegistro] = useState(emptyRegister);
+  const [selectedRegistros, setSelectedRegistros] = useState([]);
 
   //Inicio de FETCH REGISTROS
   const fetcheggies = async () => {
@@ -98,35 +102,32 @@ function ColectaInvernadero() {
   //Fin Formatear la FECHA DE REGISTRO
 
   // Inicio de EXPORTAR TABLA
-  const exportPdf = () => {
-    // Importar las dependencias para generar el PDF
-    import("jspdf").then((jsPDF) => {
-      import("jspdf-autotable").then(() => {
-        const doc = new jsPDF.default(0, 0); // Crear una instancia de jsPDF
-
-        // Combinar datos seleccionados con el campo "registrado"
-        const exportData = selectedeggies.map((row) => ({
-          ...row,
-          registrado: `${row.fec_registro || ""} ${row.hor_registro || ""}`, // Combina las fechas
-        }));
-
-        // Generar la tabla en el PDF
-        doc.autoTable({
-          columns: exportColumns, // Define los encabezados
-          body: exportData, // Pasa los datos con el campo combinado
-          theme: "grid", // Tema de la tabla
-          styles: {
-            halign: "center", // Centrar texto en celdas
-            valign: "middle", // Centrar verticalmente
-          },
-          headStyles: { fillColor: [85, 107, 47] }, // Color del encabezado
-        });
-
-        // Descargar el archivo PDF
-        doc.save("eggies Inoculados.pdf");
-      });
-    });
-  };
+  const exportXlsx = () => {
+      // Obtener los encabezados de las columnas
+      const headers = cols.map((col) => col.header);  // Mapear solo los encabezados de las columnas
+      
+      // Obtener los datos seleccionados y mapearlos para las columnas
+      const rows = selectedRegistros.map((registro) =>
+        cols.map((col) => registro[col.field]) // Mapear los valores de cada fila por las columnas
+      );
+    
+      // Agregar la fila de encabezados al principio de los datos
+      const dataToExport = [headers, ...rows];
+    
+      // Crear una hoja de trabajo a partir de los encabezados y los datos
+      const ws = XLSX.utils.aoa_to_sheet(dataToExport);
+    
+      // Configurar el estilo de la hoja para asegurar la correcta separación de celdas
+      const wscols = cols.map(col => ({ width: Math.max(col.header.length, 10) })); // Ajustar el ancho de las columnas según los encabezados
+      ws['!cols'] = wscols;
+    
+      // Crear un libro de trabajo
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Registros");
+    
+      // Exportar el archivo .xlsx
+      XLSX.writeFile(wb, "Eggies_Colecta_Invernadero_Embudo.xlsx");
+    };
 
   // Columnas de la tabla para exportar
   const cols = [
@@ -138,7 +139,7 @@ function ColectaInvernadero() {
     { field: "mediana", header: "Mediana" },
     { field: "total_gm", header: "Total g" },
     { field: "nave_procedencia", header: "Procedencia" },
-    { field: "temp", header: "Temperatura" },
+    { field: "temp", header: "Temperatura Ambiente" },
     { field: "hum_relativa", header: "Humedad relativa" },
     { field: "operario", header: "Operio" },
     { field: "registrado", header: "Registrado" },
@@ -413,10 +414,10 @@ function ColectaInvernadero() {
   const rightToolbarTemplate = () => {
     return (
       <Button
-        label="Export"
+        label="Exportar a Excel "
         icon="pi pi-upload"
         className="p-button-help"
-        onClick={exportPdf}
+        onClick={exportXlsx}
       />
     );
   };
@@ -459,12 +460,13 @@ function ColectaInvernadero() {
       <div className="tabla-container">
         <Toast ref={toast} />
         <h1>Cosecha Eggies Invernadero - Embudos</h1>
-        <button onClick={() => navigate(-1)} className="back-buttontest">
+        <button onClick={() => navigate(-1)} className="back-button">
           Volver
         </button>
-        <br></br>
-        <button onClick={() => navigate(-2)} className="back-buttontest">
-          Menú Principal
+        <br />
+        <br />
+        <button onClick={() => navigate(-2)} className="menu-button">
+          Menú principal
         </button>
         <div className="tabla-scroll">
           <Toolbar

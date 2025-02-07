@@ -1,7 +1,11 @@
-.menu-principals {
+.menu-principal {
   text-align: center;
   padding: 20px;
-  background-color: #f2f7f1;
+  background-color: #e2ede0;
+}
+
+.menuprincipal-container h1 {
+  color: #556b2f;
 }
 
 .botones {
@@ -27,4 +31,8 @@
   background-color: #6b8e23;
 }
 
+body {
+  background-color: #e2ede0 !important; /* Prioridad más alta */
+  color: black; /* Asegura que el texto se vea correctamente */
+}
 

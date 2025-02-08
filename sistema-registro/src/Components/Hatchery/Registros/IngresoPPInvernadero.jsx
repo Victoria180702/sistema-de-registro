@@ -43,7 +43,7 @@ function IngresoPPInvernadero() {
   const [deletePPDialog, setDeletePPDialog] = useState(false); //Variable de estado que guarda si se muestra el dialogo de eliminar usuario
   const [deleteIngresoPPsDialog, setDeleteIngresoPPsDialog] = useState(false); //Variable de estado que guarda si se muestra el dialogo de eliminar usuarios
   const navigate = useNavigate(); //Variable de navegación
-
+  const [observacionesObligatorio, setObservacionesObligatorio] = useState(false); 
   const [fechaRegistro, setFechaRegistro] = useState(""); //Variable de estado que guarda la fecha de registro actual
 
   //Inicio de FETCH REGISTROS
@@ -139,6 +139,7 @@ function IngresoPPInvernadero() {
     { field: "cantidad_pp_modulo", header: "# PP/Modulo" },
     { field: "kg_pp_redsea", header: "KG PP/RedSea" },
     { field: "fec_cam_camas", header: "Cambio Cama Pupado" },
+    { field: "observaciones", header: "Observaciones" },
     { field: "registrado", header: "Agregado" }, // Campo combinado
   ];
 
@@ -164,6 +165,7 @@ function IngresoPPInvernadero() {
       cantidad_pp_modulo,
       kg_pp_redsea,
       fec_cam_camas,
+      observaciones,
     } = newData;
 
     // Convertir fec_cam_camas al formato ISO (yyyy-MM-dd)
@@ -186,6 +188,7 @@ function IngresoPPInvernadero() {
       cantidad_pp_modulo,
       kg_pp_redsea,
       fec_cam_camas: formattedFecCamCamas, // Asegúrate de inspeccionar este valor
+      observaciones,
     });
 
     try {
@@ -200,6 +203,7 @@ function IngresoPPInvernadero() {
           cantidad_pp_modulo,
           kg_pp_redsea,
           fec_cam_camas: formattedFecCamCamas,
+          observaciones,
         })
         .eq("id", id);
 
@@ -265,18 +269,36 @@ function IngresoPPInvernadero() {
     return rowData.name !== "Blue Band";
   };
 
+  // Variables para trackear cada campo inválido
+const isCantidadURInvalida = pupa.cantidad_ur < 20 || pupa.cantidad_ur > 100;
+const isKgPPModuloInvalido = pupa.kg_pp_modulo < 10 || pupa.kg_pp_modulo > 25;
+const isCantidadPPModuloInvalido = pupa.cantidad_pp_modulo < 50 || pupa.cantidad_pp_modulo > 100;
+const isKgPPRedseaInvalido = pupa.kg_pp_redsea < 400 || pupa.kg_pp_redsea > 550;
+
+// Verificar si hay algún valor fuera de rango
+const valoresFueraDeRango = isCantidadURInvalida || isKgPPModuloInvalido || 
+                           isCantidadPPModuloInvalido || isKgPPRedseaInvalido;
+
+// Opcional: Crear objeto con todos los errores
+const errores = {
+  cantidadUR: isCantidadURInvalida,
+  kgPPModulo: isKgPPModuloInvalido,
+  cantidadPPModulo: isCantidadPPModuloInvalido,
+  kgPPRedsea: isKgPPRedseaInvalido
+};
+
   const saveIngresoPP = async () => {
     setSubmitted(true);
     if (
       !pupa.fec_ingreso_pp ||
       !pupa.lote_cosecha_pp ||
       !pupa.nave ||
-      !pupa.cantidad_ur ||
+      !pupa.cantidad_ur || 
       !pupa.kg_pp_modulo ||
       !pupa.kg_pp_ur ||
       !pupa.cantidad_pp_modulo ||
       !pupa.kg_pp_redsea ||
-      !pupa.fec_cam_camas
+      !pupa.fec_cam_camas 
     ) {
       toast.current.show({
         severity: "error",
@@ -286,6 +308,19 @@ function IngresoPPInvernadero() {
       });
       return;
     }
+    // Validación principal
+if (valoresFueraDeRango && !pupa.observaciones) {
+  setObservacionesObligatorio(true);
+  toast.current.show({
+    severity: "error",
+    summary: "Error",
+    detail: `Debe agregar observaciones. Campos inválidos: ${Object.keys(errores).filter(k => errores[k]).join(', ')}`,
+    life: 3000,
+  });
+  return;
+}
+
+setObservacionesObligatorio(false);
     try {
       // Convertir fec_cam_camas al formato dd/mm/yyyy
       const formattedFecCamCamas = pupa.fec_cam_camas
@@ -323,6 +358,7 @@ function IngresoPPInvernadero() {
             fec_cam_camas: formattedFecCamCamas,
             fec_registro: currentDate,
             hor_registro: currentTime,
+            observaciones: pupa.observaciones,
           },
         ]);
 
@@ -639,6 +675,13 @@ function IngresoPPInvernadero() {
               style={{ minWidth: "14rem" }}
             ></Column>
             <Column
+              field="observaciones"
+              header="Observaciones"
+              editor={(options) => textEditor(options)}
+              sortable
+              style={{ minWidth: "8rem" }}
+            ></Column>
+            <Column
               header="Herramientas"
               rowEditor={allowEdit}
               headerStyle={{ width: "10%", minWidth: "5rem" }}
@@ -800,6 +843,19 @@ function IngresoPPInvernadero() {
             autoFocus
           />
           
+          <label htmlFor="Observaciones" className="font-bold">
+            Observaciones{" "}
+            {observacionesObligatorio &&(
+              <small className="p-error">Requerido.</small>
+            )}
+          </label>
+          <InputText
+            id="observaciones"
+            value={pupa.observaciones}
+            onChange={(e) => onInputChange(e, "observaciones")}
+            required
+            autoFocus
+          />
         </div>
       </Dialog>
 

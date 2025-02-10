@@ -19,6 +19,10 @@ import { InputIcon } from "primereact/inputicon";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { act } from "react";
+import * as XLSX from 'xlsx';
+import logo2 from "../../../assets/mosca.png";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 function IngresoPPInvernadero() {
   //Variable de registro vacio
@@ -97,36 +101,53 @@ function IngresoPPInvernadero() {
   };
   //Fin Formatear la FECHA DE REGISTRO
 
-  // Inicio de EXPORTAR TABLA
   const exportPdf = () => {
-    // Importar las dependencias para generar el PDF
-    import("jspdf").then((jsPDF) => {
-      import("jspdf-autotable").then(() => {
-        const doc = new jsPDF.default(0, 0); // Crear una instancia de jsPDF
-
-        // Combinar datos seleccionados con el campo "registrado"
-        const exportData = selectedIngresoPPs.map((row) => ({
-          ...row,
-          registrado: `${row.fec_registro || ""} ${row.hor_registro || ""}`, // Combina las fechas
-        }));
-
-        // Generar la tabla en el PDF
-        doc.autoTable({
-          columns: exportColumns, // Define los encabezados
-          body: exportData, // Pasa los datos con el campo combinado
-          theme: "grid", // Tema de la tabla
-          styles: {
-            halign: "center", // Centrar texto en celdas
-            valign: "middle", // Centrar verticalmente
-          },
-          headStyles: { fillColor: [85, 107, 47] }, // Color del encabezado
-        });
-
-        // Descargar el archivo PDF
-        doc.save("IngresoPPInvernadero.pdf");
-      });
+    const doc = new jsPDF();
+  
+    // Configuración del título
+    doc.setFontSize(18);
+    doc.text("Registros de Cosecha Eggies Invernadero - Embudos", 14, 22);
+  
+    // Configuración de la tabla
+    doc.autoTable({
+      head: [exportColumns.map(col => col.title)], // Encabezados de la tabla
+      body: selectedIngresoPPs.map(registro => exportColumns.map(col => registro[col.dataKey])), // Datos de la tabla
+      startY: 30, // Posición inicial de la tabla
+      styles: { fontSize: 10 }, // Estilo de la tabla
+      headStyles: { fillColor: [41, 128, 185], textColor: 255 }, // Estilo del encabezado
     });
+  
+    // Guardar el PDF
+    doc.save("Ingreso_PrePupas_Invernadero.pdf");
   };
+
+  const exportXlsx = () => {
+        // Obtener los encabezados de las columnas
+        const headers = cols.map((col) => col.header);  // Mapear solo los encabezados de las columnas
+        
+        // Obtener los datos seleccionados y mapearlos para las columnas
+        const rows = selectedIngresoPPs.map((registro) =>
+          cols.map((col) => registro[col.field]) // Mapear los valores de cada fila por las columnas
+        );
+      
+        // Agregar la fila de encabezados al principio de los datos
+        const dataToExport = [headers, ...rows];
+      
+        // Crear una hoja de trabajo a partir de los encabezados y los datos
+        const ws = XLSX.utils.aoa_to_sheet(dataToExport);
+      
+        // Configurar el estilo de la hoja para asegurar la correcta separación de celdas
+        const wscols = cols.map(col => ({ width: Math.max(col.header.length, 10) })); // Ajustar el ancho de las columnas según los encabezados
+        ws['!cols'] = wscols;
+      
+        // Crear un libro de trabajo
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Registros");
+      
+        // Exportar el archivo .xlsx
+        XLSX.writeFile(wb, "Ingreso_PP_Invernadero.xlsx");
+      };
+
 
   // Columnas de la tabla para exportar
   const cols = [
@@ -509,12 +530,20 @@ setObservacionesObligatorio(false);
 
   const rightToolbarTemplate = () => {
     return (
-      <Button
-        label="Export"
-        icon="pi pi-upload"
-        className="p-button-help"
-        onClick={exportPdf}
-      />
+      <div className="flex flex-wrap gap-2">
+        <Button
+          label="Exportar a Excel"
+          icon="pi pi-upload"
+          className="p-button-help"
+          onClick={exportXlsx}
+        />
+        <Button
+          label="Exportar a PDF"
+          icon="pi pi-file-pdf"
+          className="p-button-danger"
+          onClick={exportPdf}
+        />
+      </div>
     );
   };
 
@@ -555,7 +584,13 @@ setObservacionesObligatorio(false);
     <>
       <div className="tabla-container">
         <Toast ref={toast} />
-        <h1>Ingreso Pre-Pupas a Invernadero</h1>
+        <h1>
+          <img src={logo2} alt="mosca" className="logo2" />
+          Ingreso PrePupas Invernadero
+        </h1>
+        <div className="welcome-message">
+          <p>Bienvenido al sistema de Ingreso PrePupas Invernadero. Aquí puedes gestionar los registros ingreso de prepuas al invernadero.</p>
+        </div>
         <button onClick={() => navigate(-1)} className="back-button">
           Volver
         </button>

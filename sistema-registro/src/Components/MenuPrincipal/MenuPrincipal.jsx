@@ -2,11 +2,13 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './MenuPrincipal.css';
 import logo from '../../assets/Pronuvo_logos_sin_fondo_6.png green.png';
+import logo2 from '../../assets/mosca.png';
+
 
 function MenuPrincipal() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { username } = location.state || {}; // Obtener el nombre de usuario desde el estado
+  const { departamento } = location.state || {}; // Obtener el nombre de usuario desde el estado
 
   // Función para manejar el cierre de sesión
   const handleLogout = () => {
@@ -15,25 +17,28 @@ function MenuPrincipal() {
 
   return (
     <div className="menu-principal">
-      <h1>Menú Principal</h1>
+      <h1>
+        <img src={logo2} alt="mosca" className="logo2" />
+        Menú Principal
+      </h1>
       <div className="botones">
         {/* Solo mostrar "Opción 1" si el usuario es "Calidad01" */}
-        {username === 'Calidad01' && (
+        {departamento === 'Calidad' && (
           <button onClick={() => navigate('/Calidad')}>Registros Calidad</button>
         )}
-        {username === 'Hatchery01' && (
+        {departamento === 'Hatchery' && (
           <button onClick={() => navigate('/Hatchery')}>Registros Hatchery </button>
         )}
-        {username === 'Horno01' && (
+        {departamento === 'Horno' && (
           <button onClick={() => navigate('/Horno')}>Registros Horno </button>
         )}
-        {username === 'Dieta01' && (
+        {departamento === 'Dieta' && (
           <button onClick={() => navigate('/Dieta')}>Registros Dieta </button>
         )}
-        {username === 'Cosecha01' && (
+        {departamento === 'Cosecha' && (
           <button onClick={() => navigate('/Cosecha')}>Registros Cosecha </button>
         )}
-        {username === 'Mantenimiento01' && (
+        {departamento === 'Mantenimiento' && (
           <button onClick={() => navigate('/Mantenimiento')}>Registros Mantenimiento </button>
         )}
         <button onClick={handleLogout} className="logout-button">

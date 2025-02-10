@@ -17,8 +17,10 @@ import { IconField } from "primereact/iconfield";
 import { InputIcon } from "primereact/inputicon";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
-import { act } from "react";
 import * as XLSX from 'xlsx';
+import logo2 from "../../../assets/mosca.png";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 function ColectaInvernadero() {
     //Variable de registro vacio
@@ -100,6 +102,26 @@ function ColectaInvernadero() {
       .replace("A", dateMap.dayPeriod || "AM");
   };
   //Fin Formatear la FECHA DE REGISTRO
+  
+  const exportPdf = () => {
+    const doc = new jsPDF();
+  
+    // Configuración del título
+    doc.setFontSize(18);
+    doc.text("Registros de Colecta Eggies Invernadero - Embudos", 14, 22);
+  
+    // Configuración de la tabla
+    doc.autoTable({
+      head: [exportColumns.map(col => col.title)], // Encabezados de la tabla
+      body: selectedeggies.map(registro => exportColumns.map(col => registro[col.dataKey])), // Datos de la tabla
+      startY: 30, // Posición inicial de la tabla
+      styles: { fontSize: 10 }, // Estilo de la tabla
+      headStyles: { fillColor: [41, 128, 185], textColor: 255 }, // Estilo del encabezado
+    });
+  
+    // Guardar el PDF
+    doc.save("Colecta_Eggies_Invernadero.pdf");
+  };
 
   // Inicio de EXPORTAR TABLA
   const exportXlsx = () => {
@@ -107,7 +129,7 @@ function ColectaInvernadero() {
       const headers = cols.map((col) => col.header);  // Mapear solo los encabezados de las columnas
       
       // Obtener los datos seleccionados y mapearlos para las columnas
-      const rows = selectedRegistros.map((registro) =>
+      const rows = selectedeggies.map((registro) =>
         cols.map((col) => registro[col.field]) // Mapear los valores de cada fila por las columnas
       );
     
@@ -236,14 +258,6 @@ function ColectaInvernadero() {
     }
 
     try {
-      // Convertir fec_cam_camas al formato dd/mm/yyyy
-      // const formattedFecCamCamas = eggie.fec_cam_camas
-      // ? new Date(eggie.fec_cam_camas).toISOString().split("T")[0].split("-").reverse().join("/")
-      // : null;
-
-      // const formattedFecIngresoPP = eggie.fec_ingreso_pp
-      //   ? new Date(eggie.fec_ingreso_pp).toISOString().split("T")[0].split("-").reverse().join("/")
-      //   : null;
 
       const currentDate = formatDateTime(new Date(), "DD/MM/YYYY"); // Solo fecha
       const currentTime = formatDateTime(new Date(), "hh:mm A"); // Fecha en formato ISO 8601
@@ -317,78 +331,6 @@ function ColectaInvernadero() {
     seteggie(_eggie);
   };
 
-  // //Fin de EDITAR TABLA
-
-  // //Inicio de ELIMINAR REGISTRO
-  // const deleteSelectedUsuarios = async () => {
-  //   let actionMessage = "";
-  //   const selectedIds = selectedUsuarios.map((usuario) => usuario.id); // Obtener los IDs de los usuarios seleccionados del array
-
-  //   try {
-  //     // Realizar la eliminación en Supabase con un array de IDs
-  //     const { data, error } = await supabase
-  //       .from("Usuarios")
-  //       .delete()
-  //       .in("id", selectedIds); // Usamos `.in` para eliminar varios IDs
-
-  //     if (error) {
-  //       console.error("Error eliminando:", error.message);
-  //       toast.current.show({
-  //         severity: "error",
-  //         summary: "Error",
-  //         detail: "No se pudieron eliminar los usuarios",
-  //         life: 3000,
-  //       });
-  //     } else {
-  //       actionMessage = "Usuarios Eliminados";
-  //       console.log("Usuarios eliminados:", data);
-  //     }
-  //     // Mostrar mensaje de éxito
-  //     toast.current.show({
-  //       severity: "success",
-  //       summary: "Exitoso",
-  //       detail: actionMessage,
-  //       life: 3000,
-  //     });
-  //     hideDeleteUsuariosDialog(); // Cerrar el diálogo de confirmación
-  //     // Refrescar la lista de usuarios
-  //     fetchUsuarios(); // Refrescar lista de usuarios
-  //   } catch (error) {
-  //     console.error("Error en la eliminación:", error);
-  //     toast.current.show({
-  //       severity: "error",
-  //       summary: "Error",
-  //       detail: "Ocurrió un error al eliminar los usuarios",
-  //       life: 3000,
-  //     });
-  //   }
-  // };
-
-  // const hideDeleteUsuariosDialog = () => {
-  //   setDeleteUsuariosDialog(false);
-  // };
-
-  // const confirmDeleteSelected = () => {
-  //   setDeleteUsuariosDialog(true);
-  // };
-
-  // const deleteUsuariosDialogFooter = (
-  //   <React.Fragment>
-  //     <Button
-  //       label="No"
-  //       icon="pi pi-times"
-  //       outlined
-  //       onClick={hideDeleteUsuariosDialog}
-  //     />
-  //     <Button
-  //       label="Yes"
-  //       icon="pi pi-check"
-  //       severity="danger"
-  //       onClick={deleteSelectedUsuarios}
-  //     />
-  //   </React.Fragment>
-  // );
-  // //Fin de ELIMINAR REGISTRO
 
   // //Inicio de DIALOGO DE REGISTRO
   const leftToolbarTemplate = () => {
@@ -400,25 +342,28 @@ function ColectaInvernadero() {
           severity="success"
           onClick={openNew}
         />
-        {/* <Button
-          label="Delete"
-          icon="pi pi-trash"
-          severity="danger"
-          onClick={confirmDeleteSelected}
-          disabled={!selectedUsuarios || !selectedUsuarios.length}
-        /> */}
+        
       </div>
     );
   };
 
   const rightToolbarTemplate = () => {
     return (
-      <Button
-        label="Exportar a Excel "
-        icon="pi pi-upload"
-        className="p-button-help"
-        onClick={exportXlsx}
-      />
+      <div className="flex flex-wrap gap-2">
+        <Button
+          label="Exportar a Excel"
+          icon="pi pi-upload"
+          className="p-button-help"
+          onClick={exportXlsx}
+        />
+        
+        <Button
+          label="Exportar a PDF"
+          icon="pi pi-file-pdf"
+          className="p-button-danger"
+          onClick={exportPdf}
+        />
+      </div>
     );
   };
 
@@ -459,7 +404,13 @@ function ColectaInvernadero() {
     <>
       <div className="tabla-container">
         <Toast ref={toast} />
-        <h1>Cosecha Eggies Invernadero - Embudos</h1>
+        <h1>
+          <img src={logo2} alt="mosca" className="logo2" />
+          Colecta Eggies Invernadero - Embudos
+        </h1>
+        <div className="welcome-message">
+          <p>Bienvenido al sistema de Colecta de Eggies. Aquí puedes gestionar los registros de cosecha se eggies del invernadero - embudo.</p>
+        </div>
         <button onClick={() => navigate(-1)} className="back-button">
           Volver
         </button>
@@ -761,47 +712,6 @@ function ColectaInvernadero() {
         </div>
       </Dialog>
 
-      {/* <Dialog
-        visible={deleteUsuarioDialog}
-        style={{ width: "32rem" }}
-        breakpoints={{ "960px": "75vw", "641px": "90vw" }}
-        header="Confirm"
-        modal
-      >
-        <div className="confirmation-content">
-          <i
-            className="pi pi-exclamation-triangle mr-3"
-            style={{ fontSize: "2rem" }}
-          />
-          {user && (
-            <span>
-              Estas seguro que deseas eliminar el Usuario: <b>{user.name}</b>?
-            </span>
-          )}
-        </div>
-      </Dialog> */}
-
-      {/* <Dialog
-        visible={deleteUsuariosDialog}
-        style={{ width: "32rem" }}
-        breakpoints={{ "960px": "75vw", "641px": "90vw" }}
-        header="Confirm"
-        modal
-        footer={deleteUsuariosDialogFooter}
-        onHide={hideDeleteUsuariosDialog}
-      >
-        <div className="confirmation-content">
-          <i
-            className="pi pi-exclamation-triangle mr-3"
-            style={{ fontSize: "2rem" }}
-          />
-          {user && (
-            <span>
-              ¿Estas seguro que quieres eliminar los Usuarios seleccionados?
-            </span>
-          )}
-        </div>
-      </Dialog> */}
     </>
   );
 }

@@ -25,17 +25,10 @@ function App() {
 
   }, []);
 
-  // Lista de usuarios quemados
-  // const usuarios = [
-  //   { username: 'Calidad01', password: 'ProNuvoCa01' },
-  //   { username: 'Hatchery01', password: 'ProNuvoHa01' },
-  //   { username: 'Horno01', password: 'ProNuvoHo01' },
-  //   { username: 'Dieta01', password: 'ProNuvoDi01' },
-  // ];
-
   // Estados para el formulario
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [departamento, setDepartamento] = useState('');
   const [mensaje, setMensaje] = useState('');
 
   const navigate = useNavigate();
@@ -50,7 +43,7 @@ function App() {
     if (usuarioValido) {
       setMensaje(`¡Bienvenido, ${username}!`);
        // Redirigir al menú principal y pasar el nombre de usuario
-       navigate('/MenuPrincipal', { state: { username } });
+       navigate('/MenuPrincipal', { state: { departamento } });
     
        // Limpiar los campos de usuario y contraseña
        setUsername('');

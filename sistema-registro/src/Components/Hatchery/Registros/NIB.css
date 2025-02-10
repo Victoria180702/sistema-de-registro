@@ -7,7 +7,7 @@
 }
 
 .controlrendimiento-container h1 {
-  color: #3d3d3d; /* Verde musgo */
+  color: #000000; /* Verde musgo */
   margin-bottom: 20px;
   font-size: 2.5rem; /* Título más grande */
 }
@@ -102,4 +102,10 @@
   border-bottom-right-radius: 8px;
   padding: 10px 20px;
   background-color: #f2f7f1; /* Fondo claro */
+}
+
+.logo2 {
+  position:initial;
+  width: 25px; /* Cambia este valor al tamaño deseado */
+  height: auto; 
 }

@@ -1,7 +1,9 @@
 .menu-principal {
   text-align: center;
   padding: 20px;
-  background-color: #e2ede0;
+  background-color: #ffffff; /* Fondo blanco */
+  min-height: 100vh;
+  font-family: 'Arial', sans-serif; /* Fuente más moderna */
 }
 
 .menuprincipal-container h1 {
@@ -33,6 +35,11 @@
 
 body {
   background-color: #e2ede0 !important; /* Prioridad más alta */
-  color: black; /* Asegura que el texto se vea correctamente */
+  color: #556b2f; /* Asegura que el texto se vea correctamente */
 }
 
+.logo2 {
+  position:initial;
+  width: 25px; /* Cambia este valor al tamaño deseado */
+  height: auto; 
+}

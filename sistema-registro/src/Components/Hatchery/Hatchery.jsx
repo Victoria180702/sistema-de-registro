@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import './Hatchery.css';
+import logo2 from "../../assets/mosca.png";
 
 function Hatchery() {
   const navigate = useNavigate();
@@ -16,37 +17,42 @@ function Hatchery() {
       {isRootPath && (
         
         <>
-        <h1>Registros de Hatchery</h1>
+        <h1>
+          <img src={logo2} alt="mosca" className="logo2" />
+          Registros de Hatchery
+        </h1>
+        <div className="welcome-message">
           <p>Esta es la página de registros de hatchery.</p>
-          <div className="button-container">
+          </div>
+          <div className="botones">
             <button
               onClick={() => navigate("/Hatchery/IngresoPPInvernadero")}
               className="back-button"
             >
               1- Ingreso de Pre-Pupas a Invernadero
             </button>
-            <br />
+            
             <button
               onClick={() => navigate("/Hatchery/ColectaInvernadero")}
               className="back-button"
             >
               2- Colecta de Eggies del Invernadero
             </button>
-            <br />
+
             <button
               onClick={() => navigate("/Hatchery/NIB")}
               className="back-button"
             >
               3- NIB - Neonatos Inoculados
             </button>
-            <br />
+
             <button
               onClick={() => navigate("/Hatchery/ControlRendimientoCosechaReproduccion")}
               className="back-button"
             >
               4- Control de Rendimiento Cosecha-Reproducción
             </button>
-            <br />
+
             <button onClick={() => navigate(-1)} className="back-button">
               Volver al Menú Principal
             </button>

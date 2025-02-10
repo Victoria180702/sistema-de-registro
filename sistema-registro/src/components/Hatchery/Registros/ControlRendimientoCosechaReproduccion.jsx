@@ -15,6 +15,9 @@ import { InputText } from "primereact/inputtext";
 import { Toast } from "primereact/toast";
 import { FaSeedling } from "react-icons/fa"; // Importar ícono
 import * as XLSX from 'xlsx';
+import logo2 from "../../../assets/mosca.png";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 function ControlRendimientoCosechaReproduccion() {
   let emptyRegister = {
@@ -82,6 +85,26 @@ function ControlRendimientoCosechaReproduccion() {
       .replace("hh", dateMap.hour.padStart(2, "0"))
       .replace("mm", dateMap.minute)
       .replace("A", dateMap.dayPeriod || "AM");
+  };
+
+  const exportPdf = () => {
+    const doc = new jsPDF();
+  
+    // Configuración del título
+    doc.setFontSize(18);
+    doc.text("Registros de Cosecha Eggies Invernadero - Embudos", 14, 22);
+  
+    // Configuración de la tabla
+    doc.autoTable({
+      head: [exportColumns.map(col => col.title)], // Encabezados de la tabla
+      body: selectedRegistros.map(registro => exportColumns.map(col => registro[col.dataKey])), // Datos de la tabla
+      startY: 30, // Posición inicial de la tabla
+      styles: { fontSize: 10 }, // Estilo de la tabla
+      headStyles: { fillColor: [41, 128, 185], textColor: 255 }, // Estilo del encabezado
+    });
+  
+    // Guardar el PDF
+    doc.save("Control_Rendimiento_Cosecha/Reproduccion.pdf");
   };
 
   const exportXlsx = () => {
@@ -243,14 +266,22 @@ function ControlRendimientoCosechaReproduccion() {
 
   const rightToolbarTemplate = () => {
     return (
-      <Button 
-        label="Exportar a Excel" 
-        icon="pi pi-upload" 
-        className="p-button-help" 
-        onClick={exportXlsx} 
-      />
+      <div className="flex flex-wrap gap-2">
+        <Button
+          label="Exportar a Excel"
+          icon="pi pi-upload"
+          className="p-button-help"
+          onClick={exportXlsx}
+        />
+        <Button
+          label="Exportar a PDF"
+          icon="pi pi-file-pdf"
+          className="p-button-danger"
+          onClick={exportPdf}
+        />
+      </div>
     );
-  };  
+  }; 
 
   const header = (
     <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
@@ -291,7 +322,7 @@ function ControlRendimientoCosechaReproduccion() {
       <div className="controlrendimiento-container">
         <Toast ref={toast} />
         <h1>
-          <FaSeedling style={{ marginRight: "10px" }} />
+          <img src={logo2} alt="mosca" className="logo2" />
           Control de Rendimiento de Cosecha y Reproducción
         </h1>
         <div className="welcome-message">

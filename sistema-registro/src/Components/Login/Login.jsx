@@ -42,8 +42,11 @@ function App() {
 
     if (usuarioValido) {
       setMensaje(`¡Bienvenido, ${username}!`);
-       // Redirigir al menú principal y pasar el nombre de usuario
-       navigate('/MenuPrincipal', { state: { departamento } });
+       // Obtener el departamento del usuario autenticado
+        const departamentoUsuario = usuarioValido.departamento;
+
+        // Redirigir al menú principal y pasar el departamento
+        navigate('/MenuPrincipal', { state: { departamento: departamentoUsuario } });
     
        // Limpiar los campos de usuario y contraseña
        setUsername('');
@@ -62,9 +65,11 @@ function App() {
     <div className='Login'>
       <div className="login-container">
 
-        <img src={logo2} alt="mosca" className="logo2" /> 
-
-        <h1>Acceso</h1>
+        
+        <h1>
+          <img src={logo2} alt="mosca" className="logo2" /> 
+          Acceso
+        </h1>
         <form onSubmit={autenticarUsuario}>
           <div>
             <label htmlFor="username">Usuario:</label>

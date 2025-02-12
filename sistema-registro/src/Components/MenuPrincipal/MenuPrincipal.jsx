@@ -18,11 +18,10 @@ function MenuPrincipal() {
   return (
     <div className="menu-principal">
       <h1>
-        <img src={logo2} alt="mosca" className="logo2" />
-        Menú Principal
+        <img src={logo2} alt="mosca" className="logo2" /> Menú Principal
       </h1>
       <div className="botones">
-        {/* Solo mostrar "Opción 1" si el usuario es "Calidad01" */}
+        {/* Solo mostrar "Opción 1" si el usuario pertenece al departamento de Calidad" */}
         {departamento === 'Calidad' && (
           <button onClick={() => navigate('/Calidad')}>Registros Calidad</button>
         )}

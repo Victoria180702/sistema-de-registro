@@ -17,10 +17,14 @@ import { IconField } from "primereact/iconfield";
 import { InputIcon } from "primereact/inputicon";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
+
+//OTROS
 import * as XLSX from 'xlsx';
 import logo2 from "../../../assets/mosca.png";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+
+
 
 function ColectaInvernadero() {
     //Variable de registro vacio

@@ -72,12 +72,17 @@ function IngresoPPInvernadero() {
 
   //Inicio de FETCH REGISTROS
   const fetchIngresoPPInvernadero = async () => {
-    //Funcion asyncrona para obtener los datos de la tabla Usuarios
-    const { data, error } = await supabase
-      .from("Ingreso_PP_Invernadero")
-      .select(); //Constante de data y error que es un await, es decir espera a que reciba una respuesta de la variable supabase, de la tabla "Uusarios" y hace un select de toda la tabla
-    console.log(error ? "Error:" : "Datos:", error || data); //YUn console log que nos dice si hay un error o si se obtuvieron los datos
-    setIngresoPPs(data || []); //Setea la variable Usuarios con los datos obtenidos o un array vacio si no se obtuvieron datos
+    try {
+      const { data, error } = await supabase
+        .from("Ingreso_PP_Invernadero")
+        .select();
+      
+      if (error) throw error; // Si hay error, lanza una excepción
+      
+      setIngresoPPs(data || []); // Guarda los datos en el estado
+    } catch (err) {  // Captura el error real
+      console.error("Error en la conexión a la base de datos:", err);
+    }
   };
 
   useEffect(() => {
@@ -128,16 +133,16 @@ function IngresoPPInvernadero() {
     doc.setFontSize(18);
     doc.text("Registros de Cosecha Eggies Invernadero - Embudos", 14, 22);
 
-   // Combinar datos seleccionados con el campo "registrado"
-   const exportData = selectedIngresoPPs.map((row) => ({
-    ...row,
-    registrado: `${row.fec_registro || ""} ${row.hor_registro || ""}`, // Combina las fechas
-  }));
+    // Combinar datos seleccionados con el campo "registrado"
+    const exportData = selectedIngresoPPs.map((row) => ({
+      ...row,
+      registrado: `${row.fec_registro || ""} ${row.hor_registro || ""}`, // Combina las fechas
+    }));
 
-  // Mapear cada registro en un array de valores en el mismo orden de exportColumns
-  const body = exportData.map((row) =>
-    exportColumns.map((col) => row[col.dataKey])
-  );
+    // Mapear cada registro en un array de valores en el mismo orden de exportColumns
+    const body = exportData.map((row) =>
+      exportColumns.map((col) => row[col.dataKey])
+    );
 
     // Configuración de la tabla
     doc.autoTable({
@@ -153,15 +158,16 @@ function IngresoPPInvernadero() {
   };
 
   const exportXlsx = () => {
-
     // Obtener los encabezados de las columnas
     const headers = cols.map((col) => col.header); // Mapear solo los encabezados de las columnas
 
     // Combinar los datos seleccionados y agregar el campo "registrado"
-  const exportData = selectedIngresoPPs.map((registro) => ({
-    ...registro,
-    registrado: `${registro.fec_registro || ""} ${registro.hor_registro || ""}`, 
-  }));
+    const exportData = selectedIngresoPPs.map((registro) => ({
+      ...registro,
+      registrado: `${registro.fec_registro || ""} ${
+        registro.hor_registro || ""
+      }`,
+    }));
 
     // Obtener los datos seleccionados y mapearlos para las columnas
     const rows = exportData.map(
@@ -200,7 +206,7 @@ function IngresoPPInvernadero() {
     { field: "kg_pp_redsea", header: "KG PP/RedSea" },
     { field: "fec_cam_camas", header: "Cambio Cama Pupado" },
     { field: "observaciones", header: "Observaciones" },
-    { field: "registrado", header: "Agregado" }, // Campo combinado
+    { field: "registrado", header: "Registrado" }, // Campo combinado
   ];
 
   // Mapeo de columnas para jsPDF-Autotable
@@ -470,7 +476,7 @@ function IngresoPPInvernadero() {
       toast.current.show({
         severity: "success",
         summary: "Exitoso",
-        detail: "Usuario creado correctamente",
+        detail: "Registro guardado exitosamente",
         life: 3000,
       });
 
@@ -821,14 +827,14 @@ function IngresoPPInvernadero() {
         visible={pupaDialog}
         style={{ width: "32rem" }}
         breakpoints={{ "960px": "75vw", "641px": "90vw" }}
-        header="Nuevo Usuario"
+        header="Nuevo Registro"
         modal
         className="p-fluid"
         footer={pupaDialogFooter}
         onHide={hideDialog}
       >
         <div className="field">
-          <label htmlFor="Fecha Ingreso PrePupa" className="font-bold">
+          <label htmlFor="fec_ingreso_pp" className="font-bold">
             Fecha Ingreso PrePupa{" "}
             {submitted && !pupa.fec_ingreso_pp && (
               <small className="p-error">Requerido.</small>
@@ -844,7 +850,7 @@ function IngresoPPInvernadero() {
           />
           <br />
 
-          <label htmlFor="Lote Cosecha" className="font-bold">
+          <label htmlFor="lote_cosecha_pp" className="font-bold">
             Lote Cosecha{" "}
             {submitted && !pupa.lote_cosecha_pp && (
               <small className="p-error">Requerido.</small>
@@ -859,7 +865,7 @@ function IngresoPPInvernadero() {
           />
 
           <br />
-          <label htmlFor="Nave" className="font-bold">
+          <label htmlFor="nave" className="font-bold">
             Nave{" "}
             {submitted && !pupa.nave && (
               <small className="p-error">Requerido.</small>
@@ -876,6 +882,7 @@ function IngresoPPInvernadero() {
 
           {/* <InputText
             id="nave"
+            type="Dropdown"
             value={pupa.nave}
             onChange={(e) => onInputChange(e, "nave")}
             required
@@ -883,7 +890,7 @@ function IngresoPPInvernadero() {
           /> */}
 
           <br />
-          <label htmlFor="Cantidad UR" className="font-bold">
+          <label htmlFor="cantidad_ur" className="font-bold">
             Cantidad UR{" "}
             {submitted && !pupa.cantidad_ur && (
               <small className="p-error">Requerido.</small>
@@ -904,7 +911,7 @@ function IngresoPPInvernadero() {
           />
 
           <br />
-          <label htmlFor="KG PrePupa/Modulo" className="font-bold">
+          <label htmlFor="kg_pp_modulo" className="font-bold">
             KG PrePupa / Modulo{" "}
             {submitted && !pupa.kg_pp_modulo && (
               <small className="p-error">Requerido.</small>
@@ -925,7 +932,7 @@ function IngresoPPInvernadero() {
           />
 
           <br />
-          <label htmlFor="KG PrePupa UR" className="font-bold">
+          <label htmlFor="kg_pp_ur" className="font-bold">
             Kg PrePupa UR{" "}
             {submitted && !pupa.kg_pp_ur && (
               <small className="p-error">Requerido.</small>
@@ -941,7 +948,7 @@ function IngresoPPInvernadero() {
           />
 
           <br />
-          <label htmlFor="Cantidad PrePupa Modulo" className="font-bold">
+          <label htmlFor="cantidad_pp_modulo" className="font-bold">
             Cantidad PrePupa Modulo{" "}
             {submitted && !pupa.cantidad_pp_modulo && (
               <small className="p-error">Requerido.</small>
@@ -962,7 +969,7 @@ function IngresoPPInvernadero() {
           />
 
           <br />
-          <label htmlFor="KG PrePupa RedSea" className="font-bold">
+          <label htmlFor="kg_pp_redsea" className="font-bold">
             Kg PrePupa RedSea{" "}
             {submitted && !pupa.kg_pp_redsea && (
               <small className="p-error">Requerido.</small>
@@ -983,7 +990,7 @@ function IngresoPPInvernadero() {
           />
 
           <br />
-          <label htmlFor="Fecha Cambio Camas Pupado" className="font-bold">
+          <label htmlFor="fec_cam_camas" className="font-bold">
             Fecha Cambio Camas Pupado{" "}
             {submitted && !pupa.fec_cam_camas && (
               <small className="p-error">Requerido.</small>
@@ -998,7 +1005,7 @@ function IngresoPPInvernadero() {
             autoFocus
           />
 
-          <label htmlFor="Observaciones" className="font-bold">
+          <label htmlFor="observaciones" className="font-bold">
             Observaciones{" "}
             {observacionesObligatorio && (
               <small className="p-error">Requerido por fuera de rango.</small>

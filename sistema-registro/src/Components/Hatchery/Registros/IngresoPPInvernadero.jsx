@@ -18,21 +18,28 @@ import { IconField } from "primereact/iconfield";
 import { InputIcon } from "primereact/inputicon";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
+import { Dropdown } from "primereact/dropdown";
+
 import { act } from "react";
-import * as XLSX from 'xlsx';
+import * as XLSX from "xlsx";
 import logo2 from "../../../assets/mosca.png";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
 function IngresoPPInvernadero() {
   //Variable de registro vacio
-  let emptyRegister = {
-    id: null,
-    fecha: "",
-    cantidad: "",
-    origen: "",
-    destino: "",
+  const emptyRegister = {
+    fec_ingreso_pp: "",
+    lote_cosecha_pp: "",
+    nave: "", // propiedad para la nave
+    cantidad_ur: "",
+    kg_pp_modulo: "",
+    kg_pp_ur: "",
+    cantidad_pp_modulo: "",
+    kg_pp_redsea: "",
+    fec_cam_camas: "",
     observaciones: "",
+    // ... otras propiedades según corresponda
   };
 
   const [IngresoPPs, setIngresoPPs] = useState([]); //Variable de estado que guarda los datos de la tabla Usuarios
@@ -47,17 +54,35 @@ function IngresoPPInvernadero() {
   const [deletePPDialog, setDeletePPDialog] = useState(false); //Variable de estado que guarda si se muestra el dialogo de eliminar usuario
   const [deleteIngresoPPsDialog, setDeleteIngresoPPsDialog] = useState(false); //Variable de estado que guarda si se muestra el dialogo de eliminar usuarios
   const navigate = useNavigate(); //Variable de navegación
-
+  const [observacionesObligatorio, setObservacionesObligatorio] =
+    useState(false);
   const [fechaRegistro, setFechaRegistro] = useState(""); //Variable de estado que guarda la fecha de registro actual
+  const [erroresValidacion, setErroresValidacion] = useState({
+    cantidad_ur: false,
+    kg_pp_modulo: false,
+    cantidad_pp_modulo: false,
+    kg_pp_redsea: false,
+  });
+  const naves = [
+    { name: "Nave 1", value: "Nave 1" },
+    { name: "Nave 2", value: "Nave 2" },
+    { name: "Nave 3", value: "Nave 3" },
+    { name: "Nave 4", value: "Nave 4" },
+  ];
 
   //Inicio de FETCH REGISTROS
   const fetchIngresoPPInvernadero = async () => {
-    //Funcion asyncrona para obtener los datos de la tabla Usuarios
-    const { data, error } = await supabase
-      .from("Ingreso_PP_Invernadero")
-      .select(); //Constante de data y error que es un await, es decir espera a que reciba una respuesta de la variable supabase, de la tabla "Uusarios" y hace un select de toda la tabla
-    console.log(error ? "Error:" : "Datos:", error || data); //YUn console log que nos dice si hay un error o si se obtuvieron los datos
-    setIngresoPPs(data || []); //Setea la variable Usuarios con los datos obtenidos o un array vacio si no se obtuvieron datos
+    try {
+      const { data, error } = await supabase
+        .from("Ingreso_PP_Invernadero")
+        .select();
+      
+      if (error) throw error; // Si hay error, lanza una excepción
+      
+      setIngresoPPs(data || []); // Guarda los datos en el estado
+    } catch (err) {  // Captura el error real
+      console.error("Error en la conexión a la base de datos:", err);
+    }
   };
 
   useEffect(() => {
@@ -103,51 +128,71 @@ function IngresoPPInvernadero() {
 
   const exportPdf = () => {
     const doc = new jsPDF();
-  
+
     // Configuración del título
     doc.setFontSize(18);
     doc.text("Registros de Cosecha Eggies Invernadero - Embudos", 14, 22);
-  
+
+    // Combinar datos seleccionados con el campo "registrado"
+    const exportData = selectedIngresoPPs.map((row) => ({
+      ...row,
+      registrado: `${row.fec_registro || ""} ${row.hor_registro || ""}`, // Combina las fechas
+    }));
+
+    // Mapear cada registro en un array de valores en el mismo orden de exportColumns
+    const body = exportData.map((row) =>
+      exportColumns.map((col) => row[col.dataKey])
+    );
+
     // Configuración de la tabla
     doc.autoTable({
-      head: [exportColumns.map(col => col.title)], // Encabezados de la tabla
-      body: selectedIngresoPPs.map(registro => exportColumns.map(col => registro[col.dataKey])), // Datos de la tabla
+      head: [exportColumns.map((col) => col.title)], // Encabezados de la tabla
+      body: body, // Datos de la tabla
       startY: 30, // Posición inicial de la tabla
       styles: { fontSize: 10 }, // Estilo de la tabla
       headStyles: { fillColor: [41, 128, 185], textColor: 255 }, // Estilo del encabezado
     });
-  
+
     // Guardar el PDF
     doc.save("Ingreso_PrePupas_Invernadero.pdf");
   };
 
   const exportXlsx = () => {
-        // Obtener los encabezados de las columnas
-        const headers = cols.map((col) => col.header);  // Mapear solo los encabezados de las columnas
-        
-        // Obtener los datos seleccionados y mapearlos para las columnas
-        const rows = selectedIngresoPPs.map((registro) =>
-          cols.map((col) => registro[col.field]) // Mapear los valores de cada fila por las columnas
-        );
-      
-        // Agregar la fila de encabezados al principio de los datos
-        const dataToExport = [headers, ...rows];
-      
-        // Crear una hoja de trabajo a partir de los encabezados y los datos
-        const ws = XLSX.utils.aoa_to_sheet(dataToExport);
-      
-        // Configurar el estilo de la hoja para asegurar la correcta separación de celdas
-        const wscols = cols.map(col => ({ width: Math.max(col.header.length, 10) })); // Ajustar el ancho de las columnas según los encabezados
-        ws['!cols'] = wscols;
-      
-        // Crear un libro de trabajo
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Registros");
-      
-        // Exportar el archivo .xlsx
-        XLSX.writeFile(wb, "Ingreso_PP_Invernadero.xlsx");
-      };
+    // Obtener los encabezados de las columnas
+    const headers = cols.map((col) => col.header); // Mapear solo los encabezados de las columnas
 
+    // Combinar los datos seleccionados y agregar el campo "registrado"
+    const exportData = selectedIngresoPPs.map((registro) => ({
+      ...registro,
+      registrado: `${registro.fec_registro || ""} ${
+        registro.hor_registro || ""
+      }`,
+    }));
+
+    // Obtener los datos seleccionados y mapearlos para las columnas
+    const rows = exportData.map(
+      (registro) => cols.map((col) => registro[col.field]) // Mapear los valores de cada fila por las columnas
+    );
+
+    // Agregar la fila de encabezados al principio de los datos
+    const dataToExport = [headers, ...rows];
+
+    // Crear una hoja de trabajo a partir de los encabezados y los datos
+    const ws = XLSX.utils.aoa_to_sheet(dataToExport);
+
+    // Configurar el estilo de la hoja para asegurar la correcta separación de celdas
+    const wscols = cols.map((col) => ({
+      width: Math.max(col.header.length, 10),
+    })); // Ajustar el ancho de las columnas según los encabezados
+    ws["!cols"] = wscols;
+
+    // Crear un libro de trabajo
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Registros");
+
+    // Exportar el archivo .xlsx
+    XLSX.writeFile(wb, "Ingreso_PP_Invernadero.xlsx");
+  };
 
   // Columnas de la tabla para exportar
   const cols = [
@@ -160,7 +205,8 @@ function IngresoPPInvernadero() {
     { field: "cantidad_pp_modulo", header: "# PP/Modulo" },
     { field: "kg_pp_redsea", header: "KG PP/RedSea" },
     { field: "fec_cam_camas", header: "Cambio Cama Pupado" },
-    { field: "registrado", header: "Agregado" }, // Campo combinado
+    { field: "observaciones", header: "Observaciones" },
+    { field: "registrado", header: "Registrado" }, // Campo combinado
   ];
 
   // Mapeo de columnas para jsPDF-Autotable
@@ -185,6 +231,7 @@ function IngresoPPInvernadero() {
       cantidad_pp_modulo,
       kg_pp_redsea,
       fec_cam_camas,
+      observaciones,
     } = newData;
 
     // Convertir fec_cam_camas al formato ISO (yyyy-MM-dd)
@@ -207,6 +254,7 @@ function IngresoPPInvernadero() {
       cantidad_pp_modulo,
       kg_pp_redsea,
       fec_cam_camas: formattedFecCamCamas, // Asegúrate de inspeccionar este valor
+      observaciones,
     });
 
     try {
@@ -221,6 +269,7 @@ function IngresoPPInvernadero() {
           cantidad_pp_modulo,
           kg_pp_redsea,
           fec_cam_camas: formattedFecCamCamas,
+          observaciones,
         })
         .eq("id", id);
 
@@ -240,7 +289,6 @@ function IngresoPPInvernadero() {
             : ingresopp
         )
       );
-    
     } catch (err) {
       console.error("Error inesperado:", err);
     }
@@ -282,12 +330,49 @@ function IngresoPPInvernadero() {
       />
     );
   };
+  const DropdownEditor = (options, type) => (
+    <Dropdown
+      value={options.value || ""} // Asegura que no sea undefined
+      onChange={(e) => options.editorCallback(e.value)} // Callback para notificar el cambio
+      options={type} // Opciones disponibles
+      optionLabel="name" // Campo que muestra el texto visible
+      optionValue="value" // Campo que identifica el valor único
+      placeholder="Select a type" // Placeholder cuando no hay valor
+      className="w-full md:w-14rem" // Estilo de ancho responsivo
+    />
+  );
   const allowEdit = (rowData) => {
     return rowData.name !== "Blue Band";
   };
 
   const saveIngresoPP = async () => {
     setSubmitted(true);
+
+    // Validar los campos
+    const isCantidadURInvalida =
+      pupa.cantidad_ur < 20 || pupa.cantidad_ur > 100;
+    const isKgPPModuloInvalido =
+      pupa.kg_pp_modulo < 10 || pupa.kg_pp_modulo > 25;
+    const isCantidadPPModuloInvalido =
+      pupa.cantidad_pp_modulo < 50 || pupa.cantidad_pp_modulo > 100;
+    const isKgPPRedseaInvalido =
+      pupa.kg_pp_redsea < 400 || pupa.kg_pp_redsea > 550;
+
+    // Actualizar el estado de errores
+    setErroresValidacion({
+      cantidad_ur: isCantidadURInvalida,
+      kg_pp_modulo: isKgPPModuloInvalido,
+      cantidad_pp_modulo: isCantidadPPModuloInvalido,
+      kg_pp_redsea: isKgPPRedseaInvalido,
+    });
+
+    // Verificar si hay algún valor fuera de rango
+    const valoresFueraDeRango =
+      isCantidadURInvalida ||
+      isKgPPModuloInvalido ||
+      isCantidadPPModuloInvalido ||
+      isKgPPRedseaInvalido;
+
     if (
       !pupa.fec_ingreso_pp ||
       !pupa.lote_cosecha_pp ||
@@ -307,8 +392,39 @@ function IngresoPPInvernadero() {
       });
       return;
     }
+
+    // Validación principal
+    if (valoresFueraDeRango && !pupa.observaciones) {
+      setObservacionesObligatorio(true);
+      const currentErrores = {
+        "Cantidad UR": isCantidadURInvalida,
+        "Kg PrePupa Modulo": isKgPPModuloInvalido,
+        "Cantidad PrePupa Modulo": isCantidadPPModuloInvalido,
+        "Kg PrePupa RedSea": isKgPPRedseaInvalido,
+      };
+
+      toast.current.show({
+        severity: "error",
+        summary: "Error",
+        detail: `Debe agregar observaciones. Campos inválidos: ${Object.keys(
+          currentErrores
+        )
+          .filter((k) => currentErrores[k])
+          .join(", ")}`,
+        life: 3000,
+      });
+      return;
+    }
+
+    setObservacionesObligatorio(false);
+    setErroresValidacion({
+      cantidad_ur: false,
+      kg_pp_modulo: false,
+      cantidad_pp_modulo: false,
+      kg_pp_redsea: false,
+    });
+
     try {
-      // Convertir fec_cam_camas al formato dd/mm/yyyy
       const formattedFecCamCamas = pupa.fec_cam_camas
         ? new Date(pupa.fec_cam_camas)
             .toISOString()
@@ -327,8 +443,9 @@ function IngresoPPInvernadero() {
             .join("/")
         : null;
 
-      const currentDate = formatDateTime(new Date(), "DD/MM/YYYY"); // Solo fecha
-      const currentTime = formatDateTime(new Date(), "hh:mm A"); // Fecha en formato ISO 8601
+      const currentDate = formatDateTime(new Date(), "DD/MM/YYYY");
+      const currentTime = formatDateTime(new Date(), "hh:mm A");
+
       const { data, error } = await supabase
         .from("Ingreso_PP_Invernadero")
         .insert([
@@ -344,6 +461,7 @@ function IngresoPPInvernadero() {
             fec_cam_camas: formattedFecCamCamas,
             fec_registro: currentDate,
             hor_registro: currentTime,
+            observaciones: pupa.observaciones,
           },
         ]);
 
@@ -358,13 +476,14 @@ function IngresoPPInvernadero() {
       toast.current.show({
         severity: "success",
         summary: "Exitoso",
-        detail: "Usuario creado correctamente",
+        detail: "Registro guardado exitosamente",
         life: 3000,
       });
 
       // Limpia el estado
       setPupa(emptyRegister);
       setPupaDialog(false);
+      setSubmitted(false);
       fetchIngresoPPInvernadero();
     } catch (error) {
       console.error("Error capturado en el catch:", error.message);
@@ -398,6 +517,15 @@ function IngresoPPInvernadero() {
     setPupa(_pupa);
   };
 
+  const onDropdownChange = (e, name) => {
+    const val = e.value;
+    console.log(`${name}: ${val}`); // Depura el valor seleccionado
+
+    setorden((prevOrdenes) => ({
+      ...prevOrdenes,
+      [name]: val, // Guarda el valor seleccionado
+    }));
+  };
   // //Fin de EDITAR TABLA
 
   // //Inicio de ELIMINAR REGISTRO
@@ -500,12 +628,14 @@ function IngresoPPInvernadero() {
           icon="pi pi-upload"
           className="p-button-help"
           onClick={exportXlsx}
+          disabled={selectedIngresoPPs.length === 0}
         />
         <Button
           label="Exportar a PDF"
           icon="pi pi-file-pdf"
           className="p-button-danger"
           onClick={exportPdf}
+          disabled={selectedIngresoPPs.length === 0}
         />
       </div>
     );
@@ -553,7 +683,10 @@ function IngresoPPInvernadero() {
           Ingreso PrePupas Invernadero
         </h1>
         <div className="welcome-message">
-          <p>Bienvenido al sistema de Ingreso PrePupas Invernadero. Aquí puedes gestionar los registros ingreso de prepuas al invernadero.</p>
+          <p>
+            Bienvenido al sistema de Ingreso PrePupas Invernadero. Aquí puedes
+            gestionar los registros ingreso de prepuas al invernadero.
+          </p>
         </div>
         <button onClick={() => navigate(-1)} className="back-button">
           Volver
@@ -674,6 +807,13 @@ function IngresoPPInvernadero() {
               style={{ minWidth: "14rem" }}
             ></Column>
             <Column
+              field="observaciones"
+              header="Observaciones"
+              editor={(options) => textEditor(options)}
+              sortable
+              style={{ minWidth: "8rem" }}
+            ></Column>
+            <Column
               header="Herramientas"
               rowEditor={allowEdit}
               headerStyle={{ width: "10%", minWidth: "5rem" }}
@@ -687,14 +827,14 @@ function IngresoPPInvernadero() {
         visible={pupaDialog}
         style={{ width: "32rem" }}
         breakpoints={{ "960px": "75vw", "641px": "90vw" }}
-        header="Nuevo Usuario"
+        header="Nuevo Registro"
         modal
         className="p-fluid"
         footer={pupaDialogFooter}
         onHide={hideDialog}
       >
         <div className="field">
-        <label htmlFor="Fecha Ingreso PrePupa" className="font-bold">
+          <label htmlFor="fec_ingreso_pp" className="font-bold">
             Fecha Ingreso PrePupa{" "}
             {submitted && !pupa.fec_ingreso_pp && (
               <small className="p-error">Requerido.</small>
@@ -710,7 +850,7 @@ function IngresoPPInvernadero() {
           />
           <br />
 
-          <label htmlFor="Lote Cosecha" className="font-bold">
+          <label htmlFor="lote_cosecha_pp" className="font-bold">
             Lote Cosecha{" "}
             {submitted && !pupa.lote_cosecha_pp && (
               <small className="p-error">Requerido.</small>
@@ -725,25 +865,40 @@ function IngresoPPInvernadero() {
           />
 
           <br />
-          <label htmlFor="Nave" className="font-bold">
+          <label htmlFor="nave" className="font-bold">
             Nave{" "}
             {submitted && !pupa.nave && (
               <small className="p-error">Requerido.</small>
             )}
           </label>
-          <InputText
+          <Dropdown
+            value={pupa.nave}
+            onChange={(e) => setPupa({ ...pupa, nave: e.value })}
+            options={naves}
+            optionLabel="name"
+            placeholder="Selecciona una nave"
+            className="w-full md:w-14rem"
+          />
+
+          {/* <InputText
             id="nave"
+            type="Dropdown"
             value={pupa.nave}
             onChange={(e) => onInputChange(e, "nave")}
             required
             autoFocus
-          />
+          /> */}
 
           <br />
-          <label htmlFor="Cantidad UR" className="font-bold">
+          <label htmlFor="cantidad_ur" className="font-bold">
             Cantidad UR{" "}
             {submitted && !pupa.cantidad_ur && (
               <small className="p-error">Requerido.</small>
+            )}
+            {erroresValidacion.cantidad_ur && (
+              <small className="p-error">
+                Cantidad UR debe estar entre 20 y 100.
+              </small>
             )}
           </label>
           <InputText
@@ -756,10 +911,15 @@ function IngresoPPInvernadero() {
           />
 
           <br />
-          <label htmlFor="KG PrePupa/Modulo" className="font-bold">
+          <label htmlFor="kg_pp_modulo" className="font-bold">
             KG PrePupa / Modulo{" "}
             {submitted && !pupa.kg_pp_modulo && (
               <small className="p-error">Requerido.</small>
+            )}
+            {erroresValidacion.kg_pp_modulo && (
+              <small className="p-error">
+                Kg PrePupa Modulo debe estar entre 10 y 25 Kg por caja.
+              </small>
             )}
           </label>
           <InputText
@@ -772,8 +932,8 @@ function IngresoPPInvernadero() {
           />
 
           <br />
-          <label htmlFor="KG PrePupa UR" className="font-bold">
-            KG PrePupa UR{" "}
+          <label htmlFor="kg_pp_ur" className="font-bold">
+            Kg PrePupa UR{" "}
             {submitted && !pupa.kg_pp_ur && (
               <small className="p-error">Requerido.</small>
             )}
@@ -788,10 +948,15 @@ function IngresoPPInvernadero() {
           />
 
           <br />
-          <label htmlFor="Cantidad PrePupa Modulo" className="font-bold">
+          <label htmlFor="cantidad_pp_modulo" className="font-bold">
             Cantidad PrePupa Modulo{" "}
             {submitted && !pupa.cantidad_pp_modulo && (
               <small className="p-error">Requerido.</small>
+            )}
+            {erroresValidacion.cantidad_pp_modulo && (
+              <small className="p-error">
+                Cantidad PrePupa Modulo debe estar entre 50K y 100K.
+              </small>
             )}
           </label>
           <InputText
@@ -804,10 +969,15 @@ function IngresoPPInvernadero() {
           />
 
           <br />
-          <label htmlFor="KG PrePupa RedSea" className="font-bold">
-            KG PrePupa RedSea{" "}
+          <label htmlFor="kg_pp_redsea" className="font-bold">
+            Kg PrePupa RedSea{" "}
             {submitted && !pupa.kg_pp_redsea && (
               <small className="p-error">Requerido.</small>
+            )}
+            {erroresValidacion.kg_pp_redsea && (
+              <small className="p-error">
+                Kg PrePupa RedSea debe estar entre 400 y 550.
+              </small>
             )}
           </label>
           <InputText
@@ -820,7 +990,7 @@ function IngresoPPInvernadero() {
           />
 
           <br />
-          <label htmlFor="Fecha Cambio Camas Pupado" className="font-bold">
+          <label htmlFor="fec_cam_camas" className="font-bold">
             Fecha Cambio Camas Pupado{" "}
             {submitted && !pupa.fec_cam_camas && (
               <small className="p-error">Requerido.</small>
@@ -834,7 +1004,20 @@ function IngresoPPInvernadero() {
             required
             autoFocus
           />
-          
+
+          <label htmlFor="observaciones" className="font-bold">
+            Observaciones{" "}
+            {observacionesObligatorio && (
+              <small className="p-error">Requerido por fuera de rango.</small>
+            )}
+          </label>
+          <InputText
+            id="observaciones"
+            value={pupa.observaciones}
+            onChange={(e) => onInputChange(e, "observaciones")}
+            required
+            autoFocus
+          />
         </div>
       </Dialog>
 

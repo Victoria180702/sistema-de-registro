@@ -19,7 +19,7 @@ import { InputIcon } from "primereact/inputicon";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { act } from "react";
-import * as XLSX from 'xlsx';
+import * as XLSX from "xlsx";
 import logo2 from "../../../assets/mosca.png";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
@@ -38,6 +38,7 @@ function NIB() {
     operario: "",
     fec_colecta: "",
     hor_colecta: "",
+    observaciones: "",
   };
 
   const [neonatos, setNeonatos] = useState([]); //Variable de estado que guarda los datos de la tabla Usuarios
@@ -52,13 +53,26 @@ function NIB() {
   const [deleteNeonatoDialog, setDeleteNeonatoDialog] = useState(false); //Variable de estado que guarda si se muestra el dialogo de eliminar usuario
   const [deleteNeonatosDialog, setDeleteNeonatosDialog] = useState(false); //Variable de estado que guarda si se muestra el dialogo de eliminar usuarios
   const navigate = useNavigate(); //Variable de navegación
-
+  const [observacionesObligatorio, setObservacionesObligatorio] =
+    useState(false);
+  const [erroresValidacion, setErroresValidacion] = useState({
+    embudo: false,
+    gm_colectados: false,
+    cajas_inoculadas_destino: false,
+  });
   //Inicio de FETCH REGISTROS
   const fetchNeonatos = async () => {
-    //Funcion asyncrona para obtener los datos de la tabla Usuarios
-    const { data, error } = await supabase.from("Neonatos_Inoculados").select(); //Constante de data y error que es un await, es decir espera a que reciba una respuesta de la variable supabase, de la tabla "Uusarios" y hace un select de toda la tabla
-    // console.log(error ? "Error:" : "Datos:", error || data); //YUn console log que nos dice si hay un error o si se obtuvieron los datos
-    setNeonatos(data || []); //Setea la variable Usuarios con los datos obtenidos o un array vacio si no se obtuvieron datos
+    try {
+      //Funcion asyncrona para obtener los datos de la tabla Usuarios
+      const { data, error } = await supabase
+        .from("Neonatos_Inoculados")
+        .select(); //Constante de data y error que es un await, es decir espera a que reciba una respuesta de la variable supabase, de la tabla "Uusarios" y hace un select de toda la tabla
+      // console.log(error ? "Error:" : "Datos:", error || data); //YUn console log que nos dice si hay un error o si se obtuvieron los datos
+      if (error) throw error;
+      setNeonatos(data || []); //Setea la variable Usuarios con los datos obtenidos o un array vacio si no se obtuvieron datos
+    } catch {
+      console.log("Error en la conexión a la base de datos");
+    }
   };
 
   useEffect(() => {
@@ -104,51 +118,68 @@ function NIB() {
 
   const exportPdf = () => {
     const doc = new jsPDF();
-  
+
     // Configuración del título
     doc.setFontSize(18);
     doc.text("Registros de Cosecha Eggies Invernadero - Embudos", 14, 22);
-  
+
+    const exportData = selectedNeonatos.map((row) => ({
+      ...row,
+      registrado: `${row.fec_colecta || ""} ${row.hor_colecta || ""}`, // Combina las fechas
+    }));
+
+    // Mapear cada registro en un array de valores en el mismo orden de exportColumns
+    const body = exportData.map((row) =>
+      exportColumns.map((col) => row[col.dataKey])
+    );
     // Configuración de la tabla
     doc.autoTable({
-      head: [exportColumns.map(col => col.title)], // Encabezados de la tabla
-      body: selectedNeonatos.map(registro => exportColumns.map(col => registro[col.dataKey])), // Datos de la tabla
+      head: [exportColumns.map((col) => col.title)], // Encabezados de la tabla
+      body:body, // Datos de la tabla
       startY: 30, // Posición inicial de la tabla
       styles: { fontSize: 10 }, // Estilo de la tabla
       headStyles: { fillColor: [41, 128, 185], textColor: 255 }, // Estilo del encabezado
     });
-  
+
     // Guardar el PDF
     doc.save("Eggies_Colecta_Invernadero_Embudo.pdf");
   };
 
   // Inicio de EXPORTAR TABLA
-    const exportXlsx = () => {
-        // Obtener los encabezados de las columnas
-        const headers = cols.map((col) => col.header);  // Mapear solo los encabezados de las columnas
-        
-        // Obtener los datos seleccionados y mapearlos para las columnas
-        const rows = selectedNeonatos.map((registro) =>
-          cols.map((col) => registro[col.field]) // Mapear los valores de cada fila por las columnas
-        );
-      
-        // Agregar la fila de encabezados al principio de los datos
-        const dataToExport = [headers, ...rows];
-      
-        // Crear una hoja de trabajo a partir de los encabezados y los datos
-        const ws = XLSX.utils.aoa_to_sheet(dataToExport);
-      
-        // Configurar el estilo de la hoja para asegurar la correcta separación de celdas
-        const wscols = cols.map(col => ({ width: Math.max(col.header.length, 10) })); // Ajustar el ancho de las columnas según los encabezados
-        ws['!cols'] = wscols;
-      
-        // Crear un libro de trabajo
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Registros");
-      
-        // Exportar el archivo .xlsx
-        XLSX.writeFile(wb, "Neonatos_Inoculaddos.xlsx");
-      };
+  const exportXlsx = () => {
+    // Obtener los encabezados de las columnas
+    const headers = cols.map((col) => col.header); // Mapear solo los encabezados de las columnas
+
+    const exportData = selectedNeonatos.map((registro) => ({
+      ...registro,
+      registrado: `${registro.fec_colecta || ""} ${
+        registro.hor_colecta || ""
+      }`,
+    }));
+    // Obtener los datos seleccionados y mapearlos para las columnas
+    const rows = exportData.map(
+      (registro) => cols.map((col) => registro[col.field]) // Mapear los valores de cada fila por las columnas
+    );
+
+    // Agregar la fila de encabezados al principio de los datos
+    const dataToExport = [headers, ...rows];
+
+    // Crear una hoja de trabajo a partir de los encabezados y los datos
+    const ws = XLSX.utils.aoa_to_sheet(dataToExport);
+
+    // Configurar el estilo de la hoja para asegurar la correcta separación de celdas
+    const wscols = cols.map((col) => ({
+      width: Math.max(col.header.length, 10),
+    })); // Ajustar el ancho de las columnas según los encabezados
+    ws["!cols"] = wscols;
+
+    // Crear un libro de trabajo
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Registros");
+
+    // Exportar el archivo .xlsx
+    XLSX.writeFile(wb, "Neonatos_Inoculaddos.xlsx");
+  };
 
   // Columnas de la tabla para exportar
   const cols = [
@@ -161,6 +192,7 @@ function NIB() {
     { header: "Temperatura ambiental", field: "temp_ambiental" },
     { header: "Humedad ambiental", field: "hum_ambiental" },
     { header: "Operario", field: "operario" },
+    { field: "observaciones", header: "Observaciones" },
     { header: "Recolectado", field: "registrado" },
   ];
 
@@ -187,6 +219,7 @@ function NIB() {
       operario,
       fec_colecta,
       hor_colecta,
+      observaciones,
     } = newData;
 
     // console.log("Datos enviados para actualizar:", {
@@ -214,6 +247,7 @@ function NIB() {
           temp_ambiental,
           hum_ambiental,
           operario,
+          observaciones,
         })
         .eq("id", id);
 
@@ -225,8 +259,8 @@ function NIB() {
       // console.log(`Fila con ID ${id} actualizada correctamente.`);
 
       // Actualizar solo la fila editada en el estado
-      setNeonatos(prevneonato => 
-        prevneonato.map(neonato => 
+      setNeonatos((prevneonato) =>
+        prevneonato.map((neonato) =>
           neonato.id === id ? { ...neonato, ...newData } : neonato
         )
       );
@@ -277,7 +311,26 @@ function NIB() {
 
   const saveNeonatoInoculado = async () => {
     setSubmitted(true);
-    // console.log(neonato);
+
+    // Validar los campos
+    const isEmbudoInvalido = neonato.embudo < 1 || neonato.embudo > 10;
+    // const isGmColectadosInvalido = neonato.gm_colectados < 1 || neonato.gm_colectados > 100;
+    const isCajasInoculadasDestinoInvalido =
+      neonato.cajas_inoculadas_destino < 100 ||
+      neonato.cajas_inoculadas_destino > 500;
+    // POR SI LO PIDEN MAS ADELANTE const isGmNeonatoCajaInvalido = neonato.gm_neonato_caja < 1 || neonato.gm_neonato_caja > 100;
+
+    // Actualizar el estado de errores
+    setErroresValidacion({
+      embudo: isEmbudoInvalido,
+      // gm_colectados: false,
+      cajas_inoculadas_destino: isCajasInoculadasDestinoInvalido,
+    });
+    const valoresFueraDeRango =
+      isEmbudoInvalido ||
+      // isGmColectadosInvalido ||
+      isCajasInoculadasDestinoInvalido;
+
     if (
       !neonato.embudo ||
       !neonato.gm_colectados ||
@@ -296,6 +349,35 @@ function NIB() {
       });
       return;
     }
+
+    // Validación principal
+    if (valoresFueraDeRango && !neonato.observaciones) {
+      setObservacionesObligatorio(true);
+      const currentErrores = {
+        "Número de Embudo": isEmbudoInvalido,
+        // gm_colectados: false,
+        "Cajas Inoculadas": isCajasInoculadasDestinoInvalido,
+      };
+
+      toast.current.show({
+        severity: "error",
+        summary: "Error",
+        detail: `Debe agregar observaciones. Campos inválidos: ${Object.keys(
+          currentErrores
+        )
+          .filter((k) => currentErrores[k])
+          .join(", ")}`,
+        life: 3000,
+      });
+      return;
+    }
+
+    setObservacionesObligatorio(false);
+    setErroresValidacion({
+      embudo: false,
+      // gm_colectados: false,
+      cajas_inoculadas_destino: false,
+    });
 
     try {
       // Convertir fec_cam_camas al formato dd/mm/yyyy
@@ -323,6 +405,7 @@ function NIB() {
             operario: neonato.operario,
             fec_colecta: currentDate,
             hor_colecta: currentTime,
+            observaciones: neonato.observaciones,
           },
         ]);
 
@@ -337,7 +420,7 @@ function NIB() {
       toast.current.show({
         severity: "success",
         summary: "Exitoso",
-        detail: "Usuario creado correctamente",
+        detail: "Registro guardado exitosamente",
         life: 3000,
       });
 
@@ -479,12 +562,14 @@ function NIB() {
           icon="pi pi-upload"
           className="p-button-help"
           onClick={exportXlsx}
+          disabled={selectedNeonatos.length === 0}
         />
         <Button
           label="Exportar a PDF"
           icon="pi pi-file-pdf"
           className="p-button-danger"
           onClick={exportPdf}
+          disabled={selectedNeonatos.length === 0}
         />
       </div>
     );
@@ -532,7 +617,10 @@ function NIB() {
           Neonatos Inoculados
         </h1>
         <div className="welcome-message">
-          <p>Bienvenido al sistema de Neonatos Inoculados. Aquí puedes gestionar los registros de Neonatos Inoculados.</p>
+          <p>
+            Bienvenido al sistema de Neonatos Inoculados. Aquí puedes gestionar
+            los registros de Neonatos Inoculados.
+          </p>
         </div>
         <button onClick={() => navigate(-1)} className="back-button">
           Volver
@@ -645,6 +733,13 @@ function NIB() {
               style={{ minWidth: "14rem" }}
             ></Column>
             <Column
+              field="observaciones"
+              header="Observaciones"
+              editor={(options) => textEditor(options)}
+              sortable
+              style={{ minWidth: "8rem" }}
+            ></Column>
+            <Column
               header="Herramientas"
               rowEditor={allowEdit}
               headerStyle={{ width: "10%", minWidth: "5rem" }}
@@ -665,10 +760,15 @@ function NIB() {
         onHide={hideDialog}
       >
         <div className="field">
-          <label htmlFor="# de Embudo" className="font-bold">
+          <label htmlFor="embudo" className="font-bold">
             # de Embudo{" "}
             {submitted && !neonato.embudo && (
               <small className="p-error">Requerido.</small>
+            )}
+            {erroresValidacion.embudo && (
+              <small className="p-error">
+                Número de Embudo debe de ser del 1 al 10.
+              </small>
             )}
           </label>
           <InputText
@@ -681,11 +781,16 @@ function NIB() {
           />
           <br />
 
-          <label htmlFor="g Colectados" className="font-bold">
+          <label htmlFor="gm_colectados" className="font-bold">
             g Colectados{" "}
             {submitted && !neonato.gm_colectados && (
               <small className="p-error">Requerido.</small>
             )}
+            {/* {erroresValidacion.gm_colectados && (
+              <small className="p-error">
+                Gramos Colectados depende de cada caja.
+              </small>
+            )} */}
           </label>
           <InputText
             type="float"
@@ -697,10 +802,15 @@ function NIB() {
           />
 
           <br />
-          <label htmlFor="Cajas Inoculadas / Destido" className="font-bold">
+          <label htmlFor="cajas_inoculadas_destino" className="font-bold">
             Cajas Inoculadas / Destido{" "}
             {submitted && !neonato.cajas_inoculadas_destino && (
               <small className="p-error">Requerido.</small>
+            )}
+            {erroresValidacion.cajas_inoculadas_destino && (
+              <small className="p-error">
+                Cajas Inoculadas deben de estar entre 100 a 500.
+              </small>
             )}
           </label>
           <InputText
@@ -713,7 +823,7 @@ function NIB() {
           />
 
           <br />
-          <label htmlFor="g neonato x caja" className="font-bold">
+          <label htmlFor="gm_neonato_caja" className="font-bold">
             g neonato x caja{" "}
             {submitted && !neonato.gm_neonato_caja && (
               <small className="p-error">Requerido.</small>
@@ -729,7 +839,7 @@ function NIB() {
           />
 
           <br />
-          <label htmlFor="Cantidad dieta x caja" className="font-bold">
+          <label htmlFor="cantidad_dieta_caja" className="font-bold">
             Cantidad dieta x caja{" "}
             {submitted && !neonato.cantidad_dieta_caja && (
               <small className="p-error">Requerido.</small>
@@ -745,7 +855,7 @@ function NIB() {
           />
 
           <br />
-          <label htmlFor="Temperatura Ambiental" className="font-bold">
+          <label htmlFor="temp_ambiental" className="font-bold">
             Temperatura Ambiental{" "}
             {submitted && !neonato.temp_ambiental && (
               <small className="p-error">Requerido.</small>
@@ -761,7 +871,7 @@ function NIB() {
           />
 
           <br />
-          <label htmlFor="Humedad Ambiental" className="font-bold">
+          <label htmlFor="hum_ambiental" className="font-bold">
             Humedad Ambiental{" "}
             {submitted && !neonato.hum_ambiental && (
               <small className="p-error">Requerido.</small>
@@ -777,7 +887,7 @@ function NIB() {
           />
 
           <br />
-          <label htmlFor="Operario" className="font-bold">
+          <label htmlFor="operario" className="font-bold">
             Operario{" "}
             {submitted && !neonato.operario && (
               <small className="p-error">Requerido.</small>
@@ -787,6 +897,19 @@ function NIB() {
             id="operario"
             value={neonato.operario}
             onChange={(e) => onInputChange(e, "operario")}
+            required
+            autoFocus
+          />
+          <label htmlFor="observaciones" className="font-bold">
+            Observaciones{" "}
+            {observacionesObligatorio && (
+              <small className="p-error">Requerido por fuera de rango.</small>
+            )}
+          </label>
+          <InputText
+            id="observaciones"
+            value={neonato.observaciones}
+            onChange={(e) => onInputChange(e, "observaciones")}
             required
             autoFocus
           />

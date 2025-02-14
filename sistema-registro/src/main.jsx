@@ -15,6 +15,13 @@ import IngresoPPInvernadero from './pages/Hatchery/Registros/PagesIngresoPPInver
 import NIB from './pages/Hatchery/Registros/PagesNIB.jsx';
 import ControlRendimientoCosechaReproduccion from './pages/Hatchery/Registros/PagesControlRendimientoCosechaReproduccion.jsx';
 
+//imports paginas Dieta
+import Dieta from './pages/Dieta/PagesDieta.jsx';
+import ControlInventarioCascaraPila from './pages/Dieta/Registros/PagesControlInventarioCascaraPila.jsx';
+
+//imports paginas Gerencia
+import Gerencia from './pages/Gerencia/PagesGerencia.jsx';
+import GestionUsuarios from './pages/Gerencia/Registros/PagesGestionUsuarios.jsx'
 
 
 const Layout = () => {
@@ -54,7 +61,38 @@ const router = createBrowserRouter([{
           element: <ControlRendimientoCosechaReproduccion />,
         },
       ],
+    },
+
+    
+    // Grupo de rutas de Dieta
+    {
+      path: `/Dieta`,
+      element: <Dieta />, // Componente principal de Dieta
+      children: [
+        {
+          path: `ControlInventarioCascaraPila`,
+          element: <ControlInventarioCascaraPila />,
+        },
+        
+      ],
+    },
+
+
+    // Grupo de rutas de Gerencia
+    {
+      path: `/Gerencia`,
+      element: <Gerencia />, // Componente principal de Gerencia
+      children: [
+        {
+          path: `GestionUsuarios`,
+          element: <GestionUsuarios />,
+        },
+        
+      ],
     }
+
+   
+    
 ]
 }])
 

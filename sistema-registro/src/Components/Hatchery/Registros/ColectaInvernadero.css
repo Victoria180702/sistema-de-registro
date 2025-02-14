@@ -7,7 +7,7 @@
 }
 
 .controlrendimiento-container h1 {
-  color: #000000; /* Verde musgo */
+  color: #000000; /* Verde negro */
   margin-bottom: 20px;
   font-size: 2.5rem; /* Título más grande */
 }
@@ -26,7 +26,7 @@
   gap: 20px; /* Añadido para dar espacio entre los botones */
 }
 
-.back-button, .menu-button {
+.return-button, .menu-button {
   padding: 10px 20px;
   font-size: 16px;
   border: none;
@@ -36,12 +36,12 @@
   flex: 1; /* Esto hace que ambos botones ocupen el mismo espacio disponible */
 }
 
-.back-button {
+.return-button {
   background-color: #007bff; /* Azul llamativo */
   color: white;
 }
 
-.back-button:hover {
+.return-button:hover {
   background-color: #0056b3; /* Azul más oscuro */
   transform: scale(1.05); /* Efecto de escala al pasar el ratón */
 }

@@ -1,17 +1,17 @@
 import React from 'react';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
-import './Dieta.css';
+import './Gerencia.css';
 import logo2 from "../../assets/mosca.png";
 
-function Dieta() {
+function Gerencia() {
   const navigate = useNavigate();
   const location = useLocation();
 
   // Verifica si estás en la ruta principal de Dieta
-  const isRootPath = location.pathname === "/Dieta";
+  const isRootPath = location.pathname === "/Gerencia";
 
   return (
-    <div className="dieta-container">
+    <div className="gerencia-container">
       
 
       {isRootPath && (
@@ -19,17 +19,29 @@ function Dieta() {
         <>
         <h1>
           <img src={logo2} alt="mosca" className="logo2" />
-          Registros de Dieta
+          Información Gerencia
         </h1>
         <div className="welcome-message">
-          <p>Esta es la página de registros de dieta.</p>
+          <p>Esta es la página de información para gerencia.</p>
           </div>
           <div className="botones">
             <button
-              onClick={() => navigate("/Dieta/ControlInventarioCascaraPila")}
+              onClick={() => navigate("/Gerencia/GestionUsuarios")}
               className="back-button"
             >
-              1- Control Inventario Cáscara en Pila
+              Gestion de Usuarios
+            </button>
+            <button
+              onClick={() => navigate("/Gerencia/GestionUsuarios")}
+              className="back-button"
+            >
+              Reporte KPIs
+            </button>
+            <button
+              onClick={() => navigate("/Gerencia/GestionUsuarios")}
+              className="back-button"
+            >
+              Flash Report
             </button>
             
             
@@ -48,4 +60,4 @@ function Dieta() {
 );
 }
 
-export default Dieta;
+export default Gerencia;

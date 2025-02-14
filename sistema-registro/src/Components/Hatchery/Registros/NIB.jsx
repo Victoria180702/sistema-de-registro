@@ -116,7 +116,19 @@ function NIB() {
   };
   //Fin Formatear la FECHA DE REGISTRO
 
+
   const exportPdf = () => {
+    if (selectedNeonatos.length === 0) {
+      toast.current.show({
+        severity: "warn",
+        summary: "Advertencia",
+        detail: "No hay filas seleccionadas para exportar.",
+        life: 3000,
+      });
+      return; // Detener la ejecución si no hay filas seleccionadas
+    }
+  
+    // Resto del código para generar el PDF...
     const doc = new jsPDF();
 
     // Configuración del título
@@ -145,8 +157,20 @@ function NIB() {
     doc.save("Eggies_Colecta_Invernadero_Embudo.pdf");
   };
 
-  // Inicio de EXPORTAR TABLA
+
+
   const exportXlsx = () => {
+    if (selectedNeonatos.length === 0) {
+      toast.current.show({
+        severity: "warn",
+        summary: "Advertencia",
+        detail: "No hay filas seleccionadas para exportar.",
+        life: 3000,
+      });
+      return; // Detener la ejecución si no hay filas seleccionadas
+    }
+  
+    // Resto del código para generar el XLSX...
     // Obtener los encabezados de las columnas
     const headers = cols.map((col) => col.header); // Mapear solo los encabezados de las columnas
 
@@ -180,6 +204,7 @@ function NIB() {
     // Exportar el archivo .xlsx
     XLSX.writeFile(wb, "Neonatos_Inoculaddos.xlsx");
   };
+
 
   // Columnas de la tabla para exportar
   const cols = [
@@ -562,14 +587,14 @@ function NIB() {
           icon="pi pi-upload"
           className="p-button-help"
           onClick={exportXlsx}
-          disabled={selectedNeonatos.length === 0}
+          //disabled={selectedNeonatos.length === 0}
         />
         <Button
           label="Exportar a PDF"
           icon="pi pi-file-pdf"
           className="p-button-danger"
           onClick={exportPdf}
-          disabled={selectedNeonatos.length === 0}
+          //disabled={selectedNeonatos.length === 0}
         />
       </div>
     );
@@ -622,7 +647,7 @@ function NIB() {
             los registros de Neonatos Inoculados.
           </p>
         </div>
-        <button onClick={() => navigate(-1)} className="back-button">
+        <button onClick={() => navigate(-1)} className="return-button">
           Volver
         </button>
         <br />

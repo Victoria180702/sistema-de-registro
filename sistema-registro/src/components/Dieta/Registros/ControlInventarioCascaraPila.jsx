@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import "./ControlRendimientoCosechaReproduccion.css";
+import "./ControlInventarioCascaraPila.css";
 import supabase from "../../../supabaseClient";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primeicons/primeicons.css";
@@ -13,26 +13,19 @@ import { InputIcon } from "primereact/inputicon";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { Toast } from "primereact/toast";
-import { FaSeedling } from "react-icons/fa"; // Importar ícono
 import * as XLSX from "xlsx";
 import logo2 from "../../../assets/mosca.png";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
-function ControlRendimientoCosechaReproduccion() {
+function ControlInventarioCascaraPila() {
   let emptyRegister = {
-    num_lote: "",
-    fec_siembra: "",
-    fec_cosecha: "",
-    peso_pp_total_kg: "",
-    cant_cajas_cosechadas: "",
-    frass_fino_total_kg: "",
-    material_grueso_total_kg: "",
-    cantidad_pp_25g: "",
-    cantidad_pp_totales: "",
-    peso_individual_pp_mg: "",
-    cantidad_cajas: "",
-    cantidad_camas_pupacion: "",
+    fecha: "",
+    entrada_kg: "",
+    salida_kg: "",
+    saldo_kg: "",
+    responsable: "",
+    observaciones: "",
   };
 
   const [registros, setRegistros] = useState([]);
@@ -47,15 +40,18 @@ function ControlRendimientoCosechaReproduccion() {
   const [deleteRegistrosDialog, setDeleteRegistrosDialog] = useState(false);
   const navigate = useNavigate();
   const [filters, setFilters] = useState({
-    num_lote: "",
-    fec_siembra: "",
-    fec_cosecha: "",
+    fecha: "",
+    entrada_kg: "",
+    salida_kg: "",
+    saldo_kg: "",
+    responsable: "",
+    observaciones: "",
   });
 
   const fetchRegistros = async () => {
     try {
       const { data, error } = await supabase
-        .from("Control_Rendimiento_Cosecha_Reproduccion")
+        .from("Control_Inventario_Cascara_Pila")
         .select();
       setRegistros(data || []);
     } catch {
@@ -66,32 +62,6 @@ function ControlRendimientoCosechaReproduccion() {
   useEffect(() => {
     fetchRegistros();
   }, []);
-
-  const formatDateTime = (date, format = "DD-MM-YYYY hh:mm A") => {
-    const options = {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    };
-    const formatter = new Intl.DateTimeFormat("en-US", options);
-    const parts = formatter.formatToParts(date);
-    const dateMap = parts.reduce((acc, part) => {
-      if (part.type !== "literal") {
-        acc[part.type] = part.value;
-      }
-      return acc;
-    }, {});
-    return format
-      .replace("DD", dateMap.day)
-      .replace("MM", dateMap.month)
-      .replace("YYYY", dateMap.year)
-      .replace("hh", dateMap.hour.padStart(2, "0"))
-      .replace("mm", dateMap.minute)
-      .replace("A", dateMap.dayPeriod || "AM");
-  };
 
 
   const exportPdf = () => {
@@ -106,11 +76,12 @@ function ControlRendimientoCosechaReproduccion() {
     }
   
     // Resto del código para generar el PDF...
+
     const doc = new jsPDF();
 
     // Configuración del título
     doc.setFontSize(18);
-    doc.text("Registros de Cosecha Eggies Invernadero - Embudos", 14, 22);
+    doc.text("Registros de Inventario de Cáscara en Pila", 14, 22);
 
     // Configuración de la tabla
     doc.autoTable({
@@ -124,10 +95,10 @@ function ControlRendimientoCosechaReproduccion() {
     });
 
     // Guardar el PDF
-    doc.save("Control_Rendimiento_Cosecha/Reproduccion.pdf");
+    doc.save("Control_Inventario_Cascara_Pila.pdf");
   };
 
- 
+
   const exportXlsx = () => {
     if (selectedRegistros.length === 0) {
       toast.current.show({
@@ -165,27 +136,17 @@ function ControlRendimientoCosechaReproduccion() {
     XLSX.utils.book_append_sheet(wb, ws, "Registros");
 
     // Exportar el archivo .xlsx
-    XLSX.writeFile(wb, "Control_Rendimiento_Cosecha_Reproduccion.xlsx");
+    XLSX.writeFile(wb, "Control_Inventario_Cascara_Pila.xlsx");
   };
-
-  
+ 
 
   const cols = [
-    { field: "num_lote", header: "Número de Lote" },
-    { field: "fec_siembra", header: "Fecha de Siembra" },
-    { field: "fec_cosecha", header: "Fecha de Cosecha" },
-    { field: "peso_pp_total_kg", header: "Peso PP Total (kg)" },
-    { field: "cant_cajas_cosechadas", header: "Cajas Cosechadas" },
-    { field: "frass_fino_total_kg", header: "Frass Fino Total (kg)" },
-    { field: "material_grueso_total_kg", header: "Material Grueso Total (kg)" },
-    { field: "cantidad_pp_25g", header: "Cantidad PP 25g" },
-    { field: "cantidad_pp_totales", header: "Cantidad PP Totales" },
-    { field: "peso_individual_pp_mg", header: "Peso Individual PP (mg)" },
-    { field: "cantidad_cajas", header: "Cantidad de Cajas" },
-    {
-      field: "cantidad_camas_pupacion",
-      header: "Cantidad de Camas de Pupación",
-    },
+    { field: "fecha", header: "Fecha" },
+    { field: "entrada_kg", header: "Entrada (kg)" },
+    { field: "salida_kg", header: "Salida (kg)" },
+    { field: "saldo_kg", header: "Saldo (kg)" },
+    { field: "responsable", header: "Responsable" },
+    { field: "observaciones", header: "Observaciones" },
   ];
 
   const exportColumns = cols.map((col) => ({
@@ -198,7 +159,7 @@ function ControlRendimientoCosechaReproduccion() {
     const { id } = newData;
     try {
       const { error } = await supabase
-        .from("Control_Rendimiento_Cosecha_Reproduccion")
+        .from("Control_Inventario_Cascara_Pila")
         .update(newData)
         .eq("id", id);
       if (error) {
@@ -259,18 +220,12 @@ function ControlRendimientoCosechaReproduccion() {
   const saveRegistro = async () => {
     setSubmitted(true);
     if (
-      !registro.num_lote ||
-      !registro.fec_siembra ||
-      !registro.fec_cosecha ||
-      !registro.peso_pp_total_kg ||
-      !registro.cant_cajas_cosechadas ||
-      !registro.frass_fino_total_kg ||
-      !registro.material_grueso_total_kg ||
-      !registro.cantidad_pp_25g ||
-      !registro.cantidad_pp_totales ||
-      !registro.peso_individual_pp_mg ||
-      !registro.cantidad_cajas ||
-      !registro.cantidad_camas_pupacion
+      !registro.fecha ||
+      !registro.entrada_kg ||
+      !registro.salida_kg ||
+      !registro.saldo_kg ||
+      !registro.responsable ||
+      !registro.observaciones
     ) {
       toast.current.show({
         severity: "error",
@@ -283,7 +238,7 @@ function ControlRendimientoCosechaReproduccion() {
     try {
       const { id, ...registroSinId } = registro;
       const { data, error } = await supabase
-        .from("Control_Rendimiento_Cosecha_Reproduccion")
+        .from("Control_Inventario_Cascara_Pila")
         .insert([registroSinId]);
       if (error) {
         console.error("Error en Supabase:", error);
@@ -390,24 +345,27 @@ function ControlRendimientoCosechaReproduccion() {
 
   const filteredRegistros = registros.filter((registro) => {
     return (
-      registro.num_lote.toString().includes(filters.num_lote) &&
-      registro.fec_siembra.includes(filters.fec_siembra) &&
-      registro.fec_cosecha.includes(filters.fec_cosecha)
+      registro.fecha.includes(filters.fecha) &&
+      registro.entrada_kg.toString().includes(filters.entrada_kg) &&
+      registro.salida_kg.toString().includes(filters.salida_kg) &&
+      registro.saldo_kg.toString().includes(filters.saldo_kg) &&
+      registro.responsable.includes(filters.responsable) &&
+      registro.observaciones.includes(filters.observaciones)
     );
   });
 
   return (
     <>
-      <div className="controlrendimiento-container">
+      <div className="controlinventario-container">
         <Toast ref={toast} />
         <h1>
           <img src={logo2} alt="mosca" className="logo2" />
-          Control de Rendimiento de Cosecha y Reproducción
+          Control de Inventario de Cáscara en Pila
         </h1>
         <div className="welcome-message">
           <p>
-            Bienvenido al sistema de control de rendimiento. Aquí puedes
-            gestionar los registros de cosecha y reproducción.
+            Bienvenido al sistema de control de inventario. Aquí puedes gestionar
+            los registros de cáscara en pila.
           </p>
         </div>
         <button onClick={() => navigate(-1)} className="return-button">
@@ -452,86 +410,44 @@ function ControlRendimientoCosechaReproduccion() {
               style={{ minWidth: "3rem" }}
             />
             <Column
-              field="num_lote"
-              header="Número de Lote"
-              editor={(options) => numberEditor(options)}
-              sortable
-              style={{ minWidth: "10rem" }}
-            />
-            <Column
-              field="fec_siembra"
-              header="Fecha de Siembra"
+              field="fecha"
+              header="Fecha"
               editor={(options) => dateEditor(options)}
               sortable
               style={{ minWidth: "10rem" }}
             />
             <Column
-              field="fec_cosecha"
-              header="Fecha de Cosecha"
-              editor={(options) => dateEditor(options)}
-              sortable
-              style={{ minWidth: "10rem" }}
-            />
-            <Column
-              field="peso_pp_total_kg"
-              header="Peso PP Total (kg)"
+              field="entrada_kg"
+              header="Entrada (kg)"
               editor={(options) => floatEditor(options)}
               sortable
               style={{ minWidth: "10rem" }}
             />
             <Column
-              field="cant_cajas_cosechadas"
-              header="Cajas Cosechadas"
-              editor={(options) => numberEditor(options)}
-              sortable
-              style={{ minWidth: "10rem" }}
-            />
-            <Column
-              field="frass_fino_total_kg"
-              header="Frass Fino Total (kg)"
+              field="salida_kg"
+              header="Salida (kg)"
               editor={(options) => floatEditor(options)}
               sortable
               style={{ minWidth: "10rem" }}
             />
             <Column
-              field="material_grueso_total_kg"
-              header="Material Grueso Total (kg)"
+              field="saldo_kg"
+              header="Saldo (kg)"
               editor={(options) => floatEditor(options)}
               sortable
               style={{ minWidth: "10rem" }}
             />
             <Column
-              field="cantidad_pp_25g"
-              header="Cantidad PP 25g"
-              editor={(options) => floatEditor(options)}
+              field="responsable"
+              header="Responsable"
+              editor={(options) => textEditor(options)}
               sortable
               style={{ minWidth: "10rem" }}
             />
             <Column
-              field="cantidad_pp_totales"
-              header="Cantidad PP Totales"
-              editor={(options) => numberEditor(options)}
-              sortable
-              style={{ minWidth: "10rem" }}
-            />
-            <Column
-              field="peso_individual_pp_mg"
-              header="Peso Individual PP (mg)"
-              editor={(options) => floatEditor(options)}
-              sortable
-              style={{ minWidth: "10rem" }}
-            />
-            <Column
-              field="cantidad_cajas"
-              header="Cantidad de Cajas"
-              editor={(options) => numberEditor(options)}
-              sortable
-              style={{ minWidth: "10rem" }}
-            />
-            <Column
-              field="cantidad_camas_pupacion"
-              header="Cantidad de Camas de Pupación"
-              editor={(options) => floatEditor(options)}
+              field="observaciones"
+              header="Observaciones"
+              editor={(options) => textEditor(options)}
               sortable
               style={{ minWidth: "10rem" }}
             />
@@ -555,178 +471,91 @@ function ControlRendimientoCosechaReproduccion() {
         onHide={hideDialog}
       >
         <div className="field">
-          <label htmlFor="num_lote" className="font-bold">
-            Número de Lote{" "}
-            {submitted && !registro.num_lote && (
+          <label htmlFor="fecha" className="font-bold">
+            Fecha{" "}
+            {submitted && !registro.fecha && (
               <small className="p-error">Requerido.</small>
             )}
           </label>
           <InputText
-            type="number"
-            id="num_lote"
-            value={registro.num_lote}
-            onChange={(e) => onInputChange(e, "num_lote")}
+            type="date"
+            id="fecha"
+            value={registro.fecha}
+            onChange={(e) => onInputChange(e, "fecha")}
             required
             autoFocus
           />
           <br />
-          <label htmlFor="fec_siembra" className="font-bold">
-            Fecha de Siembra{" "}
-            {submitted && !registro.fec_siembra && (
-              <small className="p-error">Requerido.</small>
-            )}
-          </label>
-          <InputText
-            type="date"
-            id="fec_siembra"
-            value={registro.fec_siembra}
-            onChange={(e) => onInputChange(e, "fec_siembra")}
-            required
-          />
-          <br />
-          <label htmlFor="fec_cosecha" className="font-bold">
-            Fecha de Cosecha{" "}
-            {submitted && !registro.fec_cosecha && (
-              <small className="p-error">Requerido.</small>
-            )}
-          </label>
-          <InputText
-            type="date"
-            id="fec_cosecha"
-            value={registro.fec_cosecha}
-            onChange={(e) => onInputChange(e, "fec_cosecha")}
-            required
-          />
-          <br />
-          <label htmlFor="peso_pp_total_kg" className="font-bold">
-            Peso PP Total (kg){" "}
-            {submitted && !registro.peso_pp_total_kg && (
+          <label htmlFor="entrada_kg" className="font-bold">
+            Entrada (kg){" "}
+            {submitted && !registro.entrada_kg && (
               <small className="p-error">Requerido.</small>
             )}
           </label>
           <InputText
             type="number"
             step="0.01"
-            id="peso_pp_total_kg"
-            value={registro.peso_pp_total_kg}
-            onChange={(e) => onInputChange(e, "peso_pp_total_kg")}
+            id="entrada_kg"
+            value={registro.entrada_kg}
+            onChange={(e) => onInputChange(e, "entrada_kg")}
             required
           />
           <br />
-          <label htmlFor="cant_cajas_cosechadas" className="font-bold">
-            Cajas Cosechadas{" "}
-            {submitted && !registro.cant_cajas_cosechadas && (
-              <small className="p-error">Requerido.</small>
-            )}
-          </label>
-          <InputText
-            type="number"
-            id="cant_cajas_cosechadas"
-            value={registro.cant_cajas_cosechadas}
-            onChange={(e) => onInputChange(e, "cant_cajas_cosechadas")}
-            required
-          />
-          <br />
-          <label htmlFor="frass_fino_total_kg" className="font-bold">
-            Frass Fino Total (kg){" "}
-            {submitted && !registro.frass_fino_total_kg && (
+          <label htmlFor="salida_kg" className="font-bold">
+            Salida (kg){" "}
+            {submitted && !registro.salida_kg && (
               <small className="p-error">Requerido.</small>
             )}
           </label>
           <InputText
             type="number"
             step="0.01"
-            id="frass_fino_total_kg"
-            value={registro.frass_fino_total_kg}
-            onChange={(e) => onInputChange(e, "frass_fino_total_kg")}
+            id="salida_kg"
+            value={registro.salida_kg}
+            onChange={(e) => onInputChange(e, "salida_kg")}
             required
           />
           <br />
-          <label htmlFor="material_grueso_total_kg" className="font-bold">
-            Material Grueso Total (kg){" "}
-            {submitted && !registro.material_grueso_total_kg && (
+          <label htmlFor="saldo_kg" className="font-bold">
+            Saldo (kg){" "}
+            {submitted && !registro.saldo_kg && (
               <small className="p-error">Requerido.</small>
             )}
           </label>
           <InputText
             type="number"
             step="0.01"
-            id="material_grueso_total_kg"
-            value={registro.material_grueso_total_kg}
-            onChange={(e) => onInputChange(e, "material_grueso_total_kg")}
+            id="saldo_kg"
+            value={registro.saldo_kg}
+            onChange={(e) => onInputChange(e, "saldo_kg")}
             required
           />
           <br />
-          <label htmlFor="cantidad_pp_25g" className="font-bold">
-            Cantidad PP 25g{" "}
-            {submitted && !registro.cantidad_pp_25g && (
+          <label htmlFor="responsable" className="font-bold">
+            Responsable{" "}
+            {submitted && !registro.responsable && (
               <small className="p-error">Requerido.</small>
             )}
           </label>
           <InputText
-            type="number"
-            step="0.01"
-            id="cantidad_pp_25g"
-            value={registro.cantidad_pp_25g}
-            onChange={(e) => onInputChange(e, "cantidad_pp_25g")}
+            type="text"
+            id="responsable"
+            value={registro.responsable}
+            onChange={(e) => onInputChange(e, "responsable")}
             required
           />
           <br />
-          <label htmlFor="cantidad_pp_totales" className="font-bold">
-            Cantidad PP Totales{" "}
-            {submitted && !registro.cantidad_pp_totales && (
+          <label htmlFor="observaciones" className="font-bold">
+            Observaciones{" "}
+            {submitted && !registro.observaciones && (
               <small className="p-error">Requerido.</small>
             )}
           </label>
           <InputText
-            type="number"
-            id="cantidad_pp_totales"
-            value={registro.cantidad_pp_totales}
-            onChange={(e) => onInputChange(e, "cantidad_pp_totales")}
-            required
-          />
-          <br />
-          <label htmlFor="peso_individual_pp_mg" className="font-bold">
-            Peso Individual PP (mg){" "}
-            {submitted && !registro.peso_individual_pp_mg && (
-              <small className="p-error">Requerido.</small>
-            )}
-          </label>
-          <InputText
-            type="number"
-            step="0.01"
-            id="peso_individual_pp_mg"
-            value={registro.peso_individual_pp_mg}
-            onChange={(e) => onInputChange(e, "peso_individual_pp_mg")}
-            required
-          />
-          <br />
-          <label htmlFor="cantidad_cajas" className="font-bold">
-            Cantidad de Cajas{" "}
-            {submitted && !registro.cantidad_cajas && (
-              <small className="p-error">Requerido.</small>
-            )}
-          </label>
-          <InputText
-            type="number"
-            id="cantidad_cajas"
-            value={registro.cantidad_cajas}
-            onChange={(e) => onInputChange(e, "cantidad_cajas")}
-            required
-          />
-          <br />
-          <label htmlFor="cantidad_camas_pupacion" className="font-bold">
-            Cantidad de Camas de Pupación{" "}
-            {submitted && !registro.cantidad_camas_pupacion && (
-              <small className="p-error">Requerido.</small>
-            )}
-          </label>
-          <InputText
-            type="number"
-            step="0.01"
-            id="cantidad_camas_pupacion"
-            value={registro.cantidad_camas_pupacion}
-            onChange={(e) => onInputChange(e, "cantidad_camas_pupacion")}
+            type="text"
+            id="observaciones"
+            value={registro.observaciones}
+            onChange={(e) => onInputChange(e, "observaciones")}
             required
           />
         </div>
@@ -735,4 +564,4 @@ function ControlRendimientoCosechaReproduccion() {
   );
 }
 
-export default ControlRendimientoCosechaReproduccion;
+export default ControlInventarioCascaraPila;

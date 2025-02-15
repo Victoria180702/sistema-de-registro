@@ -126,7 +126,18 @@ function IngresoPPInvernadero() {
   };
   //Fin Formatear la FECHA DE REGISTRO
 
+
   const exportPdf = () => {
+    if (selectedIngresoPPs.length === 0) {
+      toast.current.show({
+        severity: "warn",
+        summary: "Advertencia",
+        detail: "No hay filas seleccionadas para exportar.",
+        life: 3000,
+      });
+      return; // Detener la ejecución si no hay filas seleccionadas
+    }
+  
     const doc = new jsPDF();
 
     // Configuración del título
@@ -157,7 +168,20 @@ function IngresoPPInvernadero() {
     doc.save("Ingreso_PrePupas_Invernadero.pdf");
   };
 
+  
+
   const exportXlsx = () => {
+    if (selectedIngresoPPs.length === 0) {
+      toast.current.show({
+        severity: "warn",
+        summary: "Advertencia",
+        detail: "No hay filas seleccionadas para exportar.",
+        life: 3000,
+      });
+      return; // Detener la ejecución si no hay filas seleccionadas
+    }
+  
+    // Resto del código para generar el XLSX...
     // Obtener los encabezados de las columnas
     const headers = cols.map((col) => col.header); // Mapear solo los encabezados de las columnas
 
@@ -193,6 +217,8 @@ function IngresoPPInvernadero() {
     // Exportar el archivo .xlsx
     XLSX.writeFile(wb, "Ingreso_PP_Invernadero.xlsx");
   };
+
+
 
   // Columnas de la tabla para exportar
   const cols = [
@@ -628,14 +654,14 @@ function IngresoPPInvernadero() {
           icon="pi pi-upload"
           className="p-button-help"
           onClick={exportXlsx}
-          disabled={selectedIngresoPPs.length === 0}
+          //disabled={selectedIngresoPPs.length === 0}
         />
         <Button
           label="Exportar a PDF"
           icon="pi pi-file-pdf"
           className="p-button-danger"
           onClick={exportPdf}
-          disabled={selectedIngresoPPs.length === 0}
+          //disabled={selectedIngresoPPs.length === 0}
         />
       </div>
     );
@@ -688,7 +714,7 @@ function IngresoPPInvernadero() {
             gestionar los registros ingreso de prepuas al invernadero.
           </p>
         </div>
-        <button onClick={() => navigate(-1)} className="back-button">
+        <button onClick={() => navigate(-1)} className="return-button">
           Volver
         </button>
         <br />

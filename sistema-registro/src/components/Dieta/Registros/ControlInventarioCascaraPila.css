@@ -1,0 +1,111 @@
+.controlrendimiento-container {
+    text-align: center;
+    padding: 20px;
+    background-color: #ffffff; /* Fondo blanco */
+    min-height: 100vh;
+    font-family: 'Arial', sans-serif; /* Fuente más moderna */
+  }
+  
+  .controlrendimiento-container h1 {
+    color: #000000; /* Verde negro */
+    margin-bottom: 20px;
+    font-size: 2.5rem; /* Título más grande */
+  }
+  
+  .welcome-message {
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+    color: #3d3d3d; /* Verde musgo */
+  }
+  
+  .buttons-container {
+    display: flex;
+    justify-content: space-between; /* Esto los separa uniformemente */
+    width: 100%; /* Asegura que ocupe todo el ancho disponible */
+    padding: 20px 0; /* Espaciado entre botones */
+    gap: 20px; /* Añadido para dar espacio entre los botones */
+  }
+  
+  .return-button, .menu-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    flex: 1; /* Esto hace que ambos botones ocupen el mismo espacio disponible */
+  }
+  
+  .return-button {
+    background-color: #007bff; /* Azul llamativo */
+    color: white;
+  }
+  
+  .return-button:hover {
+    background-color: #0056b3; /* Azul más oscuro */
+    transform: scale(1.05); /* Efecto de escala al pasar el ratón */
+  }
+  
+  .menu-button {
+    background-color: #ff7f00; /* Naranja llamativo */
+    color: white;
+  }
+  
+  .menu-button:hover {
+    background-color: #e65c00; /* Naranja más oscuro */
+    transform: scale(1.05); /* Efecto de escala al pasar el ratón */
+  }
+  
+  
+  .p-datatable {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
+  }
+  
+  .p-datatable-thead > tr > th {
+    background-color: #c1c1c3; /* Verde musgo */
+    color: white;
+    font-weight: bold;
+  }
+  
+  .p-datatable-tbody > tr {
+    transition: background-color 0.3s ease;
+  }
+  
+  .p-datatable-tbody > tr:hover {
+    background-color: #e9f5e1 !important; /* Fondo más claro al pasar el ratón */
+  }
+  
+  .p-highlight {
+    background-color: #c8e6c9 !important; /* Verde claro para selección */
+  }
+  
+  .p-dialog {
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .p-dialog-header {
+    background-color: #556b2f; /* Verde musgo */
+    color: white;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+  }
+  
+  .p-dialog-content {
+    padding: 20px;
+  }
+  
+  .p-dialog-footer {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    padding: 10px 20px;
+    background-color: #f2f7f1; /* Fondo claro */
+  }
+  
+  .logo2 {
+    position:initial;
+    width: 25px; /* Cambia este valor al tamaño deseado */
+    height: auto; 
+  }

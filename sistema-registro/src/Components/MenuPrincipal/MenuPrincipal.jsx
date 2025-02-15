@@ -40,6 +40,9 @@ function MenuPrincipal() {
         {departamento === 'Mantenimiento' && (
           <button onClick={() => navigate('/Mantenimiento')}>Registros Mantenimiento </button>
         )}
+        {departamento === 'Gerencia' && (
+          <button onClick={() => navigate('/Gerencia')}>Información Gerencia </button>
+        )}
         <button onClick={handleLogout} className="logout-button">
           Cerrar Sesión
         </button>

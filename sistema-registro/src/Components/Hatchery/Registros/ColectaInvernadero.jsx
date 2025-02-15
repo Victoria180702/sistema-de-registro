@@ -119,7 +119,19 @@ function ColectaInvernadero() {
   };
   //Fin Formatear la FECHA DE REGISTRO
 
+
   const exportPdf = () => {
+    if (selectedeggies.length === 0) {
+      toast.current.show({
+        severity: "warn",
+        summary: "Advertencia",
+        detail: "No hay filas seleccionadas para exportar.",
+        life: 3000,
+      });
+      return; // Detener la ejecución si no hay filas seleccionadas
+    }
+  
+    // Resto del código para generar el PDF...
     const doc = new jsPDF();
 
     // Configuración del título
@@ -146,8 +158,19 @@ function ColectaInvernadero() {
     doc.save("Colecta de Eggies Invernadero - Embudo.pdf");
   };
 
-  // Inicio de EXPORTAR TABLA
+
   const exportXlsx = () => {
+    if (selectedeggies.length === 0) {
+      toast.current.show({
+        severity: "warn",
+        summary: "Advertencia",
+        detail: "No hay filas seleccionadas para exportar.",
+        life: 3000,
+      });
+      return; // Detener la ejecución si no hay filas seleccionadas
+    }
+  
+    // Resto del código para generar el XLSX...
     // Obtener los encabezados de las columnas
     const headers = cols.map((col) => col.header); // Mapear solo los encabezados de las columnas
 
@@ -183,6 +206,8 @@ function ColectaInvernadero() {
     // Exportar el archivo .xlsx
     XLSX.writeFile(wb, "Colecta de Eggies Invernadero - Embudo.xlsx");
   };
+
+  
 
   // Columnas de la tabla para exportar
   const cols = [
@@ -442,7 +467,7 @@ function ColectaInvernadero() {
           icon="pi pi-upload"
           className="p-button-help"
           onClick={exportXlsx}
-          disabled={selectedeggies.length === 0}
+          //disabled={selectedeggies.length === 0}
         />
 
         <Button
@@ -450,7 +475,7 @@ function ColectaInvernadero() {
           icon="pi pi-file-pdf"
           className="p-button-danger"
           onClick={exportPdf}
-          disabled={selectedeggies.length === 0}
+          //disabled={selectedeggies.length === 0}
         />
       </div>
     );
@@ -503,7 +528,7 @@ function ColectaInvernadero() {
             los registros de cosecha se eggies del invernadero - embudo.
           </p>
         </div>
-        <button onClick={() => navigate(-1)} className="back-button">
+        <button onClick={() => navigate(-1)} className="return-button">
           Volver
         </button>
         <br />

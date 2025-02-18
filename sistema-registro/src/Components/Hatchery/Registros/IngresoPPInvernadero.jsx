@@ -63,6 +63,19 @@ function IngresoPPInvernadero() {
     cantidad_pp_modulo: false,
     kg_pp_redsea: false,
   });
+
+  const [selectedCantidadUR, setSelectedCantidadUR] = useState(null);
+  const [selectedKgPPModulo, setSelectedKgPPModulo] = useState(null);
+  const [selectedCantidadPPModulo, setSelectedCantidadPPModulo] = useState(null);
+  const [selectedKgPPRedSea, setSelectedKgPPRedSea] = useState(null);
+
+  const razonesObservaciones = [
+    { name: "Por Humedad", value: "Por Humedad" },
+    { name: "Razon 1", value: "Razon 1" },
+    { name: "Razon 2", value: "Razon 2" },
+    { name: "Razon 3", value: "Razon 3" },
+  ];
+
   const naves = [
     { name: "Nave 1", value: "Nave 1" },
     { name: "Nave 2", value: "Nave 2" },
@@ -76,11 +89,12 @@ function IngresoPPInvernadero() {
       const { data, error } = await supabase
         .from("Ingreso_PP_Invernadero")
         .select();
-      
+
       if (error) throw error; // Si hay error, lanza una excepción
-      
+
       setIngresoPPs(data || []); // Guarda los datos en el estado
-    } catch (err) {  // Captura el error real
+    } catch (err) {
+      // Captura el error real
       console.error("Error en la conexión a la base de datos:", err);
     }
   };
@@ -126,7 +140,6 @@ function IngresoPPInvernadero() {
   };
   //Fin Formatear la FECHA DE REGISTRO
 
-
   const exportPdf = () => {
     if (selectedIngresoPPs.length === 0) {
       toast.current.show({
@@ -137,7 +150,7 @@ function IngresoPPInvernadero() {
       });
       return; // Detener la ejecución si no hay filas seleccionadas
     }
-  
+
     const doc = new jsPDF();
 
     // Configuración del título
@@ -168,8 +181,6 @@ function IngresoPPInvernadero() {
     doc.save("Ingreso_PrePupas_Invernadero.pdf");
   };
 
-  
-
   const exportXlsx = () => {
     if (selectedIngresoPPs.length === 0) {
       toast.current.show({
@@ -180,7 +191,7 @@ function IngresoPPInvernadero() {
       });
       return; // Detener la ejecución si no hay filas seleccionadas
     }
-  
+
     // Resto del código para generar el XLSX...
     // Obtener los encabezados de las columnas
     const headers = cols.map((col) => col.header); // Mapear solo los encabezados de las columnas
@@ -217,8 +228,6 @@ function IngresoPPInvernadero() {
     // Exportar el archivo .xlsx
     XLSX.writeFile(wb, "Ingreso_PP_Invernadero.xlsx");
   };
-
-
 
   // Columnas de la tabla para exportar
   const cols = [
@@ -935,6 +944,20 @@ function IngresoPPInvernadero() {
             required
             autoFocus
           />
+          {erroresValidacion.cantidad_ur && (
+            <>
+              <small className="p-error">Razón fuera de rango</small>
+              <Dropdown
+                value={selectedCantidadUR}
+                onChange={(e) => setSelectedCantidadUR(e.value)}
+                options={razonesObservaciones}
+                optionLabel="name"
+                showClear
+                placeholder="Seleccione una Observación"
+                className="w-full md:w-14rem"
+              />
+            </>
+          )}
 
           <br />
           <label htmlFor="kg_pp_modulo" className="font-bold">
@@ -956,6 +979,20 @@ function IngresoPPInvernadero() {
             required
             autoFocus
           />
+          {erroresValidacion.kg_pp_modulo && (
+            <>
+              <small className="p-error">Razón fuera de rango</small>
+              <Dropdown
+                value={selectedKgPPModulo}
+                onChange={(e) => setSelectedKgPPModulo(e.value)}
+                options={razonesObservaciones}
+                optionLabel="name"
+                showClear
+                placeholder="Seleccione una Observación"
+                className="w-full md:w-14rem"
+              />
+            </>
+          )}
 
           <br />
           <label htmlFor="kg_pp_ur" className="font-bold">
@@ -994,6 +1031,21 @@ function IngresoPPInvernadero() {
             autoFocus
           />
 
+{erroresValidacion.cantidad_pp_modulo && (
+            <>
+              <small className="p-error">Razón fuera de rango</small>
+              <Dropdown
+                value={selectedCantidadPPModulo}
+                onChange={(e) => setSelectedCantidadPPModulo(e.value)}
+                options={razonesObservaciones}
+                optionLabel="name"
+                showClear
+                placeholder="Seleccione una Observación"
+                className="w-full md:w-14rem"
+              />
+            </>
+          )}
+
           <br />
           <label htmlFor="kg_pp_redsea" className="font-bold">
             Kg PrePupa RedSea{" "}
@@ -1014,6 +1066,21 @@ function IngresoPPInvernadero() {
             required
             autoFocus
           />
+
+{erroresValidacion.kg_pp_redsea && (
+            <>
+              <small className="p-error">Razón fuera de rango</small>
+              <Dropdown
+                value={selectedKgPPRedSea}
+                onChange={(e) => setSelectedKgPPRedSea(e.value)}
+                options={razonesObservaciones}
+                optionLabel="name"
+                showClear
+                placeholder="Seleccione una Observación"
+                className="w-full md:w-14rem"
+              />
+            </>
+          )}
 
           <br />
           <label htmlFor="fec_cam_camas" className="font-bold">

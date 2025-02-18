@@ -212,6 +212,7 @@ function ColectaInvernadero() {
   // Columnas de la tabla para exportar
   const cols = [
     { field: "id", header: "ID" },
+    {field: "lote", header: "Lote"},
     { field: "fec_colocacion", header: "Fecha Colocación" },
     { field: "fec_salida_eggies", header: "Fecha Salida" },
     { field: "num_embudo", header: "# Embudo" },
@@ -372,7 +373,7 @@ function ColectaInvernadero() {
     });
 
     try {
-      const currentDate = formatDateTime(new Date(), "DD/MM/YYYY"); // Solo fecha
+      const currentDate = formatDateTime(new Date(), "DD-MM-YYYY"); // Solo fecha
       const currentTime = formatDateTime(new Date(), "hh:mm A"); // Fecha en formato ISO 8601
       const { data, error } = await supabase
         .from("Eggies_Colecta_Invernadero_Embudo")
@@ -656,6 +657,13 @@ function ColectaInvernadero() {
               field="observaciones"
               header="Observaciones"
               editor={(options) => textEditor(options)}
+              sortable
+              style={{ minWidth: "8rem" }}
+            ></Column>
+            <Column
+              field="lote_id"
+              header="Lote"
+              // editor={(options) => textEditor(options)}
               sortable
               style={{ minWidth: "8rem" }}
             ></Column>

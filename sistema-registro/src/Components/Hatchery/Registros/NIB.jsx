@@ -18,6 +18,7 @@ import { IconField } from "primereact/iconfield";
 import { InputIcon } from "primereact/inputicon";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
+import { Dropdown } from "primereact/dropdown";
 import { act } from "react";
 import * as XLSX from "xlsx";
 import logo2 from "../../../assets/mosca.png";
@@ -60,25 +61,43 @@ function NIB() {
     gm_colectados: false,
     cajas_inoculadas_destino: false,
   });
+
+  const [loteIdSeleccionado, setLoteIdSeleccionado] = useState(null); // Estado para almacenar el lote_id seleccionado
+
+  const [lotes, setLotes] = useState([]); // Estado para almacenar los lote_ids disponibles
   //Inicio de FETCH REGISTROS
+  // Función para obtener los datos de la tabla Neonatos_Inoculados
   const fetchNeonatos = async () => {
     try {
-      //Funcion asyncrona para obtener los datos de la tabla Usuarios
       const { data, error } = await supabase
         .from("Neonatos_Inoculados")
-        .select(); //Constante de data y error que es un await, es decir espera a que reciba una respuesta de la variable supabase, de la tabla "Uusarios" y hace un select de toda la tabla
-      // console.log(error ? "Error:" : "Datos:", error || data); //YUn console log que nos dice si hay un error o si se obtuvieron los datos
-      if (error) throw error;
-      setNeonatos(data || []); //Setea la variable Usuarios con los datos obtenidos o un array vacio si no se obtuvieron datos
-    } catch {
-      console.log("Error en la conexión a la base de datos");
+        .select(); // Solo seleccionamos el campo lote_id
+
+      if (error) throw error; // Si hay un error, lanzamos una excepción
+
+      setNeonatos(data || []); // Guardamos los datos obtenidos en el estado
+
+      // Formatear los datos para solo obtener el lote_id y ponerlos en el estado de lotes
+      const loteIds = data.map((neonato) => ({
+        label: neonato.lote_id, // La etiqueta que mostrará el dropdown
+        value: neonato.lote_id, // El valor real que se seleccionará
+      }));
+
+      setLotes(loteIds); // Guardamos los lote_id en el estado 'lotes'
+    } catch (err) {
+      console.log("Error en la conexión a la base de datos", err);
     }
   };
 
+  // Este useEffect se ejecuta cuando el componente se monta, para obtener los datos una vez
   useEffect(() => {
-    //Este useEffect es un hook para que solo se ejecute una sola vez al cargar la pagina
-    fetchNeonatos(); //Ejecuta la funcion fetchUsuarios que obtiene los datos de la tabla Usuarios
-  }, []);
+    fetchNeonatos(); // Llamar a la función para obtener los datos
+  }, []); // El array vacío asegura que solo se ejecute una vez cuando el componente se monta
+
+  useEffect(() => {
+    console.log("Neonatos actualizados: ", neonatos); // Solo se ejecuta cuando 'neonatos' cambia
+  }, [neonatos]); // Este useEffect se ejecuta cada vez que el estado 'neonatos' cambia
+
   //Fin de FETCH REGISTROS
 
   //Inicio Formatear la FECHA DE REGISTRO
@@ -116,7 +135,6 @@ function NIB() {
   };
   //Fin Formatear la FECHA DE REGISTRO
 
-
   const exportPdf = () => {
     if (selectedNeonatos.length === 0) {
       toast.current.show({
@@ -127,7 +145,7 @@ function NIB() {
       });
       return; // Detener la ejecución si no hay filas seleccionadas
     }
-  
+
     // Resto del código para generar el PDF...
     const doc = new jsPDF();
 
@@ -147,7 +165,7 @@ function NIB() {
     // Configuración de la tabla
     doc.autoTable({
       head: [exportColumns.map((col) => col.title)], // Encabezados de la tabla
-      body:body, // Datos de la tabla
+      body: body, // Datos de la tabla
       startY: 30, // Posición inicial de la tabla
       styles: { fontSize: 10 }, // Estilo de la tabla
       headStyles: { fillColor: [41, 128, 185], textColor: 255 }, // Estilo del encabezado
@@ -156,8 +174,6 @@ function NIB() {
     // Guardar el PDF
     doc.save("Eggies_Colecta_Invernadero_Embudo.pdf");
   };
-
-
 
   const exportXlsx = () => {
     if (selectedNeonatos.length === 0) {
@@ -169,16 +185,14 @@ function NIB() {
       });
       return; // Detener la ejecución si no hay filas seleccionadas
     }
-  
+
     // Resto del código para generar el XLSX...
     // Obtener los encabezados de las columnas
     const headers = cols.map((col) => col.header); // Mapear solo los encabezados de las columnas
 
     const exportData = selectedNeonatos.map((registro) => ({
       ...registro,
-      registrado: `${registro.fec_colecta || ""} ${
-        registro.hor_colecta || ""
-      }`,
+      registrado: `${registro.fec_colecta || ""} ${registro.hor_colecta || ""}`,
     }));
     // Obtener los datos seleccionados y mapearlos para las columnas
     const rows = exportData.map(
@@ -204,7 +218,6 @@ function NIB() {
     // Exportar el archivo .xlsx
     XLSX.writeFile(wb, "Neonatos_Inoculaddos.xlsx");
   };
-
 
   // Columnas de la tabla para exportar
   const cols = [
@@ -431,6 +444,7 @@ function NIB() {
             fec_colecta: currentDate,
             hor_colecta: currentTime,
             observaciones: neonato.observaciones,
+            lote_id: neonato.lote_id,
           },
         ]);
 
@@ -765,6 +779,13 @@ function NIB() {
               style={{ minWidth: "8rem" }}
             ></Column>
             <Column
+              field="lote_id"
+              header="Lote"
+              // editor={(options) => textEditor(options)}
+              sortable
+              style={{ minWidth: "8rem" }}
+            ></Column>
+            <Column
               header="Herramientas"
               rowEditor={allowEdit}
               headerStyle={{ width: "10%", minWidth: "5rem" }}
@@ -785,6 +806,22 @@ function NIB() {
         onHide={hideDialog}
       >
         <div className="field">
+        <label htmlFor="lote_id" className="font-bold">
+          Lote{" "}
+          {submitted && !neonato.lote_id && (
+            <small className="p-error">Requerido.</small>
+          )}
+        </label>
+        <Dropdown
+          value={neonato.lote_id}
+          onChange={(e) => setNeonato({ ...neonato, lote_id: e.value })} // Actualiza el estado con el lote_id seleccionado
+          options={lotes} // Los lote_ids disponibles
+          optionLabel="label" // El valor a mostrar en el dropdown (lote_id)
+          optionValue="value" // El valor real que se selecciona
+          placeholder="Selecciona un lote"
+          className="w-full md:w-14rem"
+        />
+          <br />
           <label htmlFor="embudo" className="font-bold">
             # de Embudo{" "}
             {submitted && !neonato.embudo && (

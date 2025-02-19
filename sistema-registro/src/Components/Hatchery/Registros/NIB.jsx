@@ -1,7 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import "./NIB.css"; //Estilos de la tabla
 
+//Imports de estilos
+import logo2 from "../../../assets/mosca.png";
+import "./NIB.css"; 
+
+//Imports de Supabase
 import supabase from "../../../supabaseClient"; //Importa la variable supabase del archivo supabaseClient.js que sirve para conectarse con la base de datos y que funcione como API
 
 //PRIME REACT
@@ -19,13 +23,15 @@ import { InputIcon } from "primereact/inputicon";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
-import { act } from "react";
+
+//Imports de exportar
 import * as XLSX from "xlsx";
-import logo2 from "../../../assets/mosca.png";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
+
 function NIB() {
+
   //Variable de registro vacio
   let emptyRegister = {
     id: null,
@@ -42,18 +48,24 @@ function NIB() {
     observaciones: "",
   };
 
-  const [neonatos, setNeonatos] = useState([]); //Variable de estado que guarda los datos de la tabla Usuarios
-  const [neonato, setNeonato] = useState(emptyRegister); //Variable de estado que guarda los datos de un usuario
-
-  const toast = useRef(null); //Variable de referencia para mostrar mensajes emergentes
-  const dt = useRef(null); //Variable de referencia para la tabla
-  const [selectedNeonatos, setSelectedNeonatos] = useState([]); //Variable de estado que guarda los usuarios seleccionados
-  const [globalFilter, setGlobalFilter] = useState(null); //Variable de estado que guarda el filtro de busqueda
-  const [submitted, setSubmitted] = useState(false); //Variable de estado que guarda si se ha enviado un formulario
-  const [neonatoDialog, setNeonatoDialog] = useState(false); //Variable de estado que guarda si se muestra el dialogo de usuario
+  //Variables de estado para el dialogo de eliminar
   const [deleteNeonatoDialog, setDeleteNeonatoDialog] = useState(false); //Variable de estado que guarda si se muestra el dialogo de eliminar usuario
   const [deleteNeonatosDialog, setDeleteNeonatosDialog] = useState(false); //Variable de estado que guarda si se muestra el dialogo de eliminar usuarios
+
+  //Variables de estado para el formulario de registro
+  const [neonatos, setNeonatos] = useState([]); //Variable de estado que guarda los datos de la tabla Usuarios
+  const [neonato, setNeonato] = useState(emptyRegister); //Variable de estado que guarda los datos de un usuario
+  const [selectedNeonatos, setSelectedNeonatos] = useState([]); //Variable de estado que guarda los usuarios seleccionados
+  const [submitted, setSubmitted] = useState(false); //Variable de estado que guarda si se ha enviado un formulario
+  const [neonatoDialog, setNeonatoDialog] = useState(false); //Variable de estado que guarda si se muestra el dialogo de usuario
+  const [globalFilter, setGlobalFilter] = useState(null); //Variable de estado que guarda el filtro de busqueda
+ 
+  //Variables de estado para la tabla
   const navigate = useNavigate(); //Variable de navegación
+  const dt = useRef(null); //Variable de referencia para la tabla
+  const toast = useRef(null); //Variable de referencia para mostrar mensajes emergentes
+
+  //Errores de validación
   const [observacionesObligatorio, setObservacionesObligatorio] =
     useState(false);
   const [erroresValidacion, setErroresValidacion] = useState({
@@ -62,41 +74,146 @@ function NIB() {
     cajas_inoculadas_destino: false,
   });
 
-  const [loteIdSeleccionado, setLoteIdSeleccionado] = useState(null); // Estado para almacenar el lote_id seleccionado
-
+  //Lote Variables
   const [lotes, setLotes] = useState([]); // Estado para almacenar los lote_ids disponibles
+
+  //Lazzy Load Variables
+  const [loading, setLoading] = useState(false);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [selectAll, setSelectAll] = useState(false);
+  const [lazyState, setLazyState] = useState({
+    first: 0,
+    rows: 10,
+    page: 1,
+    sortField: null,
+    sortOrder: null,
+    filters: {},
+  });
+
+
+  //Inicio de Lazy Load
+  const onPage = (event) => {
+    setLazyState(event);
+  };
+
+  const onSort = (event) => {
+    setLazyState(event); // Actualiza el estado con el nuevo orden
+    fetchNeonatos(); // Llama a la función para obtener los datos ordenados
+};
+
+
+  const onSelectionChange = (event) => {
+    const value = event.value;
+
+    setSelectedNeonatos(value);
+    setSelectAll(value.length === totalRecords);
+  };
+
+  const onSelectAllChange = async (event) => {
+    const selectAll = event.checked;
+
+    if (selectAll) {
+      // Llama a la base de datos para obtener todos los registros
+      const { data, error } = await supabase
+        .from("Neonatos_Inoculados")
+        .select();
+      console.log("data", data);
+      if (error) {
+        console.log("Error al obtener todos los neonatos:", error);
+        return;
+      }
+
+      setSelectAll(true);
+      setSelectedNeonatos(data); // Selecciona todos los neonatos
+    } else {
+      setSelectAll(false);
+      setSelectedNeonatos([]); // Limpia la selección
+    }
+  };
+//Fin de Lazy Load
+  
   //Inicio de FETCH REGISTROS
-  // Función para obtener los datos de la tabla Neonatos_Inoculados
   const fetchNeonatos = async () => {
+    setLoading(true); // Activar el indicador de carga
+    try {
+        const { first, rows, sortField, sortOrder, filters } = lazyState;
+
+        // Construir la consulta
+        let query = supabase
+            .from("neonatos_inoculados_view") // Utilizar la vista
+            .select("*", { count: "exact" });
+
+        // Campos de búsqueda
+        const searchableFields = [
+            "fec_colecta",
+            "hor_colecta",
+            "operario",
+            "fec_registro",
+            "hor_registro",
+            "observaciones",
+            "lote_id",
+            // Agrega otros campos que has convertido a texto
+        ];
+    
+        if (globalFilter) {
+            const conditions = searchableFields
+                .map((field) => `${field}.ilike.%${globalFilter}%`)
+                .join(","); // Concatenar las condiciones
+            query = query.or(conditions); // Usar el método or con las condiciones generadas
+        }
+
+        // Aplicar orden
+        if (sortField) {
+            query = query.order(sortField, { ascending: sortOrder === 1 });
+        }
+
+        // Aplicar paginación
+        const { data, error, count } = await query.range(first, first + rows - 1);
+
+        if (error) throw error;
+
+        setNeonatos(data || []);
+        setTotalRecords(count || 0);
+    } catch (err) {
+        console.log("Error en la conexión a la base de datos", err);
+    } finally {
+        setLoading(false);
+    }
+};
+
+//Fin de FETCH REGISTROS
+
+//Inicio de FETCH LOTES
+  const fetchLotes = async () => {
     try {
       const { data, error } = await supabase
         .from("Neonatos_Inoculados")
-        .select(); // Solo seleccionamos el campo lote_id
+        .select("lote_id"); // Solo traemos el lote_id
 
-      if (error) throw error; // Si hay un error, lanzamos una excepción
+      if (error) throw error;
 
-      setNeonatos(data || []); // Guardamos los datos obtenidos en el estado
+      // Eliminar duplicados, ordenar y formatear
+      const loteIds = [...new Set(data.map((item) => item.lote_id))] // Elimina duplicados
+        .sort((a, b) => a - b) // Ordena de manera ascendente
+        .map((lote) => ({ label: lote, value: lote })); // Formatea para el dropdown
 
-      // Formatear los datos para solo obtener el lote_id y ponerlos en el estado de lotes
-      const loteIds = data.map((neonato) => ({
-        label: neonato.lote_id, // La etiqueta que mostrará el dropdown
-        value: neonato.lote_id, // El valor real que se seleccionará
-      }));
-
-      setLotes(loteIds); // Guardamos los lote_id en el estado 'lotes'
+      setLotes(loteIds); // Guardamos los lotes en el estado
     } catch (err) {
-      console.log("Error en la conexión a la base de datos", err);
+      console.log("Error obteniendo lotes:", err);
     }
   };
+  //Fin de FETCH LOTES
 
   // Este useEffect se ejecuta cuando el componente se monta, para obtener los datos una vez
   useEffect(() => {
-    fetchNeonatos(); // Llamar a la función para obtener los datos
-  }, []); // El array vacío asegura que solo se ejecute una vez cuando el componente se monta
+    fetchNeonatos(); 
+    fetchLotes(); 
+  }, [lazyState, globalFilter]); // Agrega globalFilter como dependencia
+  // El array vacío asegura que solo se ejecute una vez cuando el componente se monta
 
-  useEffect(() => {
-    console.log("Neonatos actualizados: ", neonatos); // Solo se ejecuta cuando 'neonatos' cambia
-  }, [neonatos]); // Este useEffect se ejecuta cada vez que el estado 'neonatos' cambia
+  useEffect(() => { //Si se actualiza neonatos se ejecuta el useEffect osea se imprime en consola
+    console.log("Neonatos actualizados: ", neonatos); 
+  }, [neonatos]); 
 
   //Fin de FETCH REGISTROS
 
@@ -614,6 +731,15 @@ function NIB() {
     );
   };
 
+  const onGlobalFilterChange = (event) => {
+    const value = event.target.value;
+    setGlobalFilter(value); // Actualizar el filtro global
+    setLazyState((prevState) => ({
+      ...prevState,
+      first: 0, // Reiniciar a la primera página
+    }));
+    fetchNeonatos(); // Llamar a la función para obtener los datos filtrados
+  };
   const header = (
     <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
       {/* <h4 className="m-0">Ingreso PP Invernadero</h4> */}
@@ -621,7 +747,7 @@ function NIB() {
         {/* <InputIcon className="pi pi-search" /> */}
         <InputText
           type="search"
-          onInput={(e) => setGlobalFilter(e.target.value)}
+          onInput={(e) => onGlobalFilterChange(e)}
           placeholder="Buscar..."
         />
       </IconField>
@@ -676,21 +802,33 @@ function NIB() {
             right={rightToolbarTemplate}
           ></Toolbar>
           <DataTable
+            lazy
+            first={lazyState.first}
+            totalRecords={totalRecords}
+            onPage={onPage}
+            onSort={onSort}
+            sortField={lazyState.sortField}
+            sortOrder={lazyState.sortOrder}
+            filters={lazyState.filters}
+            loading={loading}
+            tableStyle={{ minWidth: "75rem" }}
+            onSelectionChange={onSelectionChange}
+            selectAll={selectAll}
+            onSelectAllChange={onSelectAllChange}
             editMode="row"
+            rows={10}
             onRowEditComplete={onRowEditComplete}
             ref={dt}
             value={neonatos}
-            selection={selectedNeonatos}
-            onSelectionChange={(e) => setSelectedNeonatos(e.value)}
+            selection={selectedNeonatos} 
             onRowEditInit={(e) => setNeonato(e.data)}
             className="p-datatable-gridlines tabla"
             style={{ width: "100%" }}
             dataKey="id"
             paginator
-            rows={10}
-            rowsPerPageOptions={[5, 10, 25]}
-            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Usuarios"
+            // rowsPerPageOptions={[5, 10, 25]}
+            // paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+            // currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Usuarios"
             globalFilter={globalFilter}
             header={header}
           >
@@ -806,21 +944,21 @@ function NIB() {
         onHide={hideDialog}
       >
         <div className="field">
-        <label htmlFor="lote_id" className="font-bold">
-          Lote{" "}
-          {submitted && !neonato.lote_id && (
-            <small className="p-error">Requerido.</small>
-          )}
-        </label>
-        <Dropdown
-          value={neonato.lote_id}
-          onChange={(e) => setNeonato({ ...neonato, lote_id: e.value })} // Actualiza el estado con el lote_id seleccionado
-          options={lotes} // Los lote_ids disponibles
-          optionLabel="label" // El valor a mostrar en el dropdown (lote_id)
-          optionValue="value" // El valor real que se selecciona
-          placeholder="Selecciona un lote"
-          className="w-full md:w-14rem"
-        />
+          <label htmlFor="lote_id" className="font-bold">
+            Lote{" "}
+            {submitted && !neonato.lote_id && (
+              <small className="p-error">Requerido.</small>
+            )}
+          </label>
+          <Dropdown
+            value={neonato.lote_id}
+            onChange={(e) => setNeonato({ ...neonato, lote_id: e.value })} // Actualiza el estado con el lote_id seleccionado
+            options={lotes} // Los lote_ids disponibles
+            optionLabel="label" // El valor a mostrar en el dropdown (lote_id)
+            optionValue="value" // El valor real que se selecciona
+            placeholder="Selecciona un lote"
+            className="w-full md:w-14rem"
+          />
           <br />
           <label htmlFor="embudo" className="font-bold">
             # de Embudo{" "}

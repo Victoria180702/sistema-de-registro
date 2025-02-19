@@ -1,7 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import "./NIB.css"; //Estilos de la tabla
 
+//Imports de estilos
+import logo2 from "../../../assets/mosca.png";
+import "./NIB.css"; 
+
+//Imports de Supabase
 import supabase from "../../../supabaseClient"; //Importa la variable supabase del archivo supabaseClient.js que sirve para conectarse con la base de datos y que funcione como API
 
 //PRIME REACT
@@ -18,13 +22,16 @@ import { IconField } from "primereact/iconfield";
 import { InputIcon } from "primereact/inputicon";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
-import { act } from "react";
+import { Dropdown } from "primereact/dropdown";
+
+//Imports de exportar
 import * as XLSX from "xlsx";
-import logo2 from "../../../assets/mosca.png";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
+
 function NIB() {
+
   //Variable de registro vacio
   let emptyRegister = {
     id: null,
@@ -41,18 +48,24 @@ function NIB() {
     observaciones: "",
   };
 
-  const [neonatos, setNeonatos] = useState([]); //Variable de estado que guarda los datos de la tabla Usuarios
-  const [neonato, setNeonato] = useState(emptyRegister); //Variable de estado que guarda los datos de un usuario
-
-  const toast = useRef(null); //Variable de referencia para mostrar mensajes emergentes
-  const dt = useRef(null); //Variable de referencia para la tabla
-  const [selectedNeonatos, setSelectedNeonatos] = useState([]); //Variable de estado que guarda los usuarios seleccionados
-  const [globalFilter, setGlobalFilter] = useState(null); //Variable de estado que guarda el filtro de busqueda
-  const [submitted, setSubmitted] = useState(false); //Variable de estado que guarda si se ha enviado un formulario
-  const [neonatoDialog, setNeonatoDialog] = useState(false); //Variable de estado que guarda si se muestra el dialogo de usuario
+  //Variables de estado para el dialogo de eliminar
   const [deleteNeonatoDialog, setDeleteNeonatoDialog] = useState(false); //Variable de estado que guarda si se muestra el dialogo de eliminar usuario
   const [deleteNeonatosDialog, setDeleteNeonatosDialog] = useState(false); //Variable de estado que guarda si se muestra el dialogo de eliminar usuarios
+
+  //Variables de estado para el formulario de registro
+  const [neonatos, setNeonatos] = useState([]); //Variable de estado que guarda los datos de la tabla Usuarios
+  const [neonato, setNeonato] = useState(emptyRegister); //Variable de estado que guarda los datos de un usuario
+  const [selectedNeonatos, setSelectedNeonatos] = useState([]); //Variable de estado que guarda los usuarios seleccionados
+  const [submitted, setSubmitted] = useState(false); //Variable de estado que guarda si se ha enviado un formulario
+  const [neonatoDialog, setNeonatoDialog] = useState(false); //Variable de estado que guarda si se muestra el dialogo de usuario
+  const [globalFilter, setGlobalFilter] = useState(null); //Variable de estado que guarda el filtro de busqueda
+ 
+  //Variables de estado para la tabla
   const navigate = useNavigate(); //Variable de navegación
+  const dt = useRef(null); //Variable de referencia para la tabla
+  const toast = useRef(null); //Variable de referencia para mostrar mensajes emergentes
+
+  //Errores de validación
   const [observacionesObligatorio, setObservacionesObligatorio] =
     useState(false);
   const [erroresValidacion, setErroresValidacion] = useState({
@@ -60,25 +73,148 @@ function NIB() {
     gm_colectados: false,
     cajas_inoculadas_destino: false,
   });
-  //Inicio de FETCH REGISTROS
-  const fetchNeonatos = async () => {
-    try {
-      //Funcion asyncrona para obtener los datos de la tabla Usuarios
-      const { data, error } = await supabase
-        .from("Neonatos_Inoculados")
-        .select(); //Constante de data y error que es un await, es decir espera a que reciba una respuesta de la variable supabase, de la tabla "Uusarios" y hace un select de toda la tabla
-      // console.log(error ? "Error:" : "Datos:", error || data); //YUn console log que nos dice si hay un error o si se obtuvieron los datos
-      if (error) throw error;
-      setNeonatos(data || []); //Setea la variable Usuarios con los datos obtenidos o un array vacio si no se obtuvieron datos
-    } catch {
-      console.log("Error en la conexión a la base de datos");
-    }
+
+  //Lote Variables
+  const [lotes, setLotes] = useState([]); // Estado para almacenar los lote_ids disponibles
+
+  //Lazzy Load Variables
+  const [loading, setLoading] = useState(false);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [selectAll, setSelectAll] = useState(false);
+  const [lazyState, setLazyState] = useState({
+    first: 0,
+    rows: 10,
+    page: 1,
+    sortField: null,
+    sortOrder: null,
+    filters: {},
+  });
+
+
+  //Inicio de Lazy Load
+  const onPage = (event) => {
+    setLazyState(event);
   };
 
+  const onSort = (event) => {
+    setLazyState(event); // Actualiza el estado con el nuevo orden
+    fetchNeonatos(); // Llama a la función para obtener los datos ordenados
+};
+
+
+  const onSelectionChange = (event) => {
+    const value = event.value;
+
+    setSelectedNeonatos(value);
+    setSelectAll(value.length === totalRecords);
+  };
+
+  const onSelectAllChange = async (event) => {
+    const selectAll = event.checked;
+
+    if (selectAll) {
+      // Llama a la base de datos para obtener todos los registros
+      const { data, error } = await supabase
+        .from("Neonatos_Inoculados")
+        .select();
+      console.log("data", data);
+      if (error) {
+        console.log("Error al obtener todos los neonatos:", error);
+        return;
+      }
+
+      setSelectAll(true);
+      setSelectedNeonatos(data); // Selecciona todos los neonatos
+    } else {
+      setSelectAll(false);
+      setSelectedNeonatos([]); // Limpia la selección
+    }
+  };
+//Fin de Lazy Load
+  
+  //Inicio de FETCH REGISTROS
+  const fetchNeonatos = async () => {
+    setLoading(true); // Activar el indicador de carga
+    try {
+        const { first, rows, sortField, sortOrder, filters } = lazyState;
+
+        // Construir la consulta
+        let query = supabase
+            .from("neonatos_inoculados_view") // Utilizar la vista
+            .select("*", { count: "exact" });
+
+        // Campos de búsqueda
+        const searchableFields = [
+            "fec_colecta",
+            "hor_colecta",
+            "operario",
+            "fec_registro",
+            "hor_registro",
+            "observaciones",
+            "lote_id",
+            // Agrega otros campos que has convertido a texto
+        ];
+    
+        if (globalFilter) {
+            const conditions = searchableFields
+                .map((field) => `${field}.ilike.%${globalFilter}%`)
+                .join(","); // Concatenar las condiciones
+            query = query.or(conditions); // Usar el método or con las condiciones generadas
+        }
+
+        // Aplicar orden
+        if (sortField) {
+            query = query.order(sortField, { ascending: sortOrder === 1 });
+        }
+
+        // Aplicar paginación
+        const { data, error, count } = await query.range(first, first + rows - 1);
+
+        if (error) throw error;
+
+        setNeonatos(data || []);
+        setTotalRecords(count || 0);
+    } catch (err) {
+        console.log("Error en la conexión a la base de datos", err);
+    } finally {
+        setLoading(false);
+    }
+};
+
+//Fin de FETCH REGISTROS
+
+//Inicio de FETCH LOTES
+  const fetchLotes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("Neonatos_Inoculados")
+        .select("lote_id"); // Solo traemos el lote_id
+
+      if (error) throw error;
+
+      // Eliminar duplicados, ordenar y formatear
+      const loteIds = [...new Set(data.map((item) => item.lote_id))] // Elimina duplicados
+        .sort((a, b) => a - b) // Ordena de manera ascendente
+        .map((lote) => ({ label: lote, value: lote })); // Formatea para el dropdown
+
+      setLotes(loteIds); // Guardamos los lotes en el estado
+    } catch (err) {
+      console.log("Error obteniendo lotes:", err);
+    }
+  };
+  //Fin de FETCH LOTES
+
+  // Este useEffect se ejecuta cuando el componente se monta, para obtener los datos una vez
   useEffect(() => {
-    //Este useEffect es un hook para que solo se ejecute una sola vez al cargar la pagina
-    fetchNeonatos(); //Ejecuta la funcion fetchUsuarios que obtiene los datos de la tabla Usuarios
-  }, []);
+    fetchNeonatos(); 
+    fetchLotes(); 
+  }, [lazyState, globalFilter]); // Agrega globalFilter como dependencia
+  // El array vacío asegura que solo se ejecute una vez cuando el componente se monta
+
+  useEffect(() => { //Si se actualiza neonatos se ejecuta el useEffect osea se imprime en consola
+    console.log("Neonatos actualizados: ", neonatos); 
+  }, [neonatos]); 
+
   //Fin de FETCH REGISTROS
 
   //Inicio Formatear la FECHA DE REGISTRO
@@ -116,7 +252,6 @@ function NIB() {
   };
   //Fin Formatear la FECHA DE REGISTRO
 
-
   const exportPdf = () => {
     if (selectedNeonatos.length === 0) {
       toast.current.show({
@@ -127,7 +262,7 @@ function NIB() {
       });
       return; // Detener la ejecución si no hay filas seleccionadas
     }
-  
+
     // Resto del código para generar el PDF...
     const doc = new jsPDF();
 
@@ -147,7 +282,7 @@ function NIB() {
     // Configuración de la tabla
     doc.autoTable({
       head: [exportColumns.map((col) => col.title)], // Encabezados de la tabla
-      body:body, // Datos de la tabla
+      body: body, // Datos de la tabla
       startY: 30, // Posición inicial de la tabla
       styles: { fontSize: 10 }, // Estilo de la tabla
       headStyles: { fillColor: [41, 128, 185], textColor: 255 }, // Estilo del encabezado
@@ -156,8 +291,6 @@ function NIB() {
     // Guardar el PDF
     doc.save("Eggies_Colecta_Invernadero_Embudo.pdf");
   };
-
-
 
   const exportXlsx = () => {
     if (selectedNeonatos.length === 0) {
@@ -169,16 +302,14 @@ function NIB() {
       });
       return; // Detener la ejecución si no hay filas seleccionadas
     }
-  
+
     // Resto del código para generar el XLSX...
     // Obtener los encabezados de las columnas
     const headers = cols.map((col) => col.header); // Mapear solo los encabezados de las columnas
 
     const exportData = selectedNeonatos.map((registro) => ({
       ...registro,
-      registrado: `${registro.fec_colecta || ""} ${
-        registro.hor_colecta || ""
-      }`,
+      registrado: `${registro.fec_colecta || ""} ${registro.hor_colecta || ""}`,
     }));
     // Obtener los datos seleccionados y mapearlos para las columnas
     const rows = exportData.map(
@@ -204,7 +335,6 @@ function NIB() {
     // Exportar el archivo .xlsx
     XLSX.writeFile(wb, "Neonatos_Inoculaddos.xlsx");
   };
-
 
   // Columnas de la tabla para exportar
   const cols = [
@@ -431,6 +561,7 @@ function NIB() {
             fec_colecta: currentDate,
             hor_colecta: currentTime,
             observaciones: neonato.observaciones,
+            lote_id: neonato.lote_id,
           },
         ]);
 
@@ -600,6 +731,15 @@ function NIB() {
     );
   };
 
+  const onGlobalFilterChange = (event) => {
+    const value = event.target.value;
+    setGlobalFilter(value); // Actualizar el filtro global
+    setLazyState((prevState) => ({
+      ...prevState,
+      first: 0, // Reiniciar a la primera página
+    }));
+    fetchNeonatos(); // Llamar a la función para obtener los datos filtrados
+  };
   const header = (
     <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
       {/* <h4 className="m-0">Ingreso PP Invernadero</h4> */}
@@ -607,7 +747,7 @@ function NIB() {
         {/* <InputIcon className="pi pi-search" /> */}
         <InputText
           type="search"
-          onInput={(e) => setGlobalFilter(e.target.value)}
+          onInput={(e) => onGlobalFilterChange(e)}
           placeholder="Buscar..."
         />
       </IconField>
@@ -662,21 +802,33 @@ function NIB() {
             right={rightToolbarTemplate}
           ></Toolbar>
           <DataTable
+            lazy
+            first={lazyState.first}
+            totalRecords={totalRecords}
+            onPage={onPage}
+            onSort={onSort}
+            sortField={lazyState.sortField}
+            sortOrder={lazyState.sortOrder}
+            filters={lazyState.filters}
+            loading={loading}
+            tableStyle={{ minWidth: "75rem" }}
+            onSelectionChange={onSelectionChange}
+            selectAll={selectAll}
+            onSelectAllChange={onSelectAllChange}
             editMode="row"
+            rows={10}
             onRowEditComplete={onRowEditComplete}
             ref={dt}
             value={neonatos}
-            selection={selectedNeonatos}
-            onSelectionChange={(e) => setSelectedNeonatos(e.value)}
+            selection={selectedNeonatos} 
             onRowEditInit={(e) => setNeonato(e.data)}
             className="p-datatable-gridlines tabla"
             style={{ width: "100%" }}
             dataKey="id"
             paginator
-            rows={10}
-            rowsPerPageOptions={[5, 10, 25]}
-            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Usuarios"
+            // rowsPerPageOptions={[5, 10, 25]}
+            // paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+            // currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Usuarios"
             globalFilter={globalFilter}
             header={header}
           >
@@ -765,6 +917,13 @@ function NIB() {
               style={{ minWidth: "8rem" }}
             ></Column>
             <Column
+              field="lote_id"
+              header="Lote"
+              // editor={(options) => textEditor(options)}
+              sortable
+              style={{ minWidth: "8rem" }}
+            ></Column>
+            <Column
               header="Herramientas"
               rowEditor={allowEdit}
               headerStyle={{ width: "10%", minWidth: "5rem" }}
@@ -785,6 +944,22 @@ function NIB() {
         onHide={hideDialog}
       >
         <div className="field">
+          <label htmlFor="lote_id" className="font-bold">
+            Lote{" "}
+            {submitted && !neonato.lote_id && (
+              <small className="p-error">Requerido.</small>
+            )}
+          </label>
+          <Dropdown
+            value={neonato.lote_id}
+            onChange={(e) => setNeonato({ ...neonato, lote_id: e.value })} // Actualiza el estado con el lote_id seleccionado
+            options={lotes} // Los lote_ids disponibles
+            optionLabel="label" // El valor a mostrar en el dropdown (lote_id)
+            optionValue="value" // El valor real que se selecciona
+            placeholder="Selecciona un lote"
+            className="w-full md:w-14rem"
+          />
+          <br />
           <label htmlFor="embudo" className="font-bold">
             # de Embudo{" "}
             {submitted && !neonato.embudo && (

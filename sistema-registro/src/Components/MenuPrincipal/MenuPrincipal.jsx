@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { useLocation, useNavigate } from 'react-router-dom';
 import './MenuPrincipal.css';
 import logo from '../../assets/Pronuvo_logos_sin_fondo_6.png green.png';
@@ -22,22 +23,23 @@ function MenuPrincipal() {
       </h1>
       <div className="botones">
         {/* Solo mostrar "Opción 1" si el usuario pertenece al departamento de Calidad" */}
-        {departamento === 'Calidad' && (
-          <button onClick={() => navigate('/Calidad')}>Registros Calidad</button>
-        )}
+        
         {departamento === 'Hatchery' && (
           <button onClick={() => navigate('/Hatchery')}>Registros Hatchery </button>
+        )}
+        {departamento === 'Dieta'&& (
+          <button onClick={() => navigate('/Dieta')}>Registros Dieta </button>
         )}
         {departamento === 'Horno' && (
           <button onClick={() => navigate('/Horno')}>Registros Horno </button>
         )}
-        {departamento === 'Dieta' && (
-          <button onClick={() => navigate('/Dieta')}>Registros Dieta </button>
+        {departamento === 'Calidad' && (
+          <button onClick={() => navigate('/Calidad')}>Registros Calidad</button>
         )}
-        {departamento === 'Cosecha' && (
+        {departamento === 'Cosecha'&& (
           <button onClick={() => navigate('/Cosecha')}>Registros Cosecha </button>
         )}
-        {departamento === 'Mantenimiento' && (
+        {departamento === 'Mantenimiento'  && (
           <button onClick={() => navigate('/Mantenimiento')}>Registros Mantenimiento </button>
         )}
         {departamento === 'Gerencia' && (

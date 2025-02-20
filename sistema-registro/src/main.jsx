@@ -21,7 +21,24 @@ import ControlInventarioCascaraPila from './pages/Dieta/Registros/PagesControlIn
 
 //imports paginas Gerencia
 import Gerencia from './pages/Gerencia/PagesGerencia.jsx';
-import GestionUsuarios from './pages/Gerencia/Registros/PagesGestionUsuarios.jsx'
+import GestionUsuarios from './pages/Gerencia/Registros/PagesGestionUsuarios.jsx';
+
+//control de tiempos imports
+import ControlTiempos from './pages/ControlTiempos/PagesControlTiempos.jsx';
+
+//imports de paginas de horno
+import Horno from './pages/Horno/PagesHorno.jsx';
+import ControlRendimientoSecadoHornoMultilevel from './pages/Horno/Registros/PagesControlRendimientoSecadoHornoMultilevel.jsx';
+
+//imports de paginas de Calidad
+import Calidad from './pages/Calidad/PagesCalidad.jsx';
+import ControlCalidadCosecha from './pages/Calidad/Registros/PagesControlCalidadCosecha.jsx';
+
+//imports de paginas de Mantnimiento
+import Mantenimiento from './pages/Mantenimiento/PagesMantenimiento.jsx';
+import LimpiezaDesinfeccionEquiposMaquinariaPesada from './pages/Mantenimiento/Registros/PagesLimpiezaDesinfeccionEquiposMaquinariaPesada.jsx';
+
+
 
 
 const Layout = () => {
@@ -89,9 +106,56 @@ const router = createBrowserRouter([{
         },
         
       ],
-    }
+    },
 
-   
+   // Grupo de rutas de Control de Tiempos
+   {
+    path: `/ControlTiempos`,
+    element: <ControlTiempos />, // único componente registro de ControlTiempos
+  },
+
+
+  // Grupo de rutas de Horno
+  {
+    path: `/Horno`,
+    element: <Horno />, // Componente principal de Horno
+    children: [
+      {
+        path: `ControlRendimientoSecadoHornoMultilevel`,
+        element: <ControlRendimientoSecadoHornoMultilevel />,
+      },
+      
+    ],
+  },
+
+
+  // Grupo de rutas de Calidad
+  {
+    path: `/Calidad`,
+    element: <Calidad />, // Componente principal de Calidad
+    children: [
+      {
+        path: `ControlCalidadCosecha`,
+        element: <ControlCalidadCosecha />,
+      },
+      
+    ],
+  },
+
+
+  // Grupo de rutas de Mantenimiento
+  {
+    path: `/Mantenimiento`,
+    element: <Mantenimiento />, // Componente principal de Mantenimiento
+    children: [
+      {
+        path: `LimpiezaDesinfeccionEquiposMaquinariaPesada`,
+        element: <LimpiezaDesinfeccionEquiposMaquinariaPesada />,
+      },
+      
+    ],
+  },
+
     
 ]
 }])

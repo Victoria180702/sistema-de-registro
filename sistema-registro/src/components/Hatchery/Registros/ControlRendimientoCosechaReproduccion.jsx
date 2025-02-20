@@ -256,6 +256,15 @@ function ControlRendimientoCosechaReproduccion() {
     );
   };
 
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses empiezan en 0
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+  
   const saveRegistro = async () => {
     setSubmitted(true);
     if (
@@ -280,8 +289,16 @@ function ControlRendimientoCosechaReproduccion() {
       });
       return;
     }
+  
+    // Formatear las fechas antes de guardar
+    const registroFormateado = {
+      ...registro,
+      fec_siembra: formatDate(registro.fec_siembra),
+      fec_cosecha: formatDate(registro.fec_cosecha),
+    };
+  
     try {
-      const { id, ...registroSinId } = registro;
+      const { id, ...registroSinId } = registroFormateado;
       const { data, error } = await supabase
         .from("Control_Rendimiento_Cosecha_Reproduccion")
         .insert([registroSinId]);
@@ -315,9 +332,11 @@ function ControlRendimientoCosechaReproduccion() {
     let val = e.target.value;
     if (e.target.type === "number") {
       val = val ? parseFloat(val) : "";
+    } else if (e.target.type === "date") {
+      val = formatDate(val); // Formatear la fecha al guardar
     }
     let _registro = { ...registro };
-    _registro[`${name}`] = val;
+    _registro[name] = val; // Usar corchetes para acceder a la propiedad dinámica
     setRegistro(_registro);
   };
 
@@ -461,14 +480,14 @@ function ControlRendimientoCosechaReproduccion() {
             <Column
               field="fec_siembra"
               header="Fecha de Siembra"
-              editor={(options) => dateEditor(options)}
+              body={(rowData) => formatDate(rowData.fec_siembra)}
               sortable
               style={{ minWidth: "10rem" }}
             />
             <Column
               field="fec_cosecha"
               header="Fecha de Cosecha"
-              editor={(options) => dateEditor(options)}
+              body={(rowData) => formatDate(rowData.fec_cosecha)}
               sortable
               style={{ minWidth: "10rem" }}
             />

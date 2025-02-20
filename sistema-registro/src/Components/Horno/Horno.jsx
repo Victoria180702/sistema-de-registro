@@ -1,17 +1,48 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import './Horno.css';
+import logo2 from "../../assets/mosca.png";
 
 function Horno() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Verifica si estás en la ruta principal de Horno
+  const isRootPath = location.pathname === "/Horno";
 
   return (
     <div className="horno-container">
-      <h1>Registros de Horno</h1>
-      <p>Esta es la página de registros de horno.</p>
-      <button onClick={() => navigate(-1)} className="back-button">
-        Volver al Menú Principal
-      </button>
+      {isRootPath && (
+        <>
+          <h1>
+            <img src={logo2} alt="mosca" className="logo2" />
+            Registros de Horno
+          </h1>
+          <div className="welcome-message">
+            <p>Esta es la página de registros de horno.</p>
+          </div>
+          <div className="botones">
+            <button
+              onClick={() => navigate("/Horno/ControlRendimientoSecadoHornoMultilevel")}
+              className="back-button"
+            >
+              1- Control de Rendimiento Secado Horno Multilevel
+            </button>
+            <button
+              onClick={() => navigate("/ControlTiempos")}
+              className="back-button"
+            >
+              2- Control de Tiempos Perdidos
+            </button>
+            <button onClick={() => navigate(-1)} className="back-button">
+              Volver al Menú Principal
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* Aquí se renderizarán las subrutas */}
+      <Outlet />
     </div>
   );
 }

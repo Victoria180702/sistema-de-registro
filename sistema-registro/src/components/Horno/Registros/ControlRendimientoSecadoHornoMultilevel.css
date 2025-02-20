@@ -1,0 +1,167 @@
+.controltiempos-container {
+    text-align: center;
+    padding: 20px;
+    background-color: #ffffff; /* Fondo blanco */
+    min-height: 100vh;
+    font-family: 'Arial', sans-serif; /* Fuente más moderna */
+  }
+  
+  .controltiempos-container h1 {
+    color: #000000; /* Texto negro */
+    margin-bottom: 20px;
+    font-size: 2.5rem; /* Título más grande */
+  }
+  
+  .welcome-message {
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+    color: #3d3d3d; /* Texto gris oscuro */
+  }
+  
+  .buttons-container {
+    display: flex;
+    justify-content: space-between; /* Esto los separa uniformemente */
+    width: 100%; /* Asegura que ocupe todo el ancho disponible */
+    padding: 20px 0; /* Espaciado entre botones */
+    gap: 20px; /* Añadido para dar espacio entre los botones */
+  }
+  
+  .return-button, .menu-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    flex: 1; /* Esto hace que ambos botones ocupen el mismo espacio disponible */
+  }
+  
+  .return-button {
+    background-color: #007bff; /* Azul llamativo */
+    color: white;
+  }
+  
+  .return-button:hover {
+    background-color: #0056b3; /* Azul más oscuro */
+    transform: scale(1.05); /* Efecto de escala al pasar el ratón */
+  }
+  
+  .menu-button {
+    background-color: #ff7f00; /* Naranja llamativo */
+    color: white;
+  }
+  
+  .menu-button:hover {
+    background-color: #e65c00; /* Naranja más oscuro */
+    transform: scale(1.05); /* Efecto de escala al pasar el ratón */
+  }
+  
+  .p-datatable {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
+  }
+  
+  .p-datatable-thead > tr > th {
+    background-color: #c1c1c3; /* Gris claro */
+    color: white;
+    font-weight: bold;
+  }
+  
+  .p-datatable-tbody > tr {
+    transition: background-color 0.3s ease;
+  }
+  
+  .p-datatable-tbody > tr:hover {
+    background-color: #f0f0f0 !important; /* Fondo más claro al pasar el ratón */
+  }
+  
+  .p-highlight {
+    background-color: #c8e6c9 !important; /* Verde claro para selección */
+  }
+  
+  .p-dialog {
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .p-dialog-header {
+    background-color: #556b2f; /* Verde musgo */
+    color: white;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+  }
+  
+  .p-dialog-content {
+    padding: 20px;
+  }
+  
+  .p-dialog-footer {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    padding: 10px 20px;
+    background-color: #f2f7f1; /* Fondo claro */
+  }
+  
+  .logo2 {
+    position: initial;
+    width: 25px; /* Cambia este valor al tamaño deseado */
+    height: auto;
+  }
+  
+  /* Estilos adicionales para el Dropdown */
+  .p-dropdown {
+    width: 100%;
+    margin-bottom: 15px;
+  }
+  
+  .p-dropdown .p-dropdown-label {
+    color: #3d3d3d; /* Texto gris oscuro */
+  }
+  
+  .p-dropdown .p-dropdown-trigger {
+    color: #3d3d3d; /* Texto gris oscuro */
+  }
+  
+  .p-dropdown-panel .p-dropdown-items .p-dropdown-item {
+    color: #3d3d3d; /* Texto gris oscuro */
+  }
+  
+  .p-dropdown-panel .p-dropdown-items .p-dropdown-item:hover {
+    background-color: #f0f0f0; /* Fondo más claro al pasar el ratón */
+  }
+  
+  /* Estilos para los campos de entrada */
+  .p-inputtext {
+    width: 100%;
+    margin-bottom: 15px;
+  }
+  
+  .p-inputtext:focus {
+    border-color: #007bff; /* Azul llamativo */
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Sombra azul */
+  }
+  
+  /* Estilos para el Toast */
+  .p-toast {
+    font-family: 'Arial', sans-serif;
+  }
+  
+  .p-toast .p-toast-message {
+    border-radius: 8px;
+  }
+  
+  .p-toast .p-toast-message-success {
+    background-color: #d4edda; /* Verde claro */
+    color: #155724; /* Verde oscuro */
+  }
+  
+  .p-toast .p-toast-message-error {
+    background-color: #f8d7da; /* Rojo claro */
+    color: #721c24; /* Rojo oscuro */
+  }
+  
+  .p-toast .p-toast-message-warn {
+    background-color: #fff3cd; /* Amarillo claro */
+    color: #856404; /* Amarillo oscuro */
+  }

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./ControlInventarioCascaraPila.css";
 import supabase from "../../../supabaseClient";
+
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primeicons/primeicons.css";
 import { DataTable } from "primereact/datatable";
@@ -9,9 +10,8 @@ import { Column } from "primereact/column";
 import { Button } from "primereact/button";
 import { Toolbar } from "primereact/toolbar";
 import { IconField } from "primereact/iconfield";
-import { InputIcon } from "primereact/inputicon";
-import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
+import { Dialog } from "primereact/dialog";
 import { Toast } from "primereact/toast";
 import * as XLSX from "xlsx";
 import logo2 from "../../../assets/mosca.png";
@@ -377,7 +377,7 @@ function ControlInventarioCascaraPila() {
           Menú principal
         </button>
 
-        <div className="tabla-scroll">
+        <div className="tabla-container">
           <Toolbar
             className="mb-4"
             left={leftToolbarTemplate}

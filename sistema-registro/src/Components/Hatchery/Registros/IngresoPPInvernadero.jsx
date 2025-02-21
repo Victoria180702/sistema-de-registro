@@ -5,7 +5,7 @@ import "./IngresoPPInvernadero.css"; //Estilos de la tabla
 import supabase from "../../../supabaseClient"; //Importa la variable supabase del archivo supabaseClient.js que sirve para conectarse con la base de datos y que funcione como API
 
 //PRIME REACT
-import "primereact/resources/themes/lara-dark-indigo/theme.css"; //theme
+import "primereact/resources/themes/bootstrap4-light-blue/theme.css"; //theme
 import "primeicons/primeicons.css"; //icons
 
 //PRIME REACT COMPONENTS
@@ -684,7 +684,7 @@ function IngresoPPInvernadero() {
         <InputText
           type="search"
           onInput={(e) => setGlobalFilter(e.target.value)}
-          placeholder="Buscar..."
+          placeholder="Buscador Global..."
         />
       </IconField>
     </div>

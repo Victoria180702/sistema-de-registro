@@ -3,7 +3,7 @@
   padding: 20px;
   background-color: #ffffff; /* Fondo blanco */
   min-height: 100vh;
-  font-family: 'Arial', sans-serif; /* Fuente más moderna */
+  font-family: "Arial", sans-serif; /* Fuente más moderna */
 }
 
 .controlrendimiento-container h1 {
@@ -26,7 +26,8 @@
   gap: 20px; /* Añadido para dar espacio entre los botones */
 }
 
-.return-button, .menu-button {
+.return-button,
+.menu-button {
   padding: 10px 20px;
   font-size: 16px;
   border: none;
@@ -55,7 +56,6 @@
   background-color: #e65c00; /* Naranja más oscuro */
   transform: scale(1.05); /* Efecto de escala al pasar el ratón */
 }
-
 
 .p-datatable {
   background-color: white;
@@ -105,7 +105,7 @@
 }
 
 .logo2 {
-  position:initial;
+  position: initial;
   width: 25px; /* Cambia este valor al tamaño deseado */
-  height: auto; 
+  height: auto;
 }

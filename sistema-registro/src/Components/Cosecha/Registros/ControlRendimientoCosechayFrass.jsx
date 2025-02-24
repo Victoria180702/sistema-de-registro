@@ -306,7 +306,7 @@ function ControlRendimientoCosechayFrass() {
 
   const rightToolbarTemplate = () => {
     return (
-      <div className="flex flex-wrap gap-2">
+      <div className="exportar-container flex flex-wrap gap-2">
         <Button
           label="Exportar a Excel"
           icon="pi pi-upload"

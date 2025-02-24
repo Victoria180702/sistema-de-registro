@@ -244,7 +244,7 @@ function ControlTiempos() {
       <InputText
         type="search"
         onInput={(e) => setGlobalFilter(e.target.value)}
-        placeholder="Buscar..."
+        placeholder="Buscador Global..."
       />
     </div>
   );

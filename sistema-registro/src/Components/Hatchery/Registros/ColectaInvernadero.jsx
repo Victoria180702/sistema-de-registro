@@ -4,7 +4,7 @@ import "./ColectaInvernadero.css"; //Estilos de la tabla
 import supabase from "../../../supabaseClient"; //Importa la variable supabase del archivo supabaseClient.js que sirve para conectarse con la base de datos y que funcione como API
 
 //PRIME REACT
-import "primereact/resources/themes/lara-dark-indigo/theme.css"; //theme
+import "primereact/resources/themes/bootstrap4-light-blue/theme.css"; //theme
 import "primeicons/primeicons.css"; //icons
 
 //PRIME REACT COMPONENTS
@@ -321,7 +321,6 @@ function ColectaInvernadero() {
     // Verificar si hay algún valor fuera de rango
     const valoresFueraDeRango =
       isNumEmbudoInvalido || isCantidadEggiesInvalido || isTotalGmInvalido;
-
     if (
       !eggie.fec_colocacion ||
       !eggie.fec_salida_eggies ||
@@ -342,7 +341,6 @@ function ColectaInvernadero() {
       });
       return;
     }
-
     // Validación principal
     if (valoresFueraDeRango && !eggie.observaciones) {
       setObservacionesObligatorio(true);
@@ -351,7 +349,6 @@ function ColectaInvernadero() {
         "Cantidad de Eggies": isCantidadEggiesInvalido,
         "Total Gramos": isTotalGmInvalido,
       };
-
       toast.current.show({
         severity: "error",
         summary: "Error",
@@ -364,14 +361,12 @@ function ColectaInvernadero() {
       });
       return;
     }
-
     setObservacionesObligatorio(false);
     setErroresValidacion({
       num_embudo: false,
       cantidad_eggies: false,
       total_gm: false,
     });
-
     try {
       const currentDate = formatDateTime(new Date(), "DD-MM-YYYY"); // Solo fecha
       const currentTime = formatDateTime(new Date(), "hh:mm A"); // Fecha en formato ISO 8601
@@ -394,14 +389,12 @@ function ColectaInvernadero() {
             observaciones: eggie.observaciones,
           },
         ]);
-
       if (error) {
         console.error("Error en Supabase:", error);
         throw new Error(
           error.message || "Error desconocido al guardar en Supabase"
         );
       }
-
       // console.log("Datos insertados:", data);
       toast.current.show({
         severity: "success",
@@ -409,7 +402,6 @@ function ColectaInvernadero() {
         detail: "Registro guardado exitosamente",
         life: 3000,
       });
-
       // Limpia el estado
       seteggie(emptyRegister);
       seteggieDialog(false);
@@ -428,20 +420,14 @@ function ColectaInvernadero() {
   const onInputChange = (e, name) => {
     // Obtener el valor dependiendo del tipo de input
     let val = e.target.value;
-
     // Si el valor proviene de un input type="number", debemos asegurarnos de convertirlo a número.
     if (e.target.type === "number") {
       val = val ? parseInt(val, 10) : ""; // Si no es un número, se lo dejamos vacío o le asignamos un valor numérico como 0.
     }
-
-    // console.log(`${name}: ` + val); // Mostrar el nombre del campo y el valor que se actualizó.
-
     // Crear una copia del estado del usuario
     let _eggie = { ...eggie };
-
     // Actualizar el valor de la propiedad correspondiente
     _eggie[`${name}`] = val;
-
     // Actualizar el estado del usuario
     seteggie(_eggie);
   };
@@ -490,7 +476,7 @@ function ColectaInvernadero() {
         <InputText
           type="search"
           onInput={(e) => setGlobalFilter(e.target.value)}
-          placeholder="Buscar..."
+          placeholder="Buscador Global..."
         />
       </IconField>
     </div>

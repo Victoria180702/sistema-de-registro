@@ -1,5 +1,5 @@
 import React from 'react'
-import LimpiezaDesinfeccionEquiposMaquinariaPesada from '../../../components/Mantenimiento/Registros/LimpiezaDesinfeccionEquiposMaquinariaPesada'
+import LimpiezaDesinfeccionEquiposMaquinariaPesada from '../../../Components/Mantenimiento/Registros/LimpiezaDesinfeccionEquiposMaquinariaPesada'
 
 
 const PagesLimpiezaDesinfeccionEquiposMaquinariaPesada = () => {

@@ -1,19 +1,69 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import './Cosecha.css';
+import logo2 from "../../assets/mosca.png";
 
 function Cosecha() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Verifica si estás en la ruta principal de Coseccha
+  const isRootPath = location.pathname === "/Cosecha";
 
   return (
+   
     <div className="cosecha-container">
-      <h1>Registros de Cosecha</h1>
-      <p>Esta es la página de registros de cosecha.</p>
-      <button onClick={() => navigate(-1)} className="back-button">
-        Volver al Menú Principal
-      </button>
-    </div>
-  );
-}
 
+      {isRootPath && (
+        
+        <>
+        <h1>
+          <img src={logo2} alt="mosca" className="logo2" />
+          Registros de Cosecha
+        </h1>
+        <div className="welcome-message">
+          <p>Esta es la página de registros de Cosecha.</p>
+          </div>
+          <div className="botones">
+            <button
+              onClick={() => navigate("/Cosecha/ControlRendimientoCosechayFrass")}
+              className="back-button"
+            >
+              1- Control de Rendimiento Cosecha y Frass
+            </button>
+            
+            {/* <button
+              onClick={() => navigate("/Coseccha/")}
+              className="back-button"
+            >
+              2-
+            </button>
+
+            <button
+              onClick={() => navigate("/Coseccha/")}
+              className="back-button"
+            >
+              3- 
+            </button>
+
+            <button
+              onClick={() => navigate("/Coseccha/")}
+              className="back-button"
+            >
+              4- 
+            </button> */}
+
+            <button onClick={() => navigate(-1)} className="back-button">
+              Volver al Menú Principal
+            </button>
+          </div>
+        </>
+     
+    )}
+
+    {/* Aquí se renderizarán las subrutas */}
+    <Outlet />
+  </div>
+);
+}
 export default Cosecha;

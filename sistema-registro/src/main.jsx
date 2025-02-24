@@ -38,6 +38,9 @@ import ControlCalidadCosecha from './pages/Calidad/Registros/PagesControlCalidad
 import Mantenimiento from './pages/Mantenimiento/PagesMantenimiento.jsx';
 import LimpiezaDesinfeccionEquiposMaquinariaPesada from './pages/Mantenimiento/Registros/PagesLimpiezaDesinfeccionEquiposMaquinariaPesada.jsx';
 
+//imports de paginas de Cosecha
+import Cosecha from './pages/Cosecha/PagesCosecha.jsx';
+import ControlRendimientoCosechayFrass from './Components/Cosecha/Registros/ControlRendimientoCosechayFrass.jsx';
 
 
 
@@ -151,6 +154,18 @@ const router = createBrowserRouter([{
       {
         path: `LimpiezaDesinfeccionEquiposMaquinariaPesada`,
         element: <LimpiezaDesinfeccionEquiposMaquinariaPesada />,
+      },
+      
+    ],
+  },
+
+  {
+    path: `/Cosecha`,
+    element: <Cosecha />, // Componente principal de Gerencia
+    children: [
+      {
+        path: `ControlRendimientoCosechayFrass`,
+        element: <ControlRendimientoCosechayFrass />,
       },
       
     ],

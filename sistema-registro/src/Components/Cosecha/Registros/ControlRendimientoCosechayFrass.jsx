@@ -1,18 +1,18 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-//Imports de estilos
+// Imports de estilos
 import logo2 from "../../../assets/mosca.png";
 import "./ControlRendimientoCosechayFrass.css";
 
-//Imports de Supabase
-import supabase from "../../../supabaseClient"; //Importa la variable supabase del archivo supabaseClient.js que sirve para conectarse con la base de datos y que funcione como API
+// Imports de Supabase
+import supabase from "../../../supabaseClient";
 
-//PRIME REACT
+// PRIME REACT
 import "primereact/resources/themes/bootstrap4-light-blue/theme.css"; //theme
 import "primeicons/primeicons.css"; //icons
 
-//PRIME REACT COMPONENTS
+// PRIME REACT COMPONENTS
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Toast } from "primereact/toast";
@@ -24,7 +24,7 @@ import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
 
-//Imports de exportar
+// Imports de exportar
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
@@ -36,8 +36,6 @@ function ControlRendimientoCosechayFrass() {
     cant_cajas_cosechadas: "",
     kg_larva_fresca: "",
     cant_cajas_desechadas: "",
-    kg_larva_desechada: "",
-    kg_larva_desecho_limpia: "",
     kg_total_frass: "",
     kg_material_grueso: "",
     fec_registro: "",
@@ -57,25 +55,15 @@ function ControlRendimientoCosechayFrass() {
   const [globalFilter, setGlobalFilter] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [registroDialog, setRegistroDialog] = useState(false);
+  const [outOfRange, setOutOfRange] = useState(false); // Estado para controlar si algún valor está fuera de rango
   const navigate = useNavigate();
 
-  // Función para formatear la fecha en formato día/mes/año
-  //   const formatearFecha = (fecha) => {
-  //     if (!fecha) return "";
-  //     const date = new Date(fecha);
-  //     const dia = String(date.getDate()).padStart(2, "0");
-  //     const mes = String(date.getMonth() + 1).padStart(2, "0"); // Los meses comienzan en 0
-  //     const año = date.getFullYear();
-  //     return `${dia}/${mes}/${año}`;
-  //   };
-
-  // Función para convertir la fecha de día/mes/año a formato ISO (año-mes-día)
   const convertirFecha = (fecha) =>
     fecha ? fecha.split("-").reverse().join("/") : "";
 
-  // Opciones para el campo "tipo_control"
   const tiposControl = ["Prueba", "Control"];
   const tiposProduccion = ["Produccion", "Hatchery"];
+
   const fetchRegistros = async () => {
     try {
       const { data, error } = await supabase
@@ -84,16 +72,6 @@ function ControlRendimientoCosechayFrass() {
       if (data) {
         setRegistros(data);
       }
-      //     // Formatear las fechas al formato día/mes/año
-      //     const registrosFormateados = data.map((registro) => ({
-      //       ...registro,
-      //     //   fecha_registro: formatearFecha(registro.fec_registro),
-      //       fecha_siembra: formatearFecha(registro.fec_siembra),
-      //       fecha_cosecha: formatearFecha(registro.fec_cosecha),
-      //       fecha_almacenaje_frass: formatearFecha(registro.fec_almacenaje_frass),
-      //     }));
-      //     setRegistros(registrosFormateados);
-      //   }
     } catch {
       console.log("Error en la conexión a la base de datos");
     }
@@ -103,7 +81,6 @@ function ControlRendimientoCosechayFrass() {
     fetchRegistros();
   }, []);
 
-  //Inicio Formatear la FECHA DE REGISTRO
   const formatDateTime = (date, format = "DD-MM-YYYY hh:mm A") => {
     const fmt = new Intl.DateTimeFormat("en-US", {
       day: "2-digit",
@@ -124,23 +101,47 @@ function ControlRendimientoCosechayFrass() {
       .replace("mm", fmt.minute)
       .replace("A", fmt.dayPeriod || "AM");
   };
-  //Fin Formatear la FECHA DE REGISTRO
+
+  const validateRanges = () => {
+    const { cant_cajas_cosechadas, kg_larva_fresca, cant_cajas_desechadas, kg_total_frass, kg_material_grueso } = registro;
+  
+    // Convertir cant_cajas_desechadas a número
+    const cajasDesechadas = Number(cant_cajas_desechadas);
+  
+    const isOutOfRange =
+      cant_cajas_cosechadas < 500 || cant_cajas_cosechadas > 2000 ||
+      kg_larva_fresca < 0 || kg_larva_fresca > 12000 ||
+      cajasDesechadas !== 0 || // Ahora se compara con un número
+      kg_total_frass < 0 || kg_total_frass > 6000 ||
+      kg_material_grueso < 0 || kg_material_grueso > 6000;
+  
+    setOutOfRange(isOutOfRange);
+    return isOutOfRange;
+  };
 
   const saveRegistro = async () => {
     setSubmitted(true);
+
+    if (validateRanges() && !registro.observaciones) {
+      toast.current.show({
+        severity: "error",
+        summary: "Error",
+        detail: "Debe especificar en observaciones por qué los valores están fuera de los rangos.",
+        life: 3000,
+      });
+      return;
+    }
+
     if (
       !registro.fec_siembra ||
       !registro.fec_cosecha ||
       !registro.cant_cajas_cosechadas ||
       !registro.kg_larva_fresca ||
       !registro.cant_cajas_desechadas ||
-      !registro.kg_larva_desechada ||
-      !registro.kg_larva_desecho_limpia ||
       !registro.kg_total_frass ||
       !registro.kg_material_grueso ||
       !registro.tipo_control ||
       !registro.tipo_produccion ||
-      !registro.observaciones ||
       !registro.fec_almacenaje_frass ||
       !registro.cant_sacos
     ) {
@@ -152,9 +153,11 @@ function ControlRendimientoCosechayFrass() {
       });
       return;
     }
+
     try {
-      const currentDate = formatDateTime(new Date(), "DD/MM/YYYY"); // Solo fecha
-      const currentTime = formatDateTime(new Date(), "hh:mm A"); // Fecha en formato ISO 8601
+      const currentDate = formatDateTime(new Date(), "DD/MM/YYYY"); // Fecha actual
+      const currentTime = formatDateTime(new Date(), "hh:mm A"); // Hora actual
+
       const { data, error } = await supabase
         .from("Control_Rendimiento_CosechayFrass")
         .insert([
@@ -164,12 +167,10 @@ function ControlRendimientoCosechayFrass() {
             cant_cajas_cosechadas: registro.cant_cajas_cosechadas,
             kg_larva_fresca: registro.kg_larva_fresca,
             cant_cajas_desechadas: registro.cant_cajas_desechadas,
-            kg_larva_desechada: registro.kg_larva_desechada,
-            kg_larva_desecho_limpia: registro.kg_larva_desecho_limpia,
             kg_total_frass: registro.kg_total_frass,
             kg_material_grueso: registro.kg_material_grueso,
-            fec_registro: currentDate,
-            hor_registro: currentTime,
+            fec_registro: currentDate, // Fecha de registro automática
+            hor_registro: currentTime, // Hora de registro automática
             observaciones: registro.observaciones,
             fec_almacenaje_frass: convertirFecha(registro.fec_almacenaje_frass),
             cant_sacos: registro.cant_sacos,
@@ -192,7 +193,6 @@ function ControlRendimientoCosechayFrass() {
         life: 3000,
       });
 
-      // Limpia el estado
       setRegistro(emptyRegister);
       setRegistroDialog(false);
       setSubmitted(false);
@@ -208,30 +208,29 @@ function ControlRendimientoCosechayFrass() {
   };
 
   const dateEditor = (options) => {
-    // Función para convertir de dd/mm/yyyy a yyyy-mm-dd
     const convertToInputFormat = (date) => {
-      if (!date) return ""; // Si no hay fecha, retorna vacío
-      const [day, month, year] = date.split("/"); // Descompone la fecha
-      return `${year}-${month}-${day}`; // Retorna en formato yyyy-mm-dd
+      if (!date) return "";
+      const [day, month, year] = date.split("/");
+      return `${year}-${month}-${day}`;
     };
     const convertToDatabaseFormat = (date) => {
-        if (!date) return ""; // Si no hay fecha, retorna vacío
-        const [year, month, day] = date.split("-"); // Descompone la fecha
-        return `${day}/${month}/${year}`; // Retorna en formato dd/mm/yyyy
-      };
-    
-      return (
-        <InputText
-          type="date"
-          value={convertToInputFormat(options.value)} // Convierte al formato adecuado para el input
-          onChange={(e) => {
-            const selectedDate = e.target.value; // Fecha en formato yyyy-mm-dd
-            options.editorCallback(convertToDatabaseFormat(selectedDate)); // Convierte a dd/mm/yyyy y llama al callback
-          }}
-        />
-      );
+      if (!date) return "";
+      const [year, month, day] = date.split("-");
+      return `${day}/${month}/${year}`;
     };
-  
+
+    return (
+      <InputText
+        type="date"
+        value={convertToInputFormat(options.value)}
+        onChange={(e) => {
+          const selectedDate = e.target.value;
+          options.editorCallback(convertToDatabaseFormat(selectedDate));
+        }}
+      />
+    );
+  };
+
   const textEditor = (options) => {
     return (
       <InputText
@@ -241,6 +240,7 @@ function ControlRendimientoCosechayFrass() {
       />
     );
   };
+
   const numberEditor = (options) => {
     return (
       <InputText
@@ -250,6 +250,7 @@ function ControlRendimientoCosechayFrass() {
       />
     );
   };
+
   const floatEditor = (options) => {
     return (
       <InputText
@@ -265,15 +266,15 @@ function ControlRendimientoCosechayFrass() {
   };
 
   const onRowEditComplete = async ({ newData }) => {
-    const { id, ...updatedData } = newData;  
+    const { id, ...updatedData } = newData;
     try {
       const { error } = await supabase
         .from("Control_Rendimiento_CosechayFrass")
         .update(updatedData)
         .eq("id", id);
-  
+
       if (error) return console.error("Error al actualizar:", error.message);
-  
+
       setRegistros((prev) =>
         prev.map((n) => (n.id === id ? { ...n, ...newData } : n))
       );
@@ -281,14 +282,13 @@ function ControlRendimientoCosechayFrass() {
       console.error("Error inesperado:", err);
     }
   };
-  
-
 
   const onInputChange = (e, name) => {
     let val = e.target.value;
     let _registro = { ...registro };
     _registro[name] = val;
     setRegistro(_registro);
+    validateRanges();
   };
 
   const leftToolbarTemplate = () => {
@@ -356,8 +356,6 @@ function ControlRendimientoCosechayFrass() {
     </React.Fragment>
   );
 
-
-  // INICIO Exportar a Excel y PDF
   const cols = [
     { field: "tipo_produccion", header: "Tipo Producción" },
     { field: "tipo_control", header: "Tipo Control" },
@@ -366,22 +364,19 @@ function ControlRendimientoCosechayFrass() {
     { field: "cant_cajas_cosechadas", header: "Cajas Cosechadas" },
     { field: "kg_larva_fresca", header: "Larva Fresca (KG)" },
     { field: "cant_cajas_desechadas", header: "Cajas Desechadas" },
-    { field: "kg_larva_desechada", header: "Larva Desechada Bloque (KG)" },
-    { field: "kg_larva_desecho_limpia", header: "Desecho Larva Limpia (KG)" },
     { field: "kg_total_frass", header: "Total Frass (KG)" },
     { field: "kg_material_grueso", header: "Material Grueso (KG)" },
     { field: "cant_sacos", header: "Sacos" },
     { field: "fec_almacenaje_frass", header: "Fecha Almacenaje Frass" },
     { field: "observaciones", header: "Observaciones" },
-    {field: "registrado", header: "Registrado" },
+    { field: "registrado", header: "Registrado" },
   ];
 
-  // Mapeo de columnas para jsPDF-Autotable
   const exportColumns = cols.map((col) => ({
-    title: col.header, // Título del encabezado
-    dataKey: col.field, // Llave de datos
+    title: col.header,
+    dataKey: col.field,
   }));
-  
+
   const exportPdf = () => {
     if (selectedRegistros.length === 0) {
       toast.current.show({
@@ -390,62 +385,51 @@ function ControlRendimientoCosechayFrass() {
         detail: "No hay filas seleccionadas para exportar.",
         life: 3000,
       });
-      return; // Detener la ejecución si no hay filas seleccionadas
+      return;
     }
-  
+
     const doc = new jsPDF();
     doc.setFontSize(18);
     doc.text("Registros de Control Rendimiento Cosecha y Frass", 14, 22);
-  
+
     const exportData = selectedRegistros.map(({ fec_registro, hor_registro, ...row }) => ({
       ...row,
-      registrado: `${fec_registro || ""} ${hor_registro || ""}`, // Combina las fechas
+      registrado: `${fec_registro || ""} ${hor_registro || ""}`,
     }));
-  
-    const columnsPerPage = 5; // Número de columnas por página
-    const maxHeightPerColumn = 10; // Altura de cada fila
-    const rowHeight = exportColumns.length * maxHeightPerColumn + 10; // Altura total del registro
-    let currentY = 30; // Inicializar la posición vertical
-  
-    // Estilos
-    const headerColor = [41, 128, 185]; // Color de fondo del encabezado
-    const textColor = [0, 0, 0]; // Color del texto de los datos (negro)
-  
+
+    const columnsPerPage = 5;
+    const maxHeightPerColumn = 10;
+    const rowHeight = exportColumns.length * maxHeightPerColumn + 10;
+    let currentY = 30;
+
+    const headerColor = [41, 128, 185];
+    const textColor = [0, 0, 0];
+
     for (let i = 0; i < exportData.length; i++) {
-      // Verificar si hay suficiente espacio en la página para el nuevo registro
       if (currentY + rowHeight > doc.internal.pageSize.height) {
-        doc.addPage(); // Agregar nueva página si no hay suficiente espacio
-        currentY = 30; // Reiniciar posición Y
+        doc.addPage();
+        currentY = 30;
       }
-  
+
       const row = exportData[i];
-      const startX = 14; // Posición X inicial
-  
-      // Escribir encabezados personalizados
+      const startX = 14;
+
       exportColumns.forEach(({ title, dataKey }, index) => {
-        const value = row[dataKey]; // Obtener el valor correspondiente al encabezado
-        // Encabezado
+        const value = row[dataKey];
         doc.setFillColor(...headerColor);
-        doc.rect(startX, currentY + (index * maxHeightPerColumn), 180, maxHeightPerColumn, 'F'); // Fondo del encabezado
-        doc.setTextColor(255); // Color del texto del encabezado (blanco)
-        doc.text(title, startX + 2, currentY + (index * maxHeightPerColumn) + 7); // Encabezado
-        // Valor correspondiente
-        doc.setTextColor(...textColor); // Restablecer el color del texto para los datos
-        doc.text(`${value}`, startX + 90, currentY + (index * maxHeightPerColumn) + 7); // Valor correspondiente
+        doc.rect(startX, currentY + (index * maxHeightPerColumn), 180, maxHeightPerColumn, 'F');
+        doc.setTextColor(255);
+        doc.text(title, startX + 2, currentY + (index * maxHeightPerColumn) + 7);
+        doc.setTextColor(...textColor);
+        doc.text(`${value}`, startX + 90, currentY + (index * maxHeightPerColumn) + 7);
       });
-  
-      currentY += rowHeight; // Espacio entre registros
+
+      currentY += rowHeight;
     }
-  
-    // Guardar el PDF
+
     doc.save("Control Rendimiento Cosecha y Frass.pdf");
   };
-  
-  
-  
-  
-  
-  
+
   const exportXlsx = () => {
     if (selectedRegistros.length === 0) {
       toast.current.show({
@@ -454,28 +438,26 @@ function ControlRendimientoCosechayFrass() {
         detail: "No hay filas seleccionadas para exportar.",
         life: 3000,
       });
-      return; // Detener la ejecución si no hay filas seleccionadas
+      return;
     }
-  
-    const headers = cols.map(col => col.header); // Obtener encabezados
+
+    const headers = cols.map(col => col.header);
     const exportData = selectedRegistros.map(({ fec_registro, hor_registro, ...registro }) => ({
       ...registro,
-      registrado: `${fec_registro || ""} ${hor_registro || ""}`, // Combina las fechas
+      registrado: `${fec_registro || ""} ${hor_registro || ""}`,
     }));
-  
-    const rows = exportData.map(registro => cols.map(col => registro[col.field])); // Mapeo de filas
-  
+
+    const rows = exportData.map(registro => cols.map(col => registro[col.field]));
+
     const dataToExport = [headers, ...rows];
     const ws = XLSX.utils.aoa_to_sheet(dataToExport);
-  
-    ws["!cols"] = cols.map(col => ({ width: Math.max(col.header.length, 10) })); // Ajustar ancho de columnas
-  
+
+    ws["!cols"] = cols.map(col => ({ width: Math.max(col.header.length, 10) }));
+
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Registros");
     XLSX.writeFile(wb, "Control Rendimiento Cosecha y Frass.xlsx");
   };
-  
-  // FIN Exportar a Excel y PDF
 
   return (
     <>
@@ -521,7 +503,7 @@ function ControlRendimientoCosechayFrass() {
             currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} Registros"
           >
             <Column selectionMode="multiple" exportable={false}></Column>
-            <Column field="fec_registro" header="Fecha Registro"  sortable />
+            <Column field="fec_registro" header="Fecha Registro" sortable />
             <Column field="hor_registro" header="Hora Registro" sortable />
             <Column field="tipo_produccion" header="Tipo Producción" editor={(options) => textEditor(options)} sortable />
             <Column field="tipo_control" header="Tipo Control" editor={(options) => textEditor(options)} sortable />
@@ -543,19 +525,7 @@ function ControlRendimientoCosechayFrass() {
               field="cant_cajas_desechadas"
               header="Cajas Desechadas"
               sortable
-                editor={(options) => numberEditor(options)}
-            />
-            <Column
-              field="kg_larva_desechada"
-              header="Larva Desechada Bloque (KG)"
-              sortable
-              editor={(options) => floatEditor(options)}
-            />
-            <Column
-              field="kg_larva_desecho_limpia"
-              header="Desecho Larva Limpia (KG)"
-              sortable
-              editor={(options) => floatEditor(options)}
+              editor={(options) => numberEditor(options)}
             />
             <Column field="kg_total_frass" header="Total Frass (KG)" editor={(options) => floatEditor(options)} sortable />
             <Column
@@ -573,11 +543,11 @@ function ControlRendimientoCosechayFrass() {
             />
             <Column field="observaciones" header="Observaciones" sortable editor={(options) => textEditor(options)} />
             <Column
-                          header="Herramientas"
-                          rowEditor={allowEdit}
-                          headerStyle={{ width: "10%", minWidth: "5rem" }}
-                          bodyStyle={{ textAlign: "center" }}
-                        ></Column>
+              header="Herramientas"
+              rowEditor={allowEdit}
+              headerStyle={{ width: "10%", minWidth: "5rem" }}
+              bodyStyle={{ textAlign: "center" }}
+            ></Column>
           </DataTable>
         </div>
       </div>
@@ -593,7 +563,7 @@ function ControlRendimientoCosechayFrass() {
       >
         <div className="field">
           <label htmlFor="fec_siembra" className="font-bold">
-            Fecha Registro{" "}
+            Fecha Siembra{" "}
             {submitted && !registro.fec_siembra && (
               <small className="p-error">Requerido.</small>
             )}
@@ -623,9 +593,12 @@ function ControlRendimientoCosechayFrass() {
           />
           <br />
           <label htmlFor="cant_cajas_cosechadas" className="font-bold">
-            Cajas Cosechadas{" "}
+            Cajas Cosechadas (500 - 2000){" "}
             {submitted && !registro.cant_cajas_cosechadas && (
               <small className="p-error">Requerido.</small>
+            )}
+            {(registro.cant_cajas_cosechadas < 500 || registro.cant_cajas_cosechadas > 2000) && (
+              <small className="p-error">Valor fuera de rango.</small>
             )}
           </label>
           <InputText
@@ -637,9 +610,12 @@ function ControlRendimientoCosechayFrass() {
           />
           <br />
           <label htmlFor="kg_larva_fresca" className="font-bold">
-            Larva Fresca Estandar (KG){" "}
+            Larva Fresca Estandar (KG) (0 - 12000){" "}
             {submitted && !registro.kg_larva_fresca && (
               <small className="p-error">Requerido.</small>
+            )}
+            {(registro.kg_larva_fresca < 0 || registro.kg_larva_fresca > 12000) && (
+              <small className="p-error">Valor fuera de rango.</small>
             )}
           </label>
           <InputText
@@ -651,9 +627,12 @@ function ControlRendimientoCosechayFrass() {
           />
           <br />
           <label htmlFor="cant_cajas_desechadas" className="font-bold">
-            Cajas Desechadas{" "}
+            Cajas Desechadas (=0){" "}
             {submitted && !registro.cant_cajas_desechadas && (
               <small className="p-error">Requerido.</small>
+            )}
+            {Number(registro.cant_cajas_desechadas) !== 0 && (
+              <small className="p-error">Valor fuera de rango.</small>
             )}
           </label>
           <InputText
@@ -664,38 +643,13 @@ function ControlRendimientoCosechayFrass() {
             required
           />
           <br />
-          <label htmlFor="kg_larva_desechada" className="font-bold">
-            Larva Desechada Bloque (KG){" "}
-            {submitted && !registro.kg_larva_desechada && (
-              <small className="p-error">Requerido.</small>
-            )}
-          </label>
-          <InputText
-            type="number"
-            id="kg_larva_desechada"
-            value={registro.kg_larva_desechada}
-            onChange={(e) => onInputChange(e, "kg_larva_desechada")}
-            required
-          />
-          <br />
-          <label htmlFor="kg_larva_desecho_limpia" className="font-bold">
-            Desecho Larva Limpia (KG){" "}
-            {submitted && !registro.kg_larva_desecho_limpia && (
-              <small className="p-error">Requerido.</small>
-            )}
-          </label>
-          <InputText
-            type="number"
-            id="kg_larva_desecho_limpia"
-            value={registro.kg_larva_desecho_limpia}
-            onChange={(e) => onInputChange(e, "kg_larva_desecho_limpia")}
-            required
-          />
-          <br />
           <label htmlFor="kg_total_frass" className="font-bold">
-            Frass Fino Total (KG){" "}
+            Frass Fino Total (KG) (0 - 6000){" "}
             {submitted && !registro.kg_total_frass && (
               <small className="p-error">Requerido.</small>
+            )}
+            {(registro.kg_total_frass < 0 || registro.kg_total_frass > 6000) && (
+              <small className="p-error">Valor fuera de rango.</small>
             )}
           </label>
           <InputText
@@ -707,9 +661,12 @@ function ControlRendimientoCosechayFrass() {
           />
           <br />
           <label htmlFor="kg_material_grueso" className="font-bold">
-            Total Material Grueso (KG){" "}
+            Total Material Grueso (KG) (0 - 6000){" "}
             {submitted && !registro.kg_material_grueso && (
               <small className="p-error">Requerido.</small>
+            )}
+            {(registro.kg_material_grueso < 0 || registro.kg_material_grueso > 6000) && (
+              <small className="p-error">Valor fuera de rango.</small>
             )}
           </label>
           <InputText
@@ -783,6 +740,9 @@ function ControlRendimientoCosechayFrass() {
           <br />
           <label htmlFor="observaciones" className="font-bold">
             Observaciones{" "}
+            {outOfRange && (
+              <small className="p-error">Debe especificar por qué los valores están fuera de los rangos.</small>
+            )}
           </label>
           <InputText
             id="observaciones"
@@ -795,4 +755,5 @@ function ControlRendimientoCosechayFrass() {
     </>
   );
 }
+
 export default ControlRendimientoCosechayFrass;

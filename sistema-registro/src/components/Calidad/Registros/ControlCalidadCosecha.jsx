@@ -49,8 +49,16 @@ function ControlCalidadCosecha() {
 
   // Opciones para el campo "linea_produc"
   const lineasProduccion = ["Producción", "Reproducción"];
-  const [outOfRange, setOutOfRange] = useState(false);
-  
+  //Errores de validación
+    const [observacionesObligatorio, setObservacionesObligatorio] =
+      useState(false);
+    const [erroresValidacion, setErroresValidacion] = useState({
+      dias_rezago: false,
+      color: false,
+      tamano: false,
+      peso: false,
+    });
+
   const convertirFecha = (fecha) =>
     fecha ? fecha.split("-").reverse().join("/") : "";
 
@@ -92,28 +100,33 @@ function ControlCalidadCosecha() {
       .replace("A", fmt.dayPeriod || "AM");
   };
 
-  const validateRanges = () => {
-    const { dias_rezago, color, tamano, peso } = registro;
-  
-    const isOutOfRange = tamano < 1.5 || tamano > 2 || peso < 1.8 || peso > 2 || dias_rezago < 4 || dias_rezago >= 1 || color < 3 || color > 5;
-      
-  
-    setOutOfRange(isOutOfRange);
-    return isOutOfRange;
-  };
-
   const saveRegistro = async () => {
     setSubmitted(true);
 
-    if (validateRanges() && !registro.observaciones) {
-      toast.current.show({
-        severity: "error",
-        summary: "Error",
-        detail: "Debe especificar en observaciones por qué los valores están fuera de los rangos.",
-        life: 3000,
-      });
-      return;
-    }
+    // Validar los campos
+    const isDiazRezagoInvalido = registro.dias_rezago < 1 || registro.dias_rezago > 4;
+    const isCajasInoculadasDestinoInvalido =
+      registro.color < 3 ||
+      registro.color > 5;
+      const isTamanoInvalido =
+      registro.tamano < 1.5 ||
+      registro.tamano > 2;
+      const isPesoInvalido =
+      registro.peso < 1.8 ||
+      registro.peso > 2;
+    
+    // Actualizar el estado de errores
+    setErroresValidacion({
+      dias_rezago: isDiazRezagoInvalido,
+      color: isCajasInoculadasDestinoInvalido,
+      tamano: isTamanoInvalido,
+      peso: isPesoInvalido,
+    });
+    const valoresFueraDeRango =
+      isDiazRezagoInvalido ||
+      isCajasInoculadasDestinoInvalido ||
+      isTamanoInvalido ||
+      isPesoInvalido;
 
     if (
       !registro.lote_id ||
@@ -140,6 +153,37 @@ function ControlCalidadCosecha() {
       });
       return;
     }
+
+    // Validación principal
+    if (valoresFueraDeRango && !registro.observaciones) {
+      setObservacionesObligatorio(true);
+      const currentErrores = {
+        "Días de Rezago": isDiazRezagoInvalido,
+        "Color": isCajasInoculadasDestinoInvalido,
+        "Tamaño": isTamanoInvalido,
+        "Peso": isPesoInvalido,
+      };
+
+      toast.current.show({
+        severity: "error",
+        summary: "Error",
+        detail: `Debe agregar observaciones. Campos inválidos: ${Object.keys(
+          currentErrores
+        )
+          .filter((k) => currentErrores[k])
+          .join(", ")}`,
+        life: 3000,
+      });
+      return;
+    }
+
+    setObservacionesObligatorio(false);
+    setErroresValidacion({
+      dias_rezago: false,
+      color: false,
+      tamano: false,
+      peso: false,
+    });
 
     try {
       const currentDate = formatDateTime(new Date(), "DD/MM/YYYY"); // Fecha actual
@@ -518,13 +562,13 @@ function ControlCalidadCosecha() {
             <Column field="peso" header="Peso" editor={(options) => floatEditor(options)} sortable />
             <Column field="total_individuos" header="Total Individuos" editor={(options) => numberEditor(options)} sortable />
             <Column field="mortalidad" header="Mortalidad" editor={(options) => numberEditor(options)} sortable />
-            <Column field="fec_registro" header="Fecha Registro" sortable />
-            <Column field="hor_registro" header="Hora Registro" sortable />
-            <Column field="observaciones" header="Observaciones" editor={(options) => textEditor(options)} sortable />
             <Column field="fec_cosecha" header="Fecha Cosecha" editor={(options) => dateEditor(options)} sortable />
             <Column field="hor_inicio" header="Hora Inicio" editor={(options) => timeEditor(options)} sortable />
             <Column field="hor_fin" header="Hora Fin" editor={(options) => timeEditor(options)} sortable />
             <Column field="linea_produc" header="Línea Producción" editor={(options) => textEditor(options)} sortable />
+            <Column field="fec_registro" header="Fecha Registro" sortable />
+            <Column field="hor_registro" header="Hora Registro" sortable />
+            <Column field="observaciones" header="Observaciones" editor={(options) => textEditor(options)} sortable />
             <Column
                           header="Herramientas"
                           rowEditor={allowEdit}
@@ -564,8 +608,10 @@ function ControlCalidadCosecha() {
             {submitted && !registro.dias_rezago && (
               <small className="p-error">Requerido.</small>
             )}
-            {(registro.dias_rezago < 1 || registro.dias_rezago > 4) && (
-              <small className="p-error">Valor fuera de rango.</small>
+            {erroresValidacion.dias_rezago && (
+              <small className="p-error">
+                Días de Rezago debe de ser del 1 al 4.
+              </small>
             )}
           </label>
           <InputText
@@ -639,8 +685,10 @@ function ControlCalidadCosecha() {
             {submitted && !registro.color && (
               <small className="p-error">Requerido.</small>
             )}
-            {(registro.color < 3 || registro.color > 5) && (
-              <small className="p-error">Valor fuera de rango.</small>
+            {erroresValidacion.color && (
+              <small className="p-error">
+                Item de Color debe de estar entre el 3 a 5.
+              </small>
             )}
           </label>
           <InputText
@@ -655,8 +703,10 @@ function ControlCalidadCosecha() {
             {submitted && !registro.tamano && (
               <small className="p-error">Requerido.</small>
             )}
-            {(registro.tamano < 1.5 || registro.tamano > 2) && (
-              <small className="p-error">Valor fuera de rango.</small>
+            {erroresValidacion.tamano && (
+              <small className="p-error">
+                El Tamaño debe de ser entre 1.5 a 2.
+              </small>
             )}
           </label>
           <InputText
@@ -672,8 +722,10 @@ function ControlCalidadCosecha() {
             {submitted && !registro.peso && (
               <small className="p-error">Requerido.</small>
             )}
-            {(registro.peso < 1.8 || registro.peso > 2) && (
-              <small className="p-error">Valor fuera de rango.</small>
+            {erroresValidacion.peso && (
+              <small className="p-error">
+                El peso debe de estar entre 1.8 a 2.
+              </small>
             )}
           </label>
           <InputText
@@ -771,8 +823,8 @@ function ControlCalidadCosecha() {
           <br />
           <label htmlFor="observaciones" className="font-bold">
           Observaciones{" "}
-            {outOfRange && (
-              <small className="p-error">Debe especificar por qué los valores están fuera de los rangos.</small>
+          {observacionesObligatorio && (
+              <small className="p-error">Requerido por fuera de rango.</small>
             )}
           </label>
           <InputText

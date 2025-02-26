@@ -1,50 +1,40 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-
-// Imports de estilos
-import logo2 from "../../../assets/mosca.png";
-import "./ControlRendimientoCosechayFrass.css";
-
-// Imports de Supabase
+import "./ControlRendimientoSecadoHornoMicroondas.css"; // Importa el CSS
 import supabase from "../../../supabaseClient";
-
-// PRIME REACT
-import "primereact/resources/themes/bootstrap4-light-blue/theme.css"; //theme
-import "primeicons/primeicons.css"; //icons
-
-// PRIME REACT COMPONENTS
+import "primereact/resources/themes/lara-light-indigo/theme.css";
+import "primeicons/primeicons.css";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { Toast } from "primereact/toast";
 import { Button } from "primereact/button";
 import { Toolbar } from "primereact/toolbar";
-import { IconField } from "primereact/iconfield";
-import { InputIcon } from "primereact/inputicon";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
+import { Toast } from "primereact/toast";
 import { Dropdown } from "primereact/dropdown";
-
-// Imports de exportar
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
-function ControlRendimientoCosechayFrass() {
+function ControlRendimientoSecadoHornoMultilevel() {
   let emptyRegister = {
+    kg_minuto: "",
+    velocidad_banda: "",
+    temp_coccion: "",
+    temp_agua: "",
+    velocidad_turbina: "",
     fec_siembra: "",
-    fec_cosecha: "",
-    cant_cajas_cosechadas: "",
+    fec_produccion: "",
+    hor_proceso: "",
     kg_larva_fresca: "",
-    cant_cajas_desechadas: "",
-    kg_total_frass: "",
-    kg_material_grueso: "",
+    cajas_totales: "",
+    kg_desecho: "",
+    hor_inicio: "",
+    hor_fin: "",
+    tipo_control: "",
     fec_registro: "",
     hor_registro: "",
     observaciones: "",
-    fec_almacenaje_frass: "",
-    cant_sacos: "",
-    tipo_produccion: "",
-    tipo_control: "",
   };
 
   const [registros, setRegistros] = useState([]);
@@ -55,30 +45,25 @@ function ControlRendimientoCosechayFrass() {
   const [globalFilter, setGlobalFilter] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [registroDialog, setRegistroDialog] = useState(false);
-  const [outOfRange, setOutOfRange] = useState(false); // Estado para controlar si algún valor está fuera de rango
   const navigate = useNavigate();
 
+  // Opciones para el campo "linea_produc"
+  const lineasProduccion = ["Producción", "Reproducción"];
+  const tipoControl = ["Control", "Prueba"];
   //Errores de validación
-      const [observacionesObligatorio, setObservacionesObligatorio] =
-        useState(false);
-      const [erroresValidacion, setErroresValidacion] = useState({
-        cant_cajas_cosechadas: false, 
-      kg_larva_fresca: false,
-      cant_cajas_desechadas: false, //Si es mayor a 0
-      kg_total_frass: false,
-      kg_material_grueso: false,
-      });
+  const [observacionesObligatorio, setObservacionesObligatorio] =
+    useState(false);
+  const [erroresValidacion, setErroresValidacion] = useState({
+    //no tiene rangos
+  });
 
   const convertirFecha = (fecha) =>
     fecha ? fecha.split("-").reverse().join("/") : "";
 
-  const tiposControl = ["Prueba", "Control"];
-  const tiposProduccion = ["Produccion", "Hatchery"];
-
   const fetchRegistros = async () => {
     try {
       const { data, error } = await supabase
-        .from("Control_Rendimiento_CosechayFrass")
+        .from("Control_Rendimiento_Secado_Horno_Microondas")
         .select();
       if (data) {
         setRegistros(data);
@@ -113,132 +98,72 @@ function ControlRendimientoCosechayFrass() {
       .replace("A", fmt.dayPeriod || "AM");
   };
 
- 
-
   const saveRegistro = async () => {
     setSubmitted(true);
-
-    function isInvalid(value, min, max) {
-      return value < min || value > max;
-    }
-    
-    const isCantidadCajasCosechadasInvalido = isInvalid(registro.cant_cajas_cosechadas, 500, 2000);
-    const isKgLarvaFrescaInvalido = isInvalid(registro.kg_larva_fresca, 0, 12000);
-    const isCajasDesechadasInvalido = isInvalid(registro.cant_cajas_desechadas, 0, 0);
-    const isKgTotalFrassInvalido = isInvalid(registro.kg_total_frass, 0, 6000);
-    const isKgMaterialGruesoInvalido = isInvalid(registro.kg_material_grueso, 0, 6000);
-
-    setErroresValidacion({
-      cant_cajas_cosechadas: isCantidadCajasCosechadasInvalido,
-      kg_larva_fresca: isKgLarvaFrescaInvalido,
-      cajasDesechadas: isCajasDesechadasInvalido,
-      kg_total_frass: isKgTotalFrassInvalido,
-      kg_material_grueso: isKgMaterialGruesoInvalido,
-  });
-  const valoresFueraDeRango =
-    isCantidadCajasCosechadasInvalido ||
-    isKgLarvaFrescaInvalido ||
-    isCajasDesechadasInvalido ||
-    isKgTotalFrassInvalido ||
-    isKgMaterialGruesoInvalido;
-
-
     if (
+      !registro.kg_minuto ||
+      !registro.velocidad_banda ||
+      !registro.temp_coccion ||
+      !registro.temp_agua ||
+      !registro.velocidad_turbina ||
       !registro.fec_siembra ||
-      !registro.fec_cosecha ||
-      !registro.cant_cajas_cosechadas ||
+      !registro.fec_produccion ||
+      !registro.hor_proceso ||
       !registro.kg_larva_fresca ||
-      !registro.cant_cajas_desechadas ||
-      !registro.kg_total_frass ||
-      !registro.kg_material_grueso ||
-      !registro.tipo_control ||
-      !registro.tipo_produccion ||
-      !registro.fec_almacenaje_frass ||
-      !registro.cant_sacos
+      !registro.cajas_totales ||
+      !registro.kg_desecho ||
+      !registro.hor_inicio ||
+      !registro.hor_fin ||
+      !registro.tipo_control
     ) {
-      console.log(erroresValidacion);
       toast.current.show({
         severity: "error",
         summary: "Error",
-        detail: "Llena todos los campos ",
+        detail: "Llena todos los campos",
         life: 3000,
       });
       return;
     }
-
-    // Validación principal
-    if (valoresFueraDeRango && !registro.observaciones) {
-      setObservacionesObligatorio(true);
-      const currentErrores = {
-        "Cantidad Cajas Cosechadas": isCantidadCajasCosechadasInvalido,
-        "Kg Larva Fresca": isKgLarvaFrescaInvalido,
-        "Cajas Desechadas": isCajasDesechadasInvalido,
-        "Kg Total Frass": isKgTotalFrassInvalido,
-        "Kg Material Grueso": isKgMaterialGruesoInvalido,
-      };
-
-      toast.current.show({
-        severity: "error",
-        summary: "Error",
-        detail: `Debe agregar observaciones. Campos inválidos: ${Object.keys(
-          currentErrores
-        )
-          .filter((k) => currentErrores[k])
-          .join(", ")}`,
-        life: 3000,
-      });
-      return;
-    }
-
-    setObservacionesObligatorio(false);
-    setErroresValidacion({
-      cant_cajas_cosechadas: false,
-      kg_larva_fresca: false,
-      cajasDesechadas: false,
-      kg_total_frass: false,
-      kg_material_grueso: false,
-
-    });
 
     try {
       const currentDate = formatDateTime(new Date(), "DD/MM/YYYY"); // Fecha actual
       const currentTime = formatDateTime(new Date(), "hh:mm A"); // Hora actual
 
       const { data, error } = await supabase
-        .from("Control_Rendimiento_CosechayFrass")
+        .from("Control_Rendimiento_Secado_Horno_Microondas")
         .insert([
           {
+            kg_minuto: registro.kg_minuto,
+            velocidad_banda: registro.velocidad_banda,
+            temp_coccion: registro.temp_coccion,
+            temp_agua: registro.temp_agua,
+            velocidad_turbina: registro.velocidad_turbina,
             fec_siembra: convertirFecha(registro.fec_siembra),
-            fec_cosecha: convertirFecha(registro.fec_cosecha),
-            cant_cajas_cosechadas: registro.cant_cajas_cosechadas,
+            fec_produccion: convertirFecha(registro.fec_produccion),
+            hor_proceso: registro.hor_proceso,
             kg_larva_fresca: registro.kg_larva_fresca,
-            cant_cajas_desechadas: registro.cant_cajas_desechadas,
-            kg_total_frass: registro.kg_total_frass,
-            kg_material_grueso: registro.kg_material_grueso,
-            fec_registro: currentDate, // Fecha de registro automática
-            hor_registro: currentTime, // Hora de registro automática
-            observaciones: registro.observaciones,
-            fec_almacenaje_frass: convertirFecha(registro.fec_almacenaje_frass),
-            cant_sacos: registro.cant_sacos,
-            tipo_produccion: registro.tipo_produccion,
+            cajas_totales: registro.cajas_totales,
+            kg_desecho: registro.kg_desecho,
+            hor_inicio: registro.hor_inicio,
+            hor_fin: registro.hor_fin,
             tipo_control: registro.tipo_control,
+            fec_registro: currentDate,
+            hor_registro: currentTime,
+            observaciones: registro.observaciones,
           },
-        ]);
-
+        ]); //Cambiar aqui este insert y poner cada columna ya que las fechas se tienen que formatear
       if (error) {
         console.error("Error en Supabase:", error);
         throw new Error(
           error.message || "Error desconocido al guardar en Supabase"
         );
       }
-
       toast.current.show({
         severity: "success",
         summary: "Exitoso",
-        detail: "Registro guardado exitosamente",
+        detail: "Registro creado correctamente",
         life: 3000,
       });
-
       setRegistro(emptyRegister);
       setRegistroDialog(false);
       setSubmitted(false);
@@ -247,7 +172,7 @@ function ControlRendimientoCosechayFrass() {
       toast.current.show({
         severity: "error",
         summary: "Error",
-        detail: error.message || "Ocurrió un error al crear el usuario",
+        detail: error.message || "Ocurrió un error al crear el registro",
         life: 3000,
       });
     }
@@ -273,6 +198,16 @@ function ControlRendimientoCosechayFrass() {
           const selectedDate = e.target.value;
           options.editorCallback(convertToDatabaseFormat(selectedDate));
         }}
+      />
+    );
+  };
+
+  const timeEditor = (options) => {
+    return (
+      <InputText
+        type="time"
+        value={options.value}
+        onChange={(e) => options.editorCallback(e.target.value)}
       />
     );
   };
@@ -315,7 +250,7 @@ function ControlRendimientoCosechayFrass() {
     const { id, ...updatedData } = newData;
     try {
       const { error } = await supabase
-        .from("Control_Rendimiento_CosechayFrass")
+        .from("Control_Rendimiento_Secado_Horno_Microondas")
         .update(updatedData)
         .eq("id", id);
 
@@ -402,17 +337,20 @@ function ControlRendimientoCosechayFrass() {
   );
 
   const cols = [
-    { field: "tipo_produccion", header: "Tipo Producción" },
-    { field: "tipo_control", header: "Tipo Control" },
+    { field: "kg_minuto", header: "Kg Minuto" },
+    { field: "velocidad_banda", header: "Velocidad Banda" },
+    { field: "temp_coccion", header: "Temp Cocción" },
+    { field: "temp_agua", header: "Temp Agua" },
+    { field: "velocidad_turbina", header: "Velocidad Turbina" },
     { field: "fec_siembra", header: "Fecha Siembra" },
-    { field: "fec_cosecha", header: "Fecha Cosecha" },
-    { field: "cant_cajas_cosechadas", header: "Cajas Cosechadas" },
-    { field: "kg_larva_fresca", header: "Larva Fresca (KG)" },
-    { field: "cant_cajas_desechadas", header: "Cajas Desechadas" },
-    { field: "kg_total_frass", header: "Total Frass (KG)" },
-    { field: "kg_material_grueso", header: "Material Grueso (KG)" },
-    { field: "cant_sacos", header: "Sacos" },
-    { field: "fec_almacenaje_frass", header: "Fecha Almacenaje Frass" },
+    { field: "fec_produccion", header: "Fecha Producción" },
+    { field: "hor_proceso", header: "Hora Proceso" },
+    { field: "kg_larva_fresca", header: "Kg Larva Fresca" },
+    { field: "cajas_totales", header: "Cajas Totales" },
+    { field: "kg_desecho", header: "Kg Desecho" },
+    { field: "hor_inicio", header: "Hora Inicio" },
+    { field: "hor_fin", header: "Hora Fin" },
+    { field: "tipo_control", header: "Tipo Control" },
     { field: "observaciones", header: "Observaciones" },
     { field: "registrado", header: "Registrado" },
   ];
@@ -435,12 +373,18 @@ function ControlRendimientoCosechayFrass() {
 
     const doc = new jsPDF();
     doc.setFontSize(18);
-    doc.text("Registros de Control Rendimiento Cosecha y Frass", 14, 22);
+    doc.text(
+      "Registros de Control Rendimiento Secado Horno Microondas",
+      14,
+      22
+    );
 
-    const exportData = selectedRegistros.map(({ fec_registro, hor_registro, ...row }) => ({
-      ...row,
-      registrado: `${fec_registro || ""} ${hor_registro || ""}`,
-    }));
+    const exportData = selectedRegistros.map(
+      ({ fec_registro, hor_registro, ...row }) => ({
+        ...row,
+        registrado: `${fec_registro || ""} ${hor_registro || ""}`,
+      })
+    );
 
     const columnsPerPage = 5;
     const maxHeightPerColumn = 10;
@@ -462,17 +406,27 @@ function ControlRendimientoCosechayFrass() {
       exportColumns.forEach(({ title, dataKey }, index) => {
         const value = row[dataKey];
         doc.setFillColor(...headerColor);
-        doc.rect(startX, currentY + (index * maxHeightPerColumn), 180, maxHeightPerColumn, 'F');
+        doc.rect(
+          startX,
+          currentY + index * maxHeightPerColumn,
+          180,
+          maxHeightPerColumn,
+          "F"
+        );
         doc.setTextColor(255);
-        doc.text(title, startX + 2, currentY + (index * maxHeightPerColumn) + 7);
+        doc.text(title, startX + 2, currentY + index * maxHeightPerColumn + 7);
         doc.setTextColor(...textColor);
-        doc.text(`${value}`, startX + 90, currentY + (index * maxHeightPerColumn) + 7);
+        doc.text(
+          `${value}`,
+          startX + 90,
+          currentY + index * maxHeightPerColumn + 7
+        );
       });
 
       currentY += rowHeight;
     }
 
-    doc.save("Control Rendimiento Cosecha y Frass.pdf");
+    doc.save("Control Rendimiento Secado Horno Microondas.pdf");
   };
 
   const exportXlsx = () => {
@@ -486,33 +440,39 @@ function ControlRendimientoCosechayFrass() {
       return;
     }
 
-    const headers = cols.map(col => col.header);
-    const exportData = selectedRegistros.map(({ fec_registro, hor_registro, ...registro }) => ({
-      ...registro,
-      registrado: `${fec_registro || ""} ${hor_registro || ""}`,
-    }));
+    const headers = cols.map((col) => col.header);
+    const exportData = selectedRegistros.map(
+      ({ fec_registro, hor_registro, ...registro }) => ({
+        ...registro,
+        registrado: `${fec_registro || ""} ${hor_registro || ""}`,
+      })
+    );
 
-    const rows = exportData.map(registro => cols.map(col => registro[col.field]));
+    const rows = exportData.map((registro) =>
+      cols.map((col) => registro[col.field])
+    );
 
     const dataToExport = [headers, ...rows];
     const ws = XLSX.utils.aoa_to_sheet(dataToExport);
 
-    ws["!cols"] = cols.map(col => ({ width: Math.max(col.header.length, 10) }));
+    ws["!cols"] = cols.map((col) => ({
+      width: Math.max(col.header.length, 10),
+    }));
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Registros");
-    XLSX.writeFile(wb, "Control Rendimiento Cosecha y Frass.xlsx");
+    XLSX.writeFile(wb, "Control Rendimiento Secado Horno Microondas.xlsx");
   };
 
   return (
     <>
-      <div className="controlrendcosechayfrass-container">
+      <div className="controltiempos-container">
         <Toast ref={toast} />
-        <h1>Control de Rendimiento Cosecha y Frass</h1>
+        <h1>Control Rendimiento Secado Horno Microondas</h1>
         <div className="welcome-message">
           <p>
-            Bienvenido al sistema de Control de Rendimiento Cosecha y Frass.
-            Aquí puedes gestionar los registros de producción.
+            Bienvenido al sistema de Control Rendimiento Secado Horno
+            Microondas. Aquí puedes gestionar los registros de Microondas.
           </p>
         </div>
         <div className="buttons-container">
@@ -548,45 +508,98 @@ function ControlRendimientoCosechayFrass() {
             currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} Registros"
           >
             <Column selectionMode="multiple" exportable={false}></Column>
-            <Column field="fec_registro" header="Fecha Registro" sortable />
-            <Column field="hor_registro" header="Hora Registro" sortable />
-            <Column field="tipo_produccion" header="Tipo Producción" editor={(options) => textEditor(options)} sortable />
-            <Column field="tipo_control" header="Tipo Control" editor={(options) => textEditor(options)} sortable />
-            <Column field="fec_siembra" header="Fecha Siembra" editor={(options) => dateEditor(options)} sortable />
-            <Column field="fec_cosecha" header="Fecha Cosecha" editor={(options) => dateEditor(options)} sortable />
             <Column
-              field="cant_cajas_cosechadas"
-              header="Cajas Cosechadas"
+              field="kg_minuto"
+              header="Kg Minuto"
+              editor={(options) => floatEditor(options)}
               sortable
-              editor={(options) => numberEditor(options)}
+            />
+            <Column
+              field="velocidad_banda"
+              header="Velocidad Banda"
+              editor={(options) => floatEditor(options)}
+              sortable
+            />
+            <Column
+              field="temp_coccion"
+              header="Temp Cocción"
+              editor={(options) => floatEditor(options)}
+              sortable
+            />
+            <Column
+              field="temp_agua"
+              header="Temp Agua"
+              editor={(options) => floatEditor(options)}
+              sortable
+            />
+            <Column
+              field="velocidad_turbina"
+              header="Velocidad Turbina"
+              editor={(options) => floatEditor(options)}
+              sortable
+            />
+            <Column
+              field="fec_siembra"
+              header="Fecha Siembra"
+              editor={(options) => dateEditor(options)}
+              sortable
+            />
+            <Column
+              field="fec_produccion"
+              header="Fecha Producción"
+              editor={(options) => dateEditor(options)}
+              sortable
+            />
+            <Column
+              field="hor_proceso"
+              header="Hora Proceso"
+              editor={(options) => timeEditor(options)}
+              sortable
             />
             <Column
               field="kg_larva_fresca"
-              header="Larva Fresca (KG)"
-              sortable
+              header="Kg Larva Fresca"
               editor={(options) => floatEditor(options)}
+              sortable
             />
             <Column
-              field="cant_cajas_desechadas"
-              header="Cajas Desechadas"
-              sortable
+              field="cajas_totales"
+              header="Cajas Totales"
               editor={(options) => numberEditor(options)}
-            />
-            <Column field="kg_total_frass" header="Total Frass (KG)" editor={(options) => floatEditor(options)} sortable />
-            <Column
-              field="kg_material_grueso"
-              header="Material Grueso (KG)"
               sortable
+            />
+            <Column
+              field="kg_desecho"
+              header="Kg Desecho"
               editor={(options) => floatEditor(options)}
-            />
-            <Column field="cant_sacos" header="Sacos" sortable />
-            <Column
-              field="fec_almacenaje_frass"
-              header="Fecha Almacenaje Frass"
               sortable
-              editor={(options) => dateEditor(options)}
             />
-            <Column field="observaciones" header="Observaciones" sortable editor={(options) => textEditor(options)} />
+            <Column
+              field="hor_inicio"
+              header="Hora Inicio"
+              editor={(options) => timeEditor(options)}
+              sortable
+            />
+            <Column
+              field="hor_fin"
+              header="Hora Fin"
+              editor={(options) => timeEditor(options)}
+              sortable
+            />
+            <Column
+              field="tipo_control"
+              header="Tipo Control"
+              editor={(options) => textEditor(options)}
+              sortable
+            />
+            <Column field="fec_registro" header="Fecha Registro" sortable />
+            <Column field="hor_registro" header="Hora Registro" sortable />
+            <Column
+              field="observaciones"
+              header="Observaciones"
+              editor={(options) => textEditor(options)}
+              sortable
+            />
             <Column
               header="Herramientas"
               rowEditor={allowEdit}
@@ -607,6 +620,77 @@ function ControlRendimientoCosechayFrass() {
         onHide={hideDialog}
       >
         <div className="field">
+          <label htmlFor="kg_minuto" className="font-bold">
+            Kg Minuto{" "}
+            {submitted && !registro.kg_minuto && (
+              <small className="p-error">Requerido.</small>
+            )}
+          </label>
+          <InputText
+            type="number"
+            id="kg_minuto"
+            value={registro.kg_minuto}
+            onChange={(e) => onInputChange(e, "kg_minuto")}
+            required
+            autoFocus
+          />
+          <br />
+          <label htmlFor="velocidad_banda" className="font-bold">
+            Velocidad Banda{" "}
+            {submitted && !registro.velocidad_banda && (
+              <small className="p-error">Requerido.</small>
+            )}
+          </label>
+          <InputText
+            type="number"
+            id="velocidad_banda"
+            value={registro.velocidad_banda}
+            onChange={(e) => onInputChange(e, "velocidad_banda")}
+            required
+          />
+          <br />
+          <label htmlFor="temp_coccion" className="font-bold">
+            Temp Coccion{" "}
+            {submitted && !registro.temp_coccion && (
+              <small className="p-error">Requerido.</small>
+            )}
+          </label>
+          <InputText
+            type="number"
+            id="temp_coccion"
+            value={registro.temp_coccion}
+            onChange={(e) => onInputChange(e, "temp_coccion")}
+            required
+          />
+          <br />
+          <label htmlFor="temp_agua" className="font-bold">
+            Temp Agua{" "}
+            {submitted && !registro.temp_agua && (
+              <small className="p-error">Requerido.</small>
+            )}
+          </label>
+          <InputText
+            type="number"
+            id="temp_agua"
+            value={registro.temp_agua}
+            onChange={(e) => onInputChange(e, "temp_agua")}
+            required
+          />
+          <br />
+          <label htmlFor="velocidad_turbina" className="font-bold">
+            Velocidad Turbina{" "}
+            {submitted && !registro.velocidad_turbina && (
+              <small className="p-error">Requerido.</small>
+            )}
+          </label>
+          <InputText
+            type="number"
+            id="velocidad_turbina"
+            value={registro.velocidad_turbina}
+            onChange={(e) => onInputChange(e, "velocidad_turbina")}
+            required
+          />
+          <br />
           <label htmlFor="fec_siembra" className="font-bold">
             Fecha Siembra{" "}
             {submitted && !registro.fec_siembra && (
@@ -619,52 +703,40 @@ function ControlRendimientoCosechayFrass() {
             value={registro.fec_siembra}
             onChange={(e) => onInputChange(e, "fec_siembra")}
             required
-            autoFocus
           />
           <br />
-          <label htmlFor="fec_cosecha" className="font-bold">
-            Fecha Cosecha{" "}
-            {submitted && !registro.fec_cosecha && (
+          <label htmlFor="fec_produccion" className="font-bold">
+            Fecha Produccion{" "}
+            {submitted && !registro.fec_produccion && (
               <small className="p-error">Requerido.</small>
             )}
           </label>
           <InputText
             type="date"
-            id="fec_cosecha"
-            value={registro.fec_cosecha}
-            onChange={(e) => onInputChange(e, "fec_cosecha")}
+            id="fec_produccion"
+            value={registro.fec_produccion}
+            onChange={(e) => onInputChange(e, "fec_produccion")}
             required
-            autoFocus
           />
           <br />
-          <label htmlFor="cant_cajas_cosechadas" className="font-bold">
-            Cajas Cosechadas (500 - 2000){" "}
-            {submitted && !registro.cant_cajas_cosechadas && (
+          <label htmlFor="hor_proceso" className="font-bold">
+            Hora Proceso{" "}
+            {submitted && !registro.hor_proceso && (
               <small className="p-error">Requerido.</small>
-            )}
-            {erroresValidacion.cant_cajas_cosechadas && (
-              <small className="p-error">
-                Cantidad Cajas Procesadas Fuera de rango 500 a 2000.
-              </small>
             )}
           </label>
           <InputText
-            type="number"
-            id="cant_cajas_cosechadas"
-            value={registro.cant_cajas_cosechadas}
-            onChange={(e) => onInputChange(e, "cant_cajas_cosechadas")}
+            type="time"
+            id="hor_proceso"
+            value={registro.hor_proceso}
+            onChange={(e) => onInputChange(e, "hor_proceso")}
             required
           />
           <br />
           <label htmlFor="kg_larva_fresca" className="font-bold">
-            Larva Fresca Estandar (KG) (0 - 12000){" "}
+            Kg Larva Fresca{" "}
             {submitted && !registro.kg_larva_fresca && (
               <small className="p-error">Requerido.</small>
-            )}
-            {erroresValidacion.kg_larva_fresca && (
-              <small className="p-error">
-                Kg Larva Fresca fuera de rango 0 a 12000.
-              </small>
             )}
           </label>
           <InputText
@@ -675,65 +747,64 @@ function ControlRendimientoCosechayFrass() {
             required
           />
           <br />
-          <label htmlFor="cant_cajas_desechadas" className="font-bold">
-            Cajas Desechadas (=0){" "}
-            {submitted && !registro.cant_cajas_desechadas && (
+          <label htmlFor="cajas_totales" className="font-bold">
+            Cajas Totales{" "}
+            {submitted && !registro.cajas_totales && (
               <small className="p-error">Requerido.</small>
-            )}
-            {erroresValidacion.cant_cajas_desechadas && (
-              <small className="p-error">
-                Kg Larva Fresca fuera de rango 0 a 12000.
-              </small>
             )}
           </label>
           <InputText
             type="number"
-            id="cant_cajas_desechadas"
-            value={registro.cant_cajas_desechadas}
-            onChange={(e) => onInputChange(e, "cant_cajas_desechadas")}
+            id="cajas_totales"
+            value={registro.cajas_totales}
+            onChange={(e) => onInputChange(e, "cajas_totales")}
             required
           />
           <br />
-          <label htmlFor="kg_total_frass" className="font-bold">
-            Frass Fino Total (KG) (0 - 6000){" "}
-            {submitted && !registro.kg_total_frass && (
+          <label htmlFor="kg_desecho" className="font-bold">
+            Kg Desecho{" "}
+            {submitted && !registro.kg_desecho && (
               <small className="p-error">Requerido.</small>
-            )}
-            {erroresValidacion.kg_total_frass && (
-              <small className="p-error">
-                Kg Total Frass Fuera de rango 0 a 6000.
-              </small>
             )}
           </label>
           <InputText
             type="number"
-            id="kg_total_frass"
-            value={registro.kg_total_frass}
-            onChange={(e) => onInputChange(e, "kg_total_frass")}
+            id="kg_desecho"
+            value={registro.kg_desecho}
+            onChange={(e) => onInputChange(e, "kg_desecho")}
             required
           />
           <br />
-          <label htmlFor="kg_material_grueso" className="font-bold">
-            Total Material Grueso (KG) (0 - 6000){" "}
-            {submitted && !registro.kg_material_grueso && (
+          <label htmlFor="hor_inicio" className="font-bold">
+            Hora Inicio{" "}
+            {submitted && !registro.hor_inicio && (
               <small className="p-error">Requerido.</small>
-            )}
-            {erroresValidacion.kg_material_grueso && (
-              <small className="p-error">
-                Kg Material Grueso Fuera de rango 0 a 6000.
-              </small>
             )}
           </label>
           <InputText
-            type="number"
-            id="kg_material_grueso"
-            value={registro.kg_material_grueso}
-            onChange={(e) => onInputChange(e, "kg_material_grueso")}
+            type="time"
+            id="hor_inicio"
+            value={registro.hor_inicio}
+            onChange={(e) => onInputChange(e, "hor_inicio")}
+            required
+          />
+          <br />
+          <label htmlFor="hor_fin" className="font-bold">
+            Hora Fin{" "}
+            {submitted && !registro.hor_fin && (
+              <small className="p-error">Requerido.</small>
+            )}
+          </label>
+          <InputText
+            type="time"
+            id="hor_fin"
+            value={registro.hor_fin}
+            onChange={(e) => onInputChange(e, "hor_fin")}
             required
           />
           <br />
           <label htmlFor="tipo_control" className="font-bold">
-            Tipo Control{" "}
+            Hora Fin{" "}
             {submitted && !registro.tipo_control && (
               <small className="p-error">Requerido.</small>
             )}
@@ -741,63 +812,14 @@ function ControlRendimientoCosechayFrass() {
           <Dropdown
             id="tipo_control"
             value={registro.tipo_control}
-            options={tiposControl}
+            options={tipoControl}
             onChange={(e) => onInputChange(e, "tipo_control")}
-            placeholder="Selecciona un tipo"
-            required
-          />
-          <br />
-
-          <label htmlFor="tipo_produccion" className="font-bold">
-            Tipo Producción{" "}
-            {submitted && !registro.tipo_produccion && (
-              <small className="p-error">Requerido.</small>
-            )}
-          </label>
-          <Dropdown
-            id="tipo_produccion"
-            value={registro.tipo_produccion}
-            options={tiposProduccion}
-            onChange={(e) => onInputChange(e, "tipo_produccion")}
-            placeholder="Selecciona un tipo"
-            required
-          />
-          <br />
-
-          <label htmlFor="fec_almacenaje_frass" className="font-bold">
-            Fecha Almacenaje Frass{" "}
-            {submitted && !registro.fec_almacenaje_frass && (
-              <small className="p-error">Requerido.</small>
-            )}
-          </label>
-          <InputText
-            type="date"
-            id="fec_almacenaje_frass"
-            value={registro.fec_almacenaje_frass}
-            onChange={(e) => onInputChange(e, "fec_almacenaje_frass")}
-            required
-            autoFocus
-          />
-          <br />
-          <label htmlFor="cant_sacos" className="font-bold">
-            Cantidad Sacos{" "}
-            {submitted && !registro.cant_sacos && (
-              <small className="p-error">Requerido.</small>
-            )}
-          </label>
-          <InputText
-            type="number"
-            id="cant_sacos"
-            value={registro.cant_sacos}
-            onChange={(e) => onInputChange(e, "cant_sacos")}
+            placeholder="Selecciona un tipo de Control"
             required
           />
           <br />
           <label htmlFor="observaciones" className="font-bold">
             Observaciones{" "}
-            {observacionesObligatorio && (
-              <small className="p-error">Requerido por fuera de rango.</small>
-            )}
           </label>
           <InputText
             id="observaciones"
@@ -810,5 +832,4 @@ function ControlRendimientoCosechayFrass() {
     </>
   );
 }
-
-export default ControlRendimientoCosechayFrass;
+export default ControlRendimientoSecadoHornoMultilevel;

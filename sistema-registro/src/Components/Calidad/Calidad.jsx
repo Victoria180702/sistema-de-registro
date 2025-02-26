@@ -28,6 +28,12 @@ function Calidad() {
             >
               1- Control de Calidad de Cosecha
             </button>
+            <button
+              onClick={() => navigate("/Calidad/RecepcionMateriasPrimas")}
+              className="back-button"
+            >
+              2- Recepcion de Materias Priams
+            </button>
             
             <button onClick={() => navigate(-1)} className="back-button">
               Volver al Menú Principal

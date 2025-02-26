@@ -37,6 +37,7 @@ import ControlOperativoHornoMultilevel from './pages/Horno/Registros/PagesContro
 import Calidad from './pages/Calidad/PagesCalidad.jsx';
 import ControlCalidadCosecha from './pages/Calidad/Registros/PagesControlCalidadCosecha.jsx';
 import RecepcionMateriasPrimas from './pages/Calidad/Registros/PagesRecepcionMateriasPrimas.jsx';
+import ControlNeonatos from './pages/Calidad/Registros/PagesControlNeonatos.jsx';
 
 //imports de paginas de Mantnimiento
 import Mantenimiento from './pages/Mantenimiento/PagesMantenimiento.jsx';
@@ -158,6 +159,10 @@ const router = createBrowserRouter([{
       {
         path: `RecepcionMateriasPrimas`,
         element: <RecepcionMateriasPrimas />,
+      },
+      {
+        path: `ControlNeonatos`,
+        element: <ControlNeonatos />,
       },
       
     ],

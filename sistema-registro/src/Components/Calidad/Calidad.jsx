@@ -23,16 +23,22 @@ function Calidad() {
           </div>
           <div className="botones">
             <button
+              onClick={() => navigate("/Calidad/ControlNeonatos")}
+              className="back-button"
+            >
+              1- Control Neonatos
+            </button>
+            <button
               onClick={() => navigate("/Calidad/ControlCalidadCosecha")}
               className="back-button"
             >
-              1- Control de Calidad de Cosecha
+              2- Control de Calidad de Cosecha
             </button>
             <button
               onClick={() => navigate("/Calidad/RecepcionMateriasPrimas")}
               className="back-button"
             >
-              2- Recepcion de Materias Priams
+              3- Recepcion de Materias Priams
             </button>
             
             <button onClick={() => navigate(-1)} className="back-button">

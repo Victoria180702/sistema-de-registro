@@ -48,97 +48,25 @@ function ControlInventarioCascaraPila() {
     observaciones: "",
   });
 
+  const convertirFecha = (fecha) =>
+    fecha ? fecha.split("-").reverse().join("/") : "";
+
   const fetchRegistros = async () => {
     try {
       const { data, error } = await supabase
         .from("Control_Inventario_Cascara_Pila")
         .select();
-      setRegistros(data || []);
-    } catch {
-      console.log("Error en la conexión a la base de datos");
-    }
+        if (data) {
+          setRegistros(data);
+        }
+      } catch {
+        console.log("Error en la conexión a la base de datos");
+      }
   };
 
   useEffect(() => {
     fetchRegistros();
   }, []);
-
-
-  const exportPdf = () => {
-    if (selectedRegistros.length === 0) {
-      toast.current.show({
-        severity: "warn",
-        summary: "Advertencia",
-        detail: "No hay filas seleccionadas para exportar.",
-        life: 3000,
-      });
-      return; // Detener la ejecución si no hay filas seleccionadas
-    }
-  
-    // Resto del código para generar el PDF...
-
-    const doc = new jsPDF();
-
-    // Configuración del título
-    doc.setFontSize(18);
-    doc.text("Registros de Inventario de Cáscara en Pila", 14, 22);
-
-    // Configuración de la tabla
-    doc.autoTable({
-      head: [exportColumns.map((col) => col.title)], // Encabezados de la tabla
-      body: selectedRegistros.map((registro) =>
-        exportColumns.map((col) => registro[col.dataKey])
-      ), // Datos de la tabla
-      startY: 30, // Posición inicial de la tabla
-      styles: { fontSize: 10 }, // Estilo de la tabla
-      headStyles: { fillColor: [41, 128, 185], textColor: 255 }, // Estilo del encabezado
-    });
-
-    // Guardar el PDF
-    doc.save("Control_Inventario_Cascara_Pila.pdf");
-  };
-
-
-  const exportXlsx = () => {
-    if (selectedRegistros.length === 0) {
-      toast.current.show({
-        severity: "warn",
-        summary: "Advertencia",
-        detail: "No hay filas seleccionadas para exportar.",
-        life: 3000,
-      });
-      return; // Detener la ejecución si no hay filas seleccionadas
-    }
-  
-    // Resto del código para generar el XLSX...
-    // Obtener los encabezados de las columnas
-    const headers = cols.map((col) => col.header); // Mapear solo los encabezados de las columnas
-
-    // Obtener los datos seleccionados y mapearlos para las columnas
-    const rows = selectedRegistros.map(
-      (registro) => cols.map((col) => registro[col.field]) // Mapear los valores de cada fila por las columnas
-    );
-
-    // Agregar la fila de encabezados al principio de los datos
-    const dataToExport = [headers, ...rows];
-
-    // Crear una hoja de trabajo a partir de los encabezados y los datos
-    const ws = XLSX.utils.aoa_to_sheet(dataToExport);
-
-    // Configurar el estilo de la hoja para asegurar la correcta separación de celdas
-    const wscols = cols.map((col) => ({
-      width: Math.max(col.header.length, 10),
-    })); // Ajustar el ancho de las columnas según los encabezados
-    ws["!cols"] = wscols;
-
-    // Crear un libro de trabajo
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Registros");
-
-    // Exportar el archivo .xlsx
-    XLSX.writeFile(wb, "Control_Inventario_Cascara_Pila.xlsx");
-  };
- 
 
   const cols = [
     { field: "fecha", header: "Fecha" },
@@ -147,39 +75,128 @@ function ControlInventarioCascaraPila() {
     { field: "saldo_kg", header: "Saldo (kg)" },
     { field: "responsable", header: "Responsable" },
     { field: "observaciones", header: "Observaciones" },
+    {field: "registrado", header: "Registrado"}
   ];
 
   const exportColumns = cols.map((col) => ({
-    title: col.header,
-    dataKey: col.field,
-  }));
+        title: col.header,
+        dataKey: col.field,
+      }));
+    
+      const exportPdf = () => {
+        if (selectedRegistros.length === 0) {
+          toast.current.show({
+            severity: "warn",
+            summary: "Advertencia",
+            detail: "No hay filas seleccionadas para exportar.",
+            life: 3000,
+          });
+          return;
+        }
+    
+        const doc = new jsPDF();
+        doc.setFontSize(18);
+        doc.text("Registros de Control Inventario Cascara y P iña", 14, 22);
+    
+        const exportData = selectedRegistros.map(({ fec_registro, hor_registro, ...row }) => ({
+          ...row,
+          registrado: `${fec_registro || ""} ${hor_registro || ""}`,
+        }));
+    
+        const columnsPerPage = 5;
+        const maxHeightPerColumn = 10;
+        const rowHeight = exportColumns.length * maxHeightPerColumn + 10;
+        let currentY = 30;
+    
+        const headerColor = [41, 128, 185];
+        const textColor = [0, 0, 0];
+    
+        for (let i = 0; i < exportData.length; i++) {
+          if (currentY + rowHeight > doc.internal.pageSize.height) {
+            doc.addPage();
+            currentY = 30;
+          }
+    
+          const row = exportData[i];
+          const startX = 14;
+    
+          exportColumns.forEach(({ title, dataKey }, index) => {
+            const value = row[dataKey];
+            doc.setFillColor(...headerColor);
+            doc.rect(startX, currentY + (index * maxHeightPerColumn), 180, maxHeightPerColumn, 'F');
+            doc.setTextColor(255);
+            doc.text(title, startX + 2, currentY + (index * maxHeightPerColumn) + 7);
+            doc.setTextColor(...textColor);
+            doc.text(`${value}`, startX + 90, currentY + (index * maxHeightPerColumn) + 7);
+          });
+    
+          currentY += rowHeight;
+        }
+    
+        doc.save("Control Calidad Cosecha.pdf");
+      };
+  
+    const exportXlsx = () => {
+        if (selectedRegistros.length === 0) {
+          toast.current.show({
+            severity: "warn",
+            summary: "Advertencia",
+            detail: "No hay filas seleccionadas para exportar.",
+            life: 3000,
+          });
+          return;
+        }
+    
+        const headers = cols.map(col => col.header);
+        const exportData = selectedRegistros.map(({ fec_registro, hor_registro, ...registro }) => ({
+          ...registro,
+          registrado: `${fec_registro || ""} ${hor_registro || ""}`,
+        }));
+    
+        const rows = exportData.map(registro => cols.map(col => registro[col.field]));
+    
+        const dataToExport = [headers, ...rows];
+        const ws = XLSX.utils.aoa_to_sheet(dataToExport);
+    
+        ws["!cols"] = cols.map(col => ({ width: Math.max(col.header.length, 10) }));
+    
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Registros");
+        XLSX.writeFile(wb, "Control Calidad Cosecha.xlsx");
+      };
 
-  const onRowEditComplete = async (e) => {
-    const { newData } = e;
-    const { id } = newData;
-    try {
-      const { error } = await supabase
-        .from("Control_Inventario_Cascara_Pila")
-        .update(newData)
-        .eq("id", id);
-      if (error) {
-        console.error("Error al actualizar:", error.message);
-        return;
-      }
-      setRegistros((prevRegistros) =>
-        prevRegistros.map((registro) =>
-          registro.id === id ? { ...registro, ...newData } : registro
-        )
-      );
-    } catch (err) {
-      console.error("Error inesperado:", err);
-    }
-  };
+  
+
+  
 
   const dateEditor = (options) => {
+    const convertToInputFormat = (date) => {
+      if (!date) return "";
+      const [day, month, year] = date.split("/");
+      return `${year}-${month}-${day}`;
+    };
+    const convertToDatabaseFormat = (date) => {
+      if (!date) return "";
+      const [year, month, day] = date.split("-");
+      return `${day}/${month}/${year}`;
+    };
+
     return (
       <InputText
         type="date"
+        value={convertToInputFormat(options.value)}
+        onChange={(e) => {
+          const selectedDate = e.target.value;
+          options.editorCallback(convertToDatabaseFormat(selectedDate));
+        }}
+      />
+    );
+  };
+  
+  const timeEditor = (options) => {
+    return (
+      <InputText
+        type="time"
         value={options.value}
         onChange={(e) => options.editorCallback(e.target.value)}
       />
@@ -209,12 +226,54 @@ function ControlInventarioCascaraPila() {
   const floatEditor = (options) => {
     return (
       <InputText
-        type="number"
-        step="0.01"
+        type="float"
         value={options.value}
         onChange={(e) => options.editorCallback(e.target.value)}
       />
     );
+  };
+
+  const allowEdit = (rowData) => {
+    return rowData.name !== "Blue Band";
+  };
+
+  const onRowEditComplete = async ({ newData }) => {
+    const { id, ...updatedData } = newData;
+    try {
+      const { error } = await supabase
+        .from("Control_Inventario_Cascara_Pila")
+        .update(updatedData)
+        .eq("id", id);
+
+      if (error) return console.error("Error al actualizar:", error.message);
+
+      setRegistros((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, ...newData } : n))
+      );
+    } catch (err) {
+      console.error("Error inesperado:", err);
+    }
+  };
+
+  const formatDateTime = (date, format = "DD-MM-YYYY hh:mm A") => {
+    const fmt = new Intl.DateTimeFormat("en-US", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    })
+      .formatToParts(date)
+      .reduce((acc, { type, value }) => ({ ...acc, [type]: value }), {});
+
+    return format
+      .replace("DD", fmt.day)
+      .replace("MM", fmt.month)
+      .replace("YYYY", fmt.year)
+      .replace("hh", fmt.hour.padStart(2, "0"))
+      .replace("mm", fmt.minute)
+      .replace("A", fmt.dayPeriod || "AM");
   };
 
   const saveRegistro = async () => {
@@ -224,8 +283,7 @@ function ControlInventarioCascaraPila() {
       !registro.entrada_kg ||
       !registro.salida_kg ||
       !registro.saldo_kg ||
-      !registro.responsable ||
-      !registro.observaciones
+      !registro.responsable
     ) {
       toast.current.show({
         severity: "error",
@@ -236,10 +294,22 @@ function ControlInventarioCascaraPila() {
       return;
     }
     try {
-      const { id, ...registroSinId } = registro;
+      const currentDate = formatDateTime(new Date(), "DD/MM/YYYY"); // Fecha actual
+      const currentTime = formatDateTime(new Date(), "hh:mm A"); // Hora actual
+
       const { data, error } = await supabase
         .from("Control_Inventario_Cascara_Pila")
-        .insert([registroSinId]);
+        .insert([{
+          fecha: formatDateTime(new Date(registro.fecha), "DD/MM/YYYY"),
+          entrada_kg: registro.entrada_kg,
+          salida_kg: registro.salida_kg,
+          saldo_kg: registro.saldo_kg,
+          responsable: registro.responsable,
+          observaciones: registro.observaciones,
+          fec_registro: currentDate,
+          hor_registro: currentTime,
+
+        }]);
       if (error) {
         console.error("Error en Supabase:", error);
         throw new Error(
@@ -266,6 +336,8 @@ function ControlInventarioCascaraPila() {
     }
   };
 
+  
+
   const onInputChange = (e, name) => {
     let val = e.target.value;
     if (e.target.type === "number") {
@@ -291,7 +363,7 @@ function ControlInventarioCascaraPila() {
 
   const rightToolbarTemplate = () => {
     return (
-      <div className="flex flex-wrap gap-2">
+      <div className="exportar-container flex flex-wrap gap-2">
         <Button
           label="Exportar a Excel"
           icon="pi pi-upload"
@@ -441,6 +513,18 @@ function ControlInventarioCascaraPila() {
               field="responsable"
               header="Responsable"
               editor={(options) => textEditor(options)}
+              sortable
+              style={{ minWidth: "10rem" }}
+            />
+            <Column
+              field="fec_registro"
+              header="Fecha Registro"
+              sortable
+              style={{ minWidth: "10rem" }}
+            />
+            <Column
+              field="hor_registro"
+              header="Hora Registro"
               sortable
               style={{ minWidth: "10rem" }}
             />

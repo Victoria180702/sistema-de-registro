@@ -18,6 +18,7 @@ import ControlRendimientoCosechaReproduccion from './pages/Hatchery/Registros/Pa
 //imports paginas Dieta
 import Dieta from './pages/Dieta/PagesDieta.jsx';
 import ControlInventarioCascaraPila from './pages/Dieta/Registros/PagesControlInventarioCascaraPila.jsx';
+import ControlRendimientoDietaySiembra from './pages/Dieta/Registros/PagesControlRendimientoDietaySiembra.jsx';
 
 //imports paginas Gerencia
 import Gerencia from './pages/Gerencia/PagesGerencia.jsx';
@@ -29,10 +30,13 @@ import ControlTiempos from './pages/ControlTiempos/PagesControlTiempos.jsx';
 //imports de paginas de horno
 import Horno from './pages/Horno/PagesHorno.jsx';
 import ControlRendimientoSecadoHornoMultilevel from './pages/Horno/Registros/PagesControlRendimientoSecadoHornoMultilevel.jsx';
+import ControlRendimientoSecadoHornoMicroondas from './pages/Horno/Registros/PagesControlRendimientoSecadoHornoMicroondas.jsx';
+import ControlOperativoHornoMultilevel from './pages/Horno/Registros/PagesControlOperativoHornoMultilevel.jsx';
 
 //imports de paginas de Calidad
 import Calidad from './pages/Calidad/PagesCalidad.jsx';
 import ControlCalidadCosecha from './pages/Calidad/Registros/PagesControlCalidadCosecha.jsx';
+import RecepcionMateriasPrimas from './pages/Calidad/Registros/PagesRecepcionMateriasPrimas.jsx';
 
 //imports de paginas de Mantnimiento
 import Mantenimiento from './pages/Mantenimiento/PagesMantenimiento.jsx';
@@ -93,7 +97,10 @@ const router = createBrowserRouter([{
           path: `ControlInventarioCascaraPila`,
           element: <ControlInventarioCascaraPila />,
         },
-        
+        {
+          path: `ControlRendimientoDietaySiembra`,
+          element: <ControlRendimientoDietaySiembra />,
+        },
       ],
     },
 
@@ -127,10 +134,17 @@ const router = createBrowserRouter([{
         path: `ControlRendimientoSecadoHornoMultilevel`,
         element: <ControlRendimientoSecadoHornoMultilevel />,
       },
-      
+      {
+        path: `ControlRendimientoSecadoHornoMicroondas`,
+        element: <ControlRendimientoSecadoHornoMicroondas />,
+      },
+      {
+        path: `ControlOperativoHornoMultilevel`,
+        element: <ControlOperativoHornoMultilevel />,
+      },
     ],
   },
-
+  
 
   // Grupo de rutas de Calidad
   {
@@ -140,6 +154,10 @@ const router = createBrowserRouter([{
       {
         path: `ControlCalidadCosecha`,
         element: <ControlCalidadCosecha />,
+      },
+      {
+        path: `RecepcionMateriasPrimas`,
+        element: <RecepcionMateriasPrimas />,
       },
       
     ],

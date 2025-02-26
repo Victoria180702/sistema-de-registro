@@ -29,10 +29,22 @@ function Horno() {
               1- Control de Rendimiento Secado Horno Multilevel
             </button>
             <button
+              onClick={() => navigate("/Horno/ControlRendimientoSecadoHornoMicroondas")}
+              className="back-button"
+            >
+              2- Control Rendimiento Secado Horno Microondas
+            </button>
+            <button
+              onClick={() => navigate("/Horno/ControlOperativoHornoMultilevel")}
+              className="back-button"
+            >
+              3- Control Operativo Horno Multilevel
+            </button>
+            <button
               onClick={() => navigate("/ControlTiempos")}
               className="back-button"
             >
-              2- Control de Tiempos Perdidos
+              4- Control de Tiempos Perdidos
             </button>
             <button onClick={() => navigate(-1)} className="back-button">
               Volver al Menú Principal

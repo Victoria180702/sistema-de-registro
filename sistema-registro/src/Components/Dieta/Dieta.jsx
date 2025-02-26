@@ -33,10 +33,17 @@ function Dieta() {
               1- Control Inventario Cáscara en Pila
             </button>
             <button
+              onClick={() => navigate("/Dieta/ControlRendimientoDietaySiembra")}
+              className="back-button"
+            >
+              2- Control Rendimiento Dieta y Siembra
+            </button>
+
+            <button
               onClick={() => navigate("/ControlTiempos")}
               className="back-button"
             >
-              2- Control de Tiempos Perdidos
+              3- Control de Tiempos Perdidos
             </button>
             
             

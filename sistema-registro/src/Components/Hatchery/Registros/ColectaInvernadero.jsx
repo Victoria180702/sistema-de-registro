@@ -53,8 +53,6 @@ function ColectaInvernadero() {
   const [deleteeggieDialog, setDeleteeggieDialog] = useState(false); //Variable de estado que guarda si se muestra el dialogo de eliminar usuario
   const [deleteeggiesDialog, setDeleteeggiesDialog] = useState(false); //Variable de estado que guarda si se muestra el dialogo de eliminar usuarios
   const navigate = useNavigate(); //Variable de navegación
-  const [registros, setRegistros] = useState([]);
-  const [registro, setRegistro] = useState(emptyRegister);
   const [selectedRegistros, setSelectedRegistros] = useState([]);
   const [observacionesObligatorio, setObservacionesObligatorio] =
     useState(false);
@@ -63,6 +61,10 @@ function ColectaInvernadero() {
     cantidad_eggies: false,
     total_gm: false,
   });
+  
+  const convertirFecha = (fecha) =>
+    fecha ? fecha.split("-").reverse().join("/") : "";
+
   //Inicio de FETCH REGISTROS
   const fetcheggies = async () => {
     //Funcion asyncrona para obtener los datos de la tabla Usuarios
@@ -86,131 +88,31 @@ function ColectaInvernadero() {
 
   //Inicio Formatear la FECHA DE REGISTRO
   const formatDateTime = (date, format = "DD-MM-YYYY hh:mm A") => {
-    const options = {
+    const fmt = new Intl.DateTimeFormat("en-US", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
       hour12: true,
-    };
+    })
+      .formatToParts(date)
+      .reduce((acc, { type, value }) => ({ ...acc, [type]: value }), {});
 
-    const formatter = new Intl.DateTimeFormat("en-US", options);
-
-    // Convertir fecha al formato inicial
-    const parts = formatter.formatToParts(date);
-
-    // Crear un mapa con los valores para personalizar el formato
-    const dateMap = parts.reduce((acc, part) => {
-      if (part.type !== "literal") {
-        acc[part.type] = part.value;
-      }
-      return acc;
-    }, {});
-
-    // Reemplazar los patrones en el formato
     return format
-      .replace("DD", dateMap.day)
-      .replace("MM", dateMap.month)
-      .replace("YYYY", dateMap.year)
-      .replace("hh", dateMap.hour.padStart(2, "0"))
-      .replace("mm", dateMap.minute)
-      .replace("A", dateMap.dayPeriod || "AM");
+      .replace("DD", fmt.day)
+      .replace("MM", fmt.month)
+      .replace("YYYY", fmt.year)
+      .replace("hh", fmt.hour.padStart(2, "0"))
+      .replace("mm", fmt.minute)
+      .replace("A", fmt.dayPeriod || "AM");
   };
+
   //Fin Formatear la FECHA DE REGISTRO
 
 
-  const exportPdf = () => {
-    if (selectedeggies.length === 0) {
-      toast.current.show({
-        severity: "warn",
-        summary: "Advertencia",
-        detail: "No hay filas seleccionadas para exportar.",
-        life: 3000,
-      });
-      return; // Detener la ejecución si no hay filas seleccionadas
-    }
-  
-    // Resto del código para generar el PDF...
-    const doc = new jsPDF();
-
-    // Configuración del título
-    doc.setFontSize(18);
-    doc.text("Registros de Colecta Eggies Invernadero - Embudos", 14, 22);
-
-    const exportData = selectedeggies.map((row) => ({
-      ...row,
-      registrado: `${row.fec_registro || ""} ${row.hor_registro || ""}`, // Combina las fechas
-    }));
-    const body = exportData.map((row) =>
-      exportColumns.map((col) => row[col.dataKey])
-    );
-    // Configuración de la tabla
-    doc.autoTable({
-      head: [exportColumns.map((col) => col.title)], // Encabezados de la tabla
-      body: body, // Datos de la tabla
-      startY: 30, // Posición inicial de la tabla
-      styles: { fontSize: 10 }, // Estilo de la tabla
-      headStyles: { fillColor: [41, 128, 185], textColor: 255 }, // Estilo del encabezado
-    });
-
-    // Guardar el PDF
-    doc.save("Colecta de Eggies Invernadero - Embudo.pdf");
-  };
-
-
-  const exportXlsx = () => {
-    if (selectedeggies.length === 0) {
-      toast.current.show({
-        severity: "warn",
-        summary: "Advertencia",
-        detail: "No hay filas seleccionadas para exportar.",
-        life: 3000,
-      });
-      return; // Detener la ejecución si no hay filas seleccionadas
-    }
-  
-    // Resto del código para generar el XLSX...
-    // Obtener los encabezados de las columnas
-    const headers = cols.map((col) => col.header); // Mapear solo los encabezados de las columnas
-
-    // Combinar los datos seleccionados y agregar el campo "registrado"
-    const exportData = selectedeggies.map((registro) => ({
-      ...registro,
-      registrado: `${registro.fec_registro || ""} ${
-        registro.hor_registro || ""
-      }`,
-    }));
-
-    // Obtener los datos seleccionados y mapearlos para las columnas
-    const rows = exportData.map(
-      (registro) => cols.map((col) => registro[col.field]) // Mapear los valores de cada fila por las columnas
-    );
-
-    // Agregar la fila de encabezados al principio de los datos
-    const dataToExport = [headers, ...rows];
-
-    // Crear una hoja de trabajo a partir de los encabezados y los datos
-    const ws = XLSX.utils.aoa_to_sheet(dataToExport);
-
-    // Configurar el estilo de la hoja para asegurar la correcta separación de celdas
-    const wscols = cols.map((col) => ({
-      width: Math.max(col.header.length, 10),
-    })); // Ajustar el ancho de las columnas según los encabezados
-    ws["!cols"] = wscols;
-
-    // Crear un libro de trabajo
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Registros");
-
-    // Exportar el archivo .xlsx
-    XLSX.writeFile(wb, "Colecta de Eggies Invernadero - Embudo.xlsx");
-  };
-
-  
-
-  // Columnas de la tabla para exportar
   const cols = [
+
     { field: "id", header: "ID" },
     {field: "lote", header: "Lote"},
     { field: "fec_colocacion", header: "Fecha Colocación" },
@@ -227,11 +129,98 @@ function ColectaInvernadero() {
     { field: "registrado", header: "Registrado" },
   ];
 
-  // Mapeo de columnas para jsPDF-Autotable
   const exportColumns = cols.map((col) => ({
-    title: col.header, // Título del encabezado
-    dataKey: col.field, // Llave de datos
-  }));
+        title: col.header,
+        dataKey: col.field,
+      }));
+    
+      const exportPdf = () => {
+        if (selectedRegistros.length === 0) {
+          toast.current.show({
+            severity: "warn",
+            summary: "Advertencia",
+            detail: "No hay filas seleccionadas para exportar.",
+            life: 3000,
+          });
+          return;
+        }
+    
+        const doc = new jsPDF();
+        doc.setFontSize(18);
+        doc.text("Registros de Control Rendimiento Cosecha y Frass", 14, 22);
+    
+        const exportData = selectedRegistros.map(({ fec_registro, hor_registro, ...row }) => ({
+          ...row,
+          registrado: `${fec_registro || ""} ${hor_registro || ""}`,
+        }));
+    
+        const columnsPerPage = 5;
+        const maxHeightPerColumn = 10;
+        const rowHeight = exportColumns.length * maxHeightPerColumn + 10;
+        let currentY = 30;
+    
+        const headerColor = [41, 128, 185];
+        const textColor = [0, 0, 0];
+    
+        for (let i = 0; i < exportData.length; i++) {
+          if (currentY + rowHeight > doc.internal.pageSize.height) {
+            doc.addPage();
+            currentY = 30;
+          }
+    
+          const row = exportData[i];
+          const startX = 14;
+    
+          exportColumns.forEach(({ title, dataKey }, index) => {
+            const value = row[dataKey];
+            doc.setFillColor(...headerColor);
+            doc.rect(startX, currentY + (index * maxHeightPerColumn), 180, maxHeightPerColumn, 'F');
+            doc.setTextColor(255);
+            doc.text(title, startX + 2, currentY + (index * maxHeightPerColumn) + 7);
+            doc.setTextColor(...textColor);
+            doc.text(`${value}`, startX + 90, currentY + (index * maxHeightPerColumn) + 7);
+          });
+    
+          currentY += rowHeight;
+        }
+    
+        doc.save("Colecta Invernadero.pdf");
+      };
+  
+    const exportXlsx = () => {
+        if (selectedRegistros.length === 0) {
+          toast.current.show({
+            severity: "warn",
+            summary: "Advertencia",
+            detail: "No hay filas seleccionadas para exportar.",
+            life: 3000,
+          });
+          return;
+        }
+    
+        const headers = cols.map(col => col.header);
+        const exportData = selectedRegistros.map(({ fec_registro, hor_registro, ...registro }) => ({
+          ...registro,
+          registrado: `${fec_registro || ""} ${hor_registro || ""}`,
+        }));
+    
+        const rows = exportData.map(registro => cols.map(col => registro[col.field]));
+    
+        const dataToExport = [headers, ...rows];
+        const ws = XLSX.utils.aoa_to_sheet(dataToExport);
+    
+        ws["!cols"] = cols.map(col => ({ width: Math.max(col.header.length, 10) }));
+    
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Registros");
+        XLSX.writeFile(wb, "Colecta Invernadero.xlsx");
+      };
+
+  
+
+  // Columnas de la tabla para exportar
+  
+
 
   // Fin de EXPORTAR TABLA
 
@@ -263,41 +252,68 @@ function ColectaInvernadero() {
   };
 
   const dateEditor = (options) => {
-    return (
-      <InputText
-        type="date"
-        value={options.value}
-        onChange={(e) => options.editorCallback(e.target.value)}
-      />
-    );
-  };
-  const textEditor = (options) => {
-    return (
-      <InputText
-        type="text"
-        value={options.value}
-        onChange={(e) => options.editorCallback(e.target.value)}
-      />
-    );
-  };
-  const numberEditor = (options) => {
-    return (
-      <InputText
-        type="number"
-        value={options.value}
-        onChange={(e) => options.editorCallback(e.target.value)}
-      />
-    );
-  };
-  const floatEditor = (options) => {
-    return (
-      <InputText
-        type="float"
-        value={options.value}
-        onChange={(e) => options.editorCallback(e.target.value)}
-      />
-    );
-  };
+      const convertToInputFormat = (date) => {
+        if (!date) return "";
+        const [day, month, year] = date.split("/");
+        return `${year}-${month}-${day}`;
+      };
+      const convertToDatabaseFormat = (date) => {
+        if (!date) return "";
+        const [year, month, day] = date.split("-");
+        return `${day}/${month}/${year}`;
+      };
+  
+      return (
+        <InputText
+          type="date"
+          value={convertToInputFormat(options.value)}
+          onChange={(e) => {
+            const selectedDate = e.target.value;
+            options.editorCallback(convertToDatabaseFormat(selectedDate));
+          }}
+        />
+      );
+    };
+    
+    const timeEditor = (options) => {
+      return (
+        <InputText
+          type="time"
+          value={options.value}
+          onChange={(e) => options.editorCallback(e.target.value)}
+        />
+      );
+    };
+  
+    const textEditor = (options) => {
+      return (
+        <InputText
+          type="text"
+          value={options.value}
+          onChange={(e) => options.editorCallback(e.target.value)}
+        />
+      );
+    };
+  
+    const numberEditor = (options) => {
+      return (
+        <InputText
+          type="number"
+          value={options.value}
+          onChange={(e) => options.editorCallback(e.target.value)}
+        />
+      );
+    };
+  
+    const floatEditor = (options) => {
+      return (
+        <InputText
+          type="float"
+          value={options.value}
+          onChange={(e) => options.editorCallback(e.target.value)}
+        />
+      );
+    };
   const allowEdit = (rowData) => {
     return rowData.name !== "Blue Band";
   };
@@ -368,14 +384,14 @@ function ColectaInvernadero() {
       total_gm: false,
     });
     try {
-      const currentDate = formatDateTime(new Date(), "DD-MM-YYYY"); // Solo fecha
-      const currentTime = formatDateTime(new Date(), "hh:mm A"); // Fecha en formato ISO 8601
-      const { data, error } = await supabase
+      const currentDate = formatDateTime(new Date(), "DD/MM/YYYY"); // Fecha actual
+      const currentTime = formatDateTime(new Date(), "hh:mm A"); // Hora actual
+const { data, error } = await supabase
         .from("Eggies_Colecta_Invernadero_Embudo")
         .insert([
           {
-            fec_colocacion: eggie.fec_colocacion,
-            fec_salida_eggies: eggie.fec_salida_eggies,
+            fec_colocacion: convertirFecha(eggie.fec_colocacion),
+            fec_salida_eggies: convertirFecha(eggie.fec_salida_eggies),
             num_embudo: eggie.num_embudo,
             cantidad_eggies: eggie.cantidad_eggies,
             mediana: eggie.mediana,

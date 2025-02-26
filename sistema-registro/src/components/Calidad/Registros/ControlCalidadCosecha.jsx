@@ -45,26 +45,22 @@ function ControlCalidadCosecha() {
   const [submitted, setSubmitted] = useState(false);
   const [registroDialog, setRegistroDialog] = useState(false);
   const navigate = useNavigate();
+  
 
   // Opciones para el campo "linea_produc"
   const lineasProduccion = ["Producción", "Reproducción"];
+  //Errores de validación
+    const [observacionesObligatorio, setObservacionesObligatorio] =
+      useState(false);
+    const [erroresValidacion, setErroresValidacion] = useState({
+      dias_rezago: false,
+      color: false,
+      tamano: false,
+      peso: false,
+    });
 
-  // Función para formatear la fecha en formato día/mes/año
-  const formatearFecha = (fecha) => {
-    if (!fecha) return "";
-    const date = new Date(fecha);
-    const dia = String(date.getDate()).padStart(2, "0");
-    const mes = String(date.getMonth() + 1).padStart(2, "0"); // Los meses comienzan en 0
-    const año = date.getFullYear();
-    return `${dia}/${mes}/${año}`;
-  };
-
-  // Función para convertir la fecha de día/mes/año a formato ISO (año-mes-día)
-  const convertirFechaISO = (fecha) => {
-    if (!fecha) return "";
-    const [dia, mes, año] = fecha.split("/");
-    return `${año}-${mes}-${dia}`;
-  };
+  const convertirFecha = (fecha) =>
+    fecha ? fecha.split("-").reverse().join("/") : "";
 
   const fetchRegistros = async () => {
     try {
@@ -72,13 +68,7 @@ function ControlCalidadCosecha() {
         .from("Control_Calidad_Cosecha")
         .select();
       if (data) {
-        // Formatear las fechas al formato día/mes/año
-        const registrosFormateados = data.map((registro) => ({
-          ...registro,
-          fec_registro: formatearFecha(registro.fec_registro),
-          fec_cosecha: formatearFecha(registro.fec_cosecha),
-        }));
-        setRegistros(registrosFormateados);
+        setRegistros(data);
       }
     } catch {
       console.log("Error en la conexión a la base de datos");
@@ -89,15 +79,55 @@ function ControlCalidadCosecha() {
     fetchRegistros();
   }, []);
 
-  const obtenerHoraActual = () => {
-    const ahora = new Date();
-    const horas = String(ahora.getHours()).padStart(2, "0");
-    const minutos = String(ahora.getMinutes()).padStart(2, "0");
-    return `${horas}:${minutos}`;
+  const formatDateTime = (date, format = "DD-MM-YYYY hh:mm A") => {
+    const fmt = new Intl.DateTimeFormat("en-US", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    })
+      .formatToParts(date)
+      .reduce((acc, { type, value }) => ({ ...acc, [type]: value }), {});
+
+    return format
+      .replace("DD", fmt.day)
+      .replace("MM", fmt.month)
+      .replace("YYYY", fmt.year)
+      .replace("hh", fmt.hour.padStart(2, "0"))
+      .replace("mm", fmt.minute)
+      .replace("A", fmt.dayPeriod || "AM");
   };
 
   const saveRegistro = async () => {
     setSubmitted(true);
+
+    // Validar los campos
+    const isDiazRezagoInvalido = registro.dias_rezago < 1 || registro.dias_rezago > 4;
+    const isCajasInoculadasDestinoInvalido =
+      registro.color < 3 ||
+      registro.color > 5;
+      const isTamanoInvalido =
+      registro.tamano < 1.5 ||
+      registro.tamano > 2;
+      const isPesoInvalido =
+      registro.peso < 1.8 ||
+      registro.peso > 2;
+    
+    // Actualizar el estado de errores
+    setErroresValidacion({
+      dias_rezago: isDiazRezagoInvalido,
+      color: isCajasInoculadasDestinoInvalido,
+      tamano: isTamanoInvalido,
+      peso: isPesoInvalido,
+    });
+    const valoresFueraDeRango =
+      isDiazRezagoInvalido ||
+      isCajasInoculadasDestinoInvalido ||
+      isTamanoInvalido ||
+      isPesoInvalido;
+
     if (
       !registro.lote_id ||
       !registro.dias_rezago ||
@@ -124,20 +154,65 @@ function ControlCalidadCosecha() {
       return;
     }
 
-    const horaActual = obtenerHoraActual();
-    const fechaActual = new Date().toISOString().split('T')[0];
-    const registroConHora = {
-      ...registro,
-      fec_registro: convertirFechaISO(fechaActual),
-      hor_registro: horaActual,
-      fec_cosecha: convertirFechaISO(registro.fec_cosecha),
-    };
+    // Validación principal
+    if (valoresFueraDeRango && !registro.observaciones) {
+      setObservacionesObligatorio(true);
+      const currentErrores = {
+        "Días de Rezago": isDiazRezagoInvalido,
+        "Color": isCajasInoculadasDestinoInvalido,
+        "Tamaño": isTamanoInvalido,
+        "Peso": isPesoInvalido,
+      };
+
+      toast.current.show({
+        severity: "error",
+        summary: "Error",
+        detail: `Debe agregar observaciones. Campos inválidos: ${Object.keys(
+          currentErrores
+        )
+          .filter((k) => currentErrores[k])
+          .join(", ")}`,
+        life: 3000,
+      });
+      return;
+    }
+
+    setObservacionesObligatorio(false);
+    setErroresValidacion({
+      dias_rezago: false,
+      color: false,
+      tamano: false,
+      peso: false,
+    });
 
     try {
-      const { id, ...registroSinId } = registroConHora;
+      const currentDate = formatDateTime(new Date(), "DD/MM/YYYY"); // Fecha actual
+      const currentTime = formatDateTime(new Date(), "hh:mm A"); // Hora actual
+
       const { data, error } = await supabase
         .from("Control_Calidad_Cosecha")
-        .insert([registroSinId]);
+        .insert([
+          {
+            lote_id: registro.lote_id,
+            dias_rezago: registro.dias_rezago,
+            temp_ambiental: registro.temp_ambiental,
+            hum_ambiental: registro.hum_ambiental,
+            hum_frass: registro.hum_frass,
+            temp_frass: registro.temp_frass,
+            color: registro.color,
+            tamano: registro.tamano,
+            peso: registro.peso,
+            total_individuos: registro.total_individuos,
+            mortalidad: registro.mortalidad,
+            observaciones: registro.observaciones,
+            hor_inicio: registro.hor_inicio,
+            hor_fin: registro.hor_fin,
+            linea_produc: registro.linea_produc,
+            fec_registro: currentDate,
+            hor_registro: currentTime,
+            fec_cosecha: convertirFecha(registro.fec_cosecha)
+          },
+        ]); //Cambiar aqui este insert y poner cada columna ya que las fechas se tienen que formatear
       if (error) {
         console.error("Error en Supabase:", error);
         throw new Error(
@@ -164,6 +239,93 @@ function ControlCalidadCosecha() {
     }
   };
 
+  const dateEditor = (options) => {
+    const convertToInputFormat = (date) => {
+      if (!date) return "";
+      const [day, month, year] = date.split("/");
+      return `${year}-${month}-${day}`;
+    };
+    const convertToDatabaseFormat = (date) => {
+      if (!date) return "";
+      const [year, month, day] = date.split("-");
+      return `${day}/${month}/${year}`;
+    };
+
+    return (
+      <InputText
+        type="date"
+        value={convertToInputFormat(options.value)}
+        onChange={(e) => {
+          const selectedDate = e.target.value;
+          options.editorCallback(convertToDatabaseFormat(selectedDate));
+        }}
+      />
+    );
+  };
+  
+  const timeEditor = (options) => {
+    return (
+      <InputText
+        type="time"
+        value={options.value}
+        onChange={(e) => options.editorCallback(e.target.value)}
+      />
+    );
+  };
+
+  const textEditor = (options) => {
+    return (
+      <InputText
+        type="text"
+        value={options.value}
+        onChange={(e) => options.editorCallback(e.target.value)}
+      />
+    );
+  };
+
+  const numberEditor = (options) => {
+    return (
+      <InputText
+        type="number"
+        value={options.value}
+        onChange={(e) => options.editorCallback(e.target.value)}
+      />
+    );
+  };
+
+  const floatEditor = (options) => {
+    return (
+      <InputText
+        type="float"
+        value={options.value}
+        onChange={(e) => options.editorCallback(e.target.value)}
+      />
+    );
+  };
+
+  const allowEdit = (rowData) => {
+    return rowData.name !== "Blue Band";
+  };
+
+  const onRowEditComplete = async ({ newData }) => {
+    const { id, ...updatedData } = newData;
+    try {
+      const { error } = await supabase
+        .from("Control_Calidad_Cosecha")
+        .update(updatedData)
+        .eq("id", id);
+
+      if (error) return console.error("Error al actualizar:", error.message);
+
+      setRegistros((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, ...newData } : n))
+      );
+    } catch (err) {
+      console.error("Error inesperado:", err);
+    }
+  };
+
+
   const onInputChange = (e, name) => {
     let val = e.target.value;
     let _registro = { ...registro };
@@ -186,7 +348,7 @@ function ControlCalidadCosecha() {
 
   const rightToolbarTemplate = () => {
     return (
-      <div className="flex flex-wrap gap-2">
+      <div className="exportar-container flex flex-wrap gap-2">
         <Button
           label="Exportar a Excel"
           icon="pi pi-upload"
@@ -236,130 +398,114 @@ function ControlCalidadCosecha() {
     </React.Fragment>
   );
 
-  const exportPdf = () => {
-    if (selectedRegistros.length === 0) {
-      toast.current.show({
-        severity: "warn",
-        summary: "Advertencia",
-        detail: "No hay filas seleccionadas para exportar.",
-        life: 3000,
-      });
-      return;
-    }
-
-    const doc = new jsPDF();
-    doc.setFontSize(18);
-    doc.text("Registros de Control de Calidad de Cosecha", 14, 22);
-
-    doc.autoTable({
-      head: [
-        [
-          "Lote ID",
-          "Días Rezago",
-          "Temp Ambiental",
-          "Hum Ambiental",
-          "Hum Frass",
-          "Temp Frass",
-          "Color",
-          "Tamaño",
-          "Peso",
-          "Total Individuos",
-          "Mortalidad",
-          "Fecha Registro",
-          "Hora Registro",
-          "Observaciones",
-          "Fecha Cosecha",
-          "Hora Inicio",
-          "Hora Fin",
-          "Línea Producción",
-        ],
-      ],
-      body: selectedRegistros.map((registro) => [
-        registro.lote_id,
-        registro.dias_rezago,
-        registro.temp_ambiental,
-        registro.hum_ambiental,
-        registro.hum_frass,
-        registro.temp_frass,
-        registro.color,
-        registro.tamano,
-        registro.peso,
-        registro.total_individuos,
-        registro.mortalidad,
-        formatearFecha(registro.fec_registro),
-        registro.hor_registro,
-        registro.observaciones,
-        formatearFecha(registro.fec_cosecha),
-        registro.hor_inicio,
-        registro.hor_fin,
-        registro.linea_produc,
-      ]),
-      startY: 30,
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-    });
-
-    doc.save("Control_Calidad_Cosecha.pdf");
-  };
+  const cols = [
+    { field: "lote_id", header: "Lote ID" },
+    { field: "dias_rezago", header: "Días Rezago" },
+    { field: "temp_ambiental", header: "Temp Ambiental" },
+    { field: "hum_ambiental", header: "Hum Ambiental" },
+    { field: "hum_frass", header: "Hum Frass" },
+    { field: "temp_frass", header: "Temp Frass" },
+    { field: "color", header: "Color" },
+    { field: "tamano", header: "Tamaño" },
+    { field: "peso", header: "Peso" },
+    { field: "total_individuos", header: "Total Individuos" },
+    { field: "mortalidad", header: "Mortalidad" },
+    { field: "fec_registro", header: "Fecha Registro" },
+    { field: "hor_registro", header: "Hora Registro" },
+    { field: "observaciones", header: "Observaciones" },
+    { field: "fec_cosecha", header: "Fecha Cosecha" },
+    { field: "hor_inicio", header: "Hora Inicio" },
+    { field: "hor_fin", header: "Hora Fin" },
+    { field: "linea_produc", header: "Línea Producción" },
+    {field: "registrado", header: "Registrado"}
+  ];
+  
+    const exportColumns = cols.map((col) => ({
+      title: col.header,
+      dataKey: col.field,
+    }));
+  
+    const exportPdf = () => {
+      if (selectedRegistros.length === 0) {
+        toast.current.show({
+          severity: "warn",
+          summary: "Advertencia",
+          detail: "No hay filas seleccionadas para exportar.",
+          life: 3000,
+        });
+        return;
+      }
+  
+      const doc = new jsPDF();
+      doc.setFontSize(18);
+      doc.text("Registros de Control Rendimiento Cosecha y Frass", 14, 22);
+  
+      const exportData = selectedRegistros.map(({ fec_registro, hor_registro, ...row }) => ({
+        ...row,
+        registrado: `${fec_registro || ""} ${hor_registro || ""}`,
+      }));
+  
+      const columnsPerPage = 5;
+      const maxHeightPerColumn = 10;
+      const rowHeight = exportColumns.length * maxHeightPerColumn + 10;
+      let currentY = 30;
+  
+      const headerColor = [41, 128, 185];
+      const textColor = [0, 0, 0];
+  
+      for (let i = 0; i < exportData.length; i++) {
+        if (currentY + rowHeight > doc.internal.pageSize.height) {
+          doc.addPage();
+          currentY = 30;
+        }
+  
+        const row = exportData[i];
+        const startX = 14;
+  
+        exportColumns.forEach(({ title, dataKey }, index) => {
+          const value = row[dataKey];
+          doc.setFillColor(...headerColor);
+          doc.rect(startX, currentY + (index * maxHeightPerColumn), 180, maxHeightPerColumn, 'F');
+          doc.setTextColor(255);
+          doc.text(title, startX + 2, currentY + (index * maxHeightPerColumn) + 7);
+          doc.setTextColor(...textColor);
+          doc.text(`${value}`, startX + 90, currentY + (index * maxHeightPerColumn) + 7);
+        });
+  
+        currentY += rowHeight;
+      }
+  
+      doc.save("Control Calidad Cosecha.pdf");
+    };
 
   const exportXlsx = () => {
-    if (selectedRegistros.length === 0) {
-      toast.current.show({
-        severity: "warn",
-        summary: "Advertencia",
-        detail: "No hay filas seleccionadas para exportar.",
-        life: 3000,
-      });
-      return;
-    }
-
-    const headers = [
-      "Lote ID",
-      "Días Rezago",
-      "Temp Ambiental",
-      "Hum Ambiental",
-      "Hum Frass",
-      "Temp Frass",
-      "Color",
-      "Tamaño",
-      "Peso",
-      "Total Individuos",
-      "Mortalidad",
-      "Fecha Registro",
-      "Hora Registro",
-      "Observaciones",
-      "Fecha Cosecha",
-      "Hora Inicio",
-      "Hora Fin",
-      "Línea Producción",
-    ];
-    const rows = selectedRegistros.map((registro) => [
-      registro.lote_id,
-      registro.dias_rezago,
-      registro.temp_ambiental,
-      registro.hum_ambiental,
-      registro.hum_frass,
-      registro.temp_frass,
-      registro.color,
-      registro.tamano,
-      registro.peso,
-      registro.total_individuos,
-      registro.mortalidad,
-      formatearFecha(registro.fec_registro),
-      registro.hor_registro,
-      registro.observaciones,
-      formatearFecha(registro.fec_cosecha),
-      registro.hor_inicio,
-      registro.hor_fin,
-      registro.linea_produc,
-    ]);
-
-    const dataToExport = [headers, ...rows];
-    const ws = XLSX.utils.aoa_to_sheet(dataToExport);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Registros");
-    XLSX.writeFile(wb, "Control_Calidad_Cosecha.xlsx");
-  };
+      if (selectedRegistros.length === 0) {
+        toast.current.show({
+          severity: "warn",
+          summary: "Advertencia",
+          detail: "No hay filas seleccionadas para exportar.",
+          life: 3000,
+        });
+        return;
+      }
+  
+      const headers = cols.map(col => col.header);
+      const exportData = selectedRegistros.map(({ fec_registro, hor_registro, ...registro }) => ({
+        ...registro,
+        registrado: `${fec_registro || ""} ${hor_registro || ""}`,
+      }));
+  
+      const rows = exportData.map(registro => cols.map(col => registro[col.field]));
+  
+      const dataToExport = [headers, ...rows];
+      const ws = XLSX.utils.aoa_to_sheet(dataToExport);
+  
+      ws["!cols"] = cols.map(col => ({ width: Math.max(col.header.length, 10) }));
+  
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Registros");
+      XLSX.writeFile(wb, "Control Calidad Cosecha.xlsx");
+    };
 
   return (
     <>
@@ -390,7 +536,9 @@ function ControlCalidadCosecha() {
             right={rightToolbarTemplate}
           ></Toolbar>
           <DataTable
-            ref={dt}
+           editMode="row"
+           onRowEditComplete={onRowEditComplete}
+           ref={dt}
             value={registros}
             selection={selectedRegistros}
             onSelectionChange={(e) => setSelectedRegistros(e.value)}
@@ -404,23 +552,29 @@ function ControlCalidadCosecha() {
           >
             <Column selectionMode="multiple" exportable={false}></Column>
             <Column field="lote_id" header="Lote ID" sortable />
-            <Column field="dias_rezago" header="Días Rezago" sortable />
-            <Column field="temp_ambiental" header="Temp Ambiental" sortable />
-            <Column field="hum_ambiental" header="Hum Ambiental" sortable />
-            <Column field="hum_frass" header="Hum Frass" sortable />
-            <Column field="temp_frass" header="Temp Frass" sortable />
-            <Column field="color" header="Color" sortable />
-            <Column field="tamano" header="Tamaño" sortable />
-            <Column field="peso" header="Peso" sortable />
-            <Column field="total_individuos" header="Total Individuos" sortable />
-            <Column field="mortalidad" header="Mortalidad" sortable />
+            <Column field="dias_rezago" header="Días Rezago" editor={(options) => numberEditor(options)} sortable/>
+            <Column field="temp_ambiental" header="Temp Ambiental" editor={(options) => floatEditor(options)} sortable />
+            <Column field="hum_ambiental" header="Hum Ambiental" editor={(options) => floatEditor(options)} sortable />
+            <Column field="hum_frass" header="Hum Frass" editor={(options) => floatEditor(options)} sortable />
+            <Column field="temp_frass" header="Temp Frass" editor={(options) => floatEditor(options)} sortable />
+            <Column field="color" header="Color" editor={(options) => textEditor(options)} sortable />
+            <Column field="tamano" header="Tamaño" editor={(options) => floatEditor(options)} sortable />
+            <Column field="peso" header="Peso" editor={(options) => floatEditor(options)} sortable />
+            <Column field="total_individuos" header="Total Individuos" editor={(options) => numberEditor(options)} sortable />
+            <Column field="mortalidad" header="Mortalidad" editor={(options) => numberEditor(options)} sortable />
+            <Column field="fec_cosecha" header="Fecha Cosecha" editor={(options) => dateEditor(options)} sortable />
+            <Column field="hor_inicio" header="Hora Inicio" editor={(options) => timeEditor(options)} sortable />
+            <Column field="hor_fin" header="Hora Fin" editor={(options) => timeEditor(options)} sortable />
+            <Column field="linea_produc" header="Línea Producción" editor={(options) => textEditor(options)} sortable />
             <Column field="fec_registro" header="Fecha Registro" sortable />
             <Column field="hor_registro" header="Hora Registro" sortable />
-            <Column field="observaciones" header="Observaciones" sortable />
-            <Column field="fec_cosecha" header="Fecha Cosecha" sortable />
-            <Column field="hor_inicio" header="Hora Inicio" sortable />
-            <Column field="hor_fin" header="Hora Fin" sortable />
-            <Column field="linea_produc" header="Línea Producción" sortable />
+            <Column field="observaciones" header="Observaciones" editor={(options) => textEditor(options)} sortable />
+            <Column
+                          header="Herramientas"
+                          rowEditor={allowEdit}
+                          headerStyle={{ width: "10%", minWidth: "5rem" }}
+                          bodyStyle={{ textAlign: "center" }}
+            ></Column>
           </DataTable>
         </div>
       </div>
@@ -454,6 +608,11 @@ function ControlCalidadCosecha() {
             {submitted && !registro.dias_rezago && (
               <small className="p-error">Requerido.</small>
             )}
+            {erroresValidacion.dias_rezago && (
+              <small className="p-error">
+                Días de Rezago debe de ser del 1 al 4.
+              </small>
+            )}
           </label>
           <InputText
             type="number"
@@ -461,6 +620,7 @@ function ControlCalidadCosecha() {
             value={registro.dias_rezago}
             onChange={(e) => onInputChange(e, "dias_rezago")}
             required
+            
           />
           <br />
           <label htmlFor="temp_ambiental" className="font-bold">
@@ -468,6 +628,7 @@ function ControlCalidadCosecha() {
             {submitted && !registro.temp_ambiental && (
               <small className="p-error">Requerido.</small>
             )}
+            
           </label>
           <InputText
             type="number"
@@ -524,6 +685,11 @@ function ControlCalidadCosecha() {
             {submitted && !registro.color && (
               <small className="p-error">Requerido.</small>
             )}
+            {erroresValidacion.color && (
+              <small className="p-error">
+                Item de Color debe de estar entre el 3 a 5.
+              </small>
+            )}
           </label>
           <InputText
             id="color"
@@ -536,6 +702,11 @@ function ControlCalidadCosecha() {
             Tamaño{" "}
             {submitted && !registro.tamano && (
               <small className="p-error">Requerido.</small>
+            )}
+            {erroresValidacion.tamano && (
+              <small className="p-error">
+                El Tamaño debe de ser entre 1.5 a 2.
+              </small>
             )}
           </label>
           <InputText
@@ -550,6 +721,11 @@ function ControlCalidadCosecha() {
             Peso{" "}
             {submitted && !registro.peso && (
               <small className="p-error">Requerido.</small>
+            )}
+            {erroresValidacion.peso && (
+              <small className="p-error">
+                El peso debe de estar entre 1.8 a 2.
+              </small>
             )}
           </label>
           <InputText
@@ -646,7 +822,10 @@ function ControlCalidadCosecha() {
           />
           <br />
           <label htmlFor="observaciones" className="font-bold">
-            Observaciones{" "}
+          Observaciones{" "}
+          {observacionesObligatorio && (
+              <small className="p-error">Requerido por fuera de rango.</small>
+            )}
           </label>
           <InputText
             id="observaciones"

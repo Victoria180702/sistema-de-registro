@@ -441,25 +441,25 @@ function RecepcionMateriasPrimas() {
     { field: "cantidad_unidades", header: "Cantidad Unidades" },
     {
       field: "nom_encargado_transporte",
-      header: "Nombre Encargado Transporte",
+      header: "Nom Encargado Transporte",
     },
     { field: "identificacion", header: "Identificación" },
     { field: "placa_vehiculo", header: "Placa Vehículo" },
-    { field: "trans_limpioyordenado", header: "Transporte Limpio y Ordenado" },
+    { field: "trans_limpioyordenado", header: "Trans Limpio y Ordenado" },
     {
       field: "trans_sin_materiales_quimicos",
-      header: "Transporte sin Materiales Químicos",
+      header: "Transporte sin Mat Químicos",
     },
     { field: "trans_libre_plagas", header: "Transporte Libre de Plagas" },
     {
       field: "mat_prima_limpiayordenada",
-      header: "Materia Prima Limpia y Ordenada",
+      header: "Mat Prima Limpia y Ordenada",
     },
     { field: "producto_sellado", header: "Producto Sellado" },
     { field: "mat_prima_etiqueta", header: "Materia Prima con Etiqueta" },
     {
       field: "mat_prima_sin_perforaciones",
-      header: "Materia Prima sin Perforaciones",
+      header: "Mata Prima sin Perforaciones",
     },
     { field: "caracteristica", header: "Característica" },
     { field: "mat_prima_peso_etiqueta", header: "Peso Etiqueta Materia Prima" },
@@ -660,47 +660,119 @@ function RecepcionMateriasPrimas() {
             <Column
               field="trans_limpioyordenado"
               header="Transporte Limpio y Ordenado"
-              editor={(options) => textEditor(options)}
+              editor={(options) =>
+                dropdownEditor({
+                  ...options,
+                  options: requerimientos.map((req) => ({
+                    label: req,
+                    value: req,
+                  })),
+                })
+              }
             ></Column>
             <Column
               field="trans_sin_materiales_quimicos"
               header="Transporte sin Materiales Químicos"
-              editor={(options) => textEditor(options)}
+              editor={(options) =>
+                dropdownEditor({
+                  ...options,
+                  options: requerimientos.map((req) => ({
+                    label: req,
+                    value: req,
+                  })),
+                })
+              }
             ></Column>
             <Column
               field="trans_libre_plagas"
               header="Transporte Libre de Plagas"
-              editor={(options) => textEditor(options)}
+              editor={(options) =>
+                dropdownEditor({
+                  ...options,
+                  options: requerimientos.map((req) => ({
+                    label: req,
+                    value: req,
+                  })),
+                })
+              }
             ></Column>
             <Column
               field="mat_prima_limpiayordenada"
               header="Materia Prima Limpia y Ordenada"
-              editor={(options) => textEditor(options)}
+              editor={(options) =>
+                dropdownEditor({
+                  ...options,
+                  options: requerimientos.map((req) => ({
+                    label: req,
+                    value: req,
+                  })),
+                })
+              }
             ></Column>
             <Column
               field="producto_sellado"
               header="Producto Sellado"
-              editor={(options) => textEditor(options)}
+              editor={(options) =>
+                dropdownEditor({
+                  ...options,
+                  options: requerimientos.map((req) => ({
+                    label: req,
+                    value: req,
+                  })),
+                })
+              }
             ></Column>
             <Column
               field="mat_prima_etiqueta"
               header="Materia Prima con Etiqueta"
-              editor={(options) => textEditor(options)}
+              editor={(options) =>
+                dropdownEditor({
+                  ...options,
+                  options: requerimientos.map((req) => ({
+                    label: req,
+                    value: req,
+                  })),
+                })
+              }
             ></Column>
             <Column
               field="mat_prima_sin_perforaciones"
               header="Materia Prima sin Perforaciones"
-              editor={(options) => textEditor(options)}
+              editor={(options) =>
+                dropdownEditor({
+                  ...options,
+                  options: requerimientos.map((req) => ({
+                    label: req,
+                    value: req,
+                  })),
+                })
+              }
             ></Column>
             <Column
               field="caracteristica"
               header="Característica"
-              editor={(options) => textEditor(options)}
+              editor={(options) =>
+                dropdownEditor({
+                  ...options,
+                  options: requerimientos.map((req) => ({
+                    label: req,
+                    value: req,
+                  })),
+                })
+              }
             ></Column>
             <Column
               field="mat_prima_peso_etiqueta"
               header="Peso Etiqueta Materia Prima"
-              editor={(options) => textEditor(options)}
+              editor={(options) =>
+                dropdownEditor({
+                  ...options,
+                  options: requerimientos.map((req) => ({
+                    label: req,
+                    value: req,
+                  })),
+                })
+              }
             ></Column>
             <Column
               field="peso_unidad"

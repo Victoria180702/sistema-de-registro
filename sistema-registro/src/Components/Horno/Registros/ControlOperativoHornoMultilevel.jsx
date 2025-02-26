@@ -28,16 +28,22 @@ const ControlOperativoHornoMultilevel = () => {
         salida2: "",
         entrada1: "",
         entrada2: "",
+
+
         kpa_manometro1: "",
         kpa_manometro2: "",
         kpa_manometro3: "",
         kpa_manometro4: "",
+
+
         banda_alimentacion1: "",
         banda_alimentacion2: "",
         banda_alimentacion3: "",
+
         psi_tanque1: "",
         psi_tanque2: "",
         psi_tanque3: "",
+
         fec_registro: "",
         hor_registro: "",
         observaciones: "",
@@ -45,11 +51,6 @@ const ControlOperativoHornoMultilevel = () => {
         hor_fin: "",
         tipo_control: ""
     };
-
-    return(
-        <>
-        <h1>Control Operativo Horno Multilevel</h1>
-        </>
-    );
+    
 }
 export default ControlOperativoHornoMultilevel;

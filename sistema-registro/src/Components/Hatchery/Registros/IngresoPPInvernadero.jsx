@@ -723,14 +723,16 @@ function IngresoPPInvernadero() {
             gestionar los registros ingreso de prepuas al invernadero.
           </p>
         </div>
-        <button onClick={() => navigate(-1)} className="return-button">
-          Volver
-        </button>
-        <br />
-        <br />
-        <button onClick={() => navigate(-2)} className="menu-button">
-          Menú principal
-        </button>
+        <div className="buttons-container">
+          <button onClick={() => navigate(-1)} className="return-button">
+            Volver
+          </button>
+          <br />
+          <br />
+          <button onClick={() => navigate(-2)} className="menu-button">
+            Menú principal
+          </button>
+        </div>
         <div className="tabla-scroll">
           <Toolbar
             className="mb-4"
@@ -831,7 +833,7 @@ function IngresoPPInvernadero() {
             ></Column>
             <Column
               field="hor_registro"
-              header="Hora de Registro el"
+              header="Hora de Registro"
               // editor={(options) => textEditor(options)}
               sortable
               style={{ minWidth: "14rem" }}
@@ -939,20 +941,7 @@ function IngresoPPInvernadero() {
             required
             autoFocus
           />
-          {erroresValidacion.cantidad_ur && (
-            <>
-              <small className="p-error">Razón fuera de rango</small>
-              <Dropdown
-                value={selectedCantidadUR}
-                onChange={(e) => setSelectedCantidadUR(e.value)}
-                options={razonesObservaciones}
-                optionLabel="name"
-                showClear
-                placeholder="Seleccione una Observación"
-                className="w-full md:w-14rem"
-              />
-            </>
-          )}
+          
 
           <br />
           <label htmlFor="kg_pp_modulo" className="font-bold">
@@ -974,20 +963,7 @@ function IngresoPPInvernadero() {
             required
             autoFocus
           />
-          {erroresValidacion.kg_pp_modulo && (
-            <>
-              <small className="p-error">Razón fuera de rango</small>
-              <Dropdown
-                value={selectedKgPPModulo}
-                onChange={(e) => setSelectedKgPPModulo(e.value)}
-                options={razonesObservaciones}
-                optionLabel="name"
-                showClear
-                placeholder="Seleccione una Observación"
-                className="w-full md:w-14rem"
-              />
-            </>
-          )}
+          
 
           <br />
           <label htmlFor="kg_pp_ur" className="font-bold">
@@ -1026,21 +1002,6 @@ function IngresoPPInvernadero() {
             autoFocus
           />
 
-{erroresValidacion.cantidad_pp_modulo && (
-            <>
-              <small className="p-error">Razón fuera de rango</small>
-              <Dropdown
-                value={selectedCantidadPPModulo}
-                onChange={(e) => setSelectedCantidadPPModulo(e.value)}
-                options={razonesObservaciones}
-                optionLabel="name"
-                showClear
-                placeholder="Seleccione una Observación"
-                className="w-full md:w-14rem"
-              />
-            </>
-          )}
-
           <br />
           <label htmlFor="kg_pp_redsea" className="font-bold">
             Kg PrePupa RedSea{" "}
@@ -1062,20 +1023,6 @@ function IngresoPPInvernadero() {
             autoFocus
           />
 
-{erroresValidacion.kg_pp_redsea && (
-            <>
-              <small className="p-error">Razón fuera de rango</small>
-              <Dropdown
-                value={selectedKgPPRedSea}
-                onChange={(e) => setSelectedKgPPRedSea(e.value)}
-                options={razonesObservaciones}
-                optionLabel="name"
-                showClear
-                placeholder="Seleccione una Observación"
-                className="w-full md:w-14rem"
-              />
-            </>
-          )}
 
           <br />
           <label htmlFor="fec_cam_camas" className="font-bold">

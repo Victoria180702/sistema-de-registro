@@ -122,8 +122,8 @@ function ColectaInvernadero() {
     { field: "mediana", header: "Mediana" },
     { field: "total_gm", header: "Total g" },
     { field: "nave_procedencia", header: "Procedencia" },
-    { field: "temp", header: "Temperatura Ambiente" },
-    { field: "hum_relativa", header: "Humedad relativa" },
+    { field: "temp", header: "Temperatura Ambiente (°C)" },
+    { field: "hum_relativa", header: "Humedad relativa (%)" },
     { field: "operario", header: "Operio" },
     { field: "observaciones", header: "Observaciones" },
     { field: "registrado", header: "Registrado" },
@@ -617,14 +617,14 @@ const { data, error } = await supabase
             ></Column>
             <Column
               field="temp"
-              header="Temperatura"
+              header="Temperatura (°C)"
               editor={(options) => floatEditor(options)}
               sortable
               style={{ minWidth: "10rem" }}
             ></Column>
             <Column
               field="hum_relativa"
-              header="Humedad Relativa"
+              header="Humedad Relativa (%)"
               editor={(options) => floatEditor(options)}
               sortable
               style={{ minWidth: "11rem" }}
@@ -811,7 +811,7 @@ const { data, error } = await supabase
 
           <br />
           <label htmlFor="temp" className="font-bold">
-            Temperatura{" "}
+            Temperatura (°C){" "}
             {submitted && !eggie.temp && (
               <small className="p-error">Requerido.</small>
             )}
@@ -827,7 +827,7 @@ const { data, error } = await supabase
 
           <br />
           <label htmlFor="hum_relativa" className="font-bold">
-            Humedad Relativa{" "}
+            Humedad Relativa (%){" "}
             {submitted && !eggie.hum_relativa && (
               <small className="p-error">Requerido.</small>
             )}

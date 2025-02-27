@@ -360,10 +360,10 @@ function Control_Neonatos() {
     { field: "inspector_calidad", header: "Inspector Calidad" },
     { field: "fecha_eclosion_huevos", header: "Fecha Eclosión Huevos" },
     { field: "fecha_despacho", header: "Fecha Despacho" },
-    { field: "temp_ambiental", header: "Temperatura Ambiental" },
-    { field: "hum_ambiental", header: "Humedad Ambiental" },
-    { field: "temp_final_dieta", header: "Temperatura Final Dieta" },
-    { field: "hum_final_dieta", header: "Humedad Final Dieta" },
+    { field: "temp_ambiental", header: "Temperatura Ambiental (°C)" },
+    { field: "hum_ambiental", header: "Humedad Ambiental (%)" },
+    { field: "temp_final_dieta", header: "Temperatura Final Dieta (°C)" },
+    { field: "hum_final_dieta", header: "Humedad Final Dieta (%)" },
     { field: "peso_total_neonato", header: "Peso Total Neonato" },
     { field: "cantidad_neonatos", header: "Cantidad Neonatos" },
     { field: "cantidad_neonatos_total", header: "Cantidad Neonatos Total" },
@@ -542,22 +542,22 @@ function Control_Neonatos() {
             ></Column>
             <Column
               field="temp_ambiental"
-              header="Temperatura Ambiental °C"
+              header="Temperatura Ambiental (°C)"
               editor={(options) => floatEditor(options)}
             ></Column>
             <Column
               field="hum_ambiental"
-              header="Humedad Ambiental"
+              header="Humedad Ambiental (%)"
               editor={(options) => floatEditor(options)}
             ></Column>
             <Column
               field="temp_final_dieta"
-              header="Temperatura Final Dieta °C"
+              header="Temperatura Final Dieta (°C)"
               editor={(options) => floatEditor(options)}
             ></Column>
             <Column
               field="hum_final_dieta"
-              header="Humedad Final Dieta"
+              header="Humedad Final Dieta (%)"
               editor={(options) => floatEditor(options)}
             ></Column>
             <Column
@@ -702,7 +702,7 @@ function Control_Neonatos() {
           <br />
 
           <label htmlFor="temp_ambiental" className="font-bold">
-            Temperatura Ambiental °C{" "}
+            Temperatura Ambiental (°C){" "}
             {submitted && !registro.temp_ambiental && (
               <small className="p-error">Requerido.</small>
             )}
@@ -717,7 +717,7 @@ function Control_Neonatos() {
           <br />
 
           <label htmlFor="hum_ambiental" className="font-bold">
-            Humedad Ambiental{" "}
+            Humedad Ambiental (%){" "}
             {submitted && !registro.hum_ambiental && (
               <small className="p-error">Requerido.</small>
             )}
@@ -732,7 +732,7 @@ function Control_Neonatos() {
           <br />
 
           <label htmlFor="temp_final_dieta" className="font-bold">
-            Temperatura Final Dieta °C{" "}
+            Temperatura Final Dieta (°C){" "}
             {submitted && !registro.temp_final_dieta && (
               <small className="p-error">Requerido.</small>
             )}
@@ -747,7 +747,7 @@ function Control_Neonatos() {
           <br />
 
           <label htmlFor="hum_final_dieta" className="font-bold">
-            Humedad Final Dieta{" "}
+            Humedad Final Dieta (%){" "}
             {submitted && !registro.hum_final_dieta && (
               <small className="p-error">Requerido.</small>
             )}

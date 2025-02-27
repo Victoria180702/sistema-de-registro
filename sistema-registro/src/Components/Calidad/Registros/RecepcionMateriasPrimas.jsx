@@ -465,8 +465,8 @@ function RecepcionMateriasPrimas() {
     { field: "caracteristica", header: "Característica" },
     { field: "mat_prima_peso_etiqueta", header: "Peso Etiqueta Materia Prima" },
     { field: "peso_unidad", header: "Peso Unidad" },
-    { field: "humedad", header: "Humedad" },
-    { field: "temp", header: "Temperatura" },
+    { field: "humedad", header: "Humedad (%)" },
+    { field: "temp", header: "Temperatura (°C)" },
     { field: "brix", header: "Brix" },
     { field: "ph", header: "pH" },
     { field: "muestra", header: "Muestra" },
@@ -785,12 +785,12 @@ function RecepcionMateriasPrimas() {
             ></Column>
             <Column
               field="humedad"
-              header="Humedad"
+              header="Humedad (%)"
               editor={(options) => numberEditor(options)}
             ></Column>
             <Column
               field="temp"
-              header="Temperatura"
+              header="Temperatura (°C)"
               editor={(options) => floatEditor(options)}
             ></Column>
             <Column
@@ -1110,7 +1110,7 @@ function RecepcionMateriasPrimas() {
           />
           <br />
           <label htmlFor="humedad" className="font-bold">
-            Humedad{" "}
+            Humedad (%){" "}
             {submitted && !registro.humedad && (
               <small className="p-error">Requerido.</small>
             )}
@@ -1128,7 +1128,7 @@ function RecepcionMateriasPrimas() {
           />
           <br />
           <label htmlFor="temp" className="font-bold">
-            Temperatira{" "}
+            Temperatura (°C){" "}
             {submitted && !registro.temp && (
               <small className="p-error">Requerido.</small>
             )}

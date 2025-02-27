@@ -48,6 +48,19 @@ function NIB() {
     observaciones: "",
   };
 
+  const embudos = [
+    { name: "1", value: "1" },
+    { name: "2", value: "2" },
+    { name: "3", value: "3" },
+    { name: "4", value: "4" },
+    { name: "5", value: "5" },
+    { name: "6", value: "6" },
+    { name: "7", value: "7" },
+    { name: "8", value: "8" },
+    { name: "9", value: "9" },
+    { name: "10", value: "10" },
+  ];
+
   const [registros, setRegistros] = useState([]);
     const [registro, setRegistro] = useState(emptyRegister);
     const toast = useRef(null);
@@ -84,31 +97,10 @@ function NIB() {
   };
 //Fin de FETCH REGISTROS
 
-//Inicio de FETCH LOTES
-  const fetchLotes = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("Neonatos_Inoculados")
-        .select("lote_id"); // Solo traemos el lote_id
-
-      if (error) throw error;
-
-      // Eliminar duplicados, ordenar y formatear
-      const loteIds = [...new Set(data.map((item) => item.lote_id))] // Elimina duplicados
-        .sort((a, b) => a - b) // Ordena de manera ascendente
-        .map((lote) => ({ label: lote, value: lote })); // Formatea para el dropdown
-
-      setLotes(loteIds); // Guardamos los lotes en el estado
-    } catch (err) {
-      console.log("Error obteniendo lotes:", err);
-    }
-  };
-  //Fin de FETCH LOTES
 
   // Este useEffect se ejecuta cuando el componente se monta, para obtener los datos una vez
   useEffect(() => {
     fetchNeonatos(); 
-    fetchLotes(); 
   }, []); // Agrega globalFilter como dependencia
   // El array vacío asegura que solo se ejecute una vez cuando el componente se monta
 
@@ -190,15 +182,6 @@ function NIB() {
     });
 
     try {
-      // Convertir fec_cam_camas al formato dd/mm/yyyy
-      // const formattedFecCamCamas = neonato.fec_cam_camas
-      // ? new Date(neonato.fec_cam_camas).toISOString().split("T")[0].split("-").reverse().join("/")
-      // : null;
-
-      // const formattedFecIngresoPP = neonato.fec_ingreso_pp
-      //   ? new Date(neonato.fec_ingreso_pp).toISOString().split("T")[0].split("-").reverse().join("/")
-      //   : null;
-
       const currentDate = formatDateTime(new Date(), "DD/MM/YYYY"); // Solo fecha
       const currentTime = formatDateTime(new Date(), "hh:mm A"); // Fecha en formato ISO 8601
       const { data, error } = await supabase
@@ -574,17 +557,18 @@ function NIB() {
 
   // Columnas de la tabla para exportar
   const cols = [
-    { header: "ID", field: "id" },
+    { header: "Fecha Colecta", field: "fec_colecta" },
+    { header: "Hora Colecta", field: "hor_colecta" },
     { header: "# Embudo", field: "embudo" },
     { header: "g Colectados", field: "gm_colectados" },
     { header: "Cajas Inoculadas / Destino", field: "cajas_inoculadas_destino" },
     { header: "g Neonato x Caja", field: "gm_neonato_caja" },
     { header: "Cantidad dieta x caja", field: "cantidad_dieta_caja" },
-    { header: "Temperatura ambiental", field: "temp_ambiental" },
-    { header: "Humedad ambiental", field: "hum_ambiental" },
+    { header: "Temperatura ambiental (°C)", field: "temp_ambiental" },
+    { header: "Humedad ambiental (%)", field: "hum_ambiental" },
     { header: "Operario", field: "operario" },
-    { field: "observaciones", header: "Observaciones" },
-    { field: "registrado", header: "Registrado" },
+    { header: "Observaciones", field: "observaciones" },
+    { header: "Lote", field: "lote_id" },
   ];
 
   // Mapeo de columnas para jsPDF-Autotable
@@ -647,12 +631,6 @@ function NIB() {
           >
             <Column selectionMode="multiple" exportable={false}></Column>
             <Column
-              field="id"
-              header="ID"
-              sortable
-              style={{ minWidth: "3rem" }}
-            ></Column>
-            <Column
               field="fec_colecta"
               header="Fecha Colecta"
               // editor={(options) => textEditor(options)}
@@ -703,14 +681,14 @@ function NIB() {
             ></Column>
             <Column
               field="temp_ambiental"
-              header="Temperatura ambiental"
+              header="Temperatura ambiental (°C)"
               editor={(options) => floatEditor(options)}
               sortable
               style={{ minWidth: "10rem" }}
             ></Column>
             <Column
               field="hum_ambiental"
-              header="Humedad ambiental"
+              header="Humedad ambiental (%)"
               editor={(options) => floatEditor(options)}
               sortable
               style={{ minWidth: "11rem" }}
@@ -757,22 +735,6 @@ function NIB() {
         onHide={hideDialog}
       >
         <div className="field">
-          <label htmlFor="lote_id" className="font-bold">
-            Lote{" "}
-            {submitted && !registro.lote_id && (
-              <small className="p-error">Requerido.</small>
-            )}
-          </label>
-          <Dropdown
-            value={registro.lote_id}
-            onChange={(e) => setRegistro({ ...registro, lote_id: e.value })} // Actualiza el estado con el lote_id seleccionado
-            options={lotes} // Los lote_ids disponibles
-            optionLabel="label" // El valor a mostrar en el dropdown (lote_id)
-            optionValue="value" // El valor real que se selecciona
-            placeholder="Selecciona un lote"
-            className="w-full md:w-14rem"
-          />
-          <br />
           <label htmlFor="embudo" className="font-bold">
             # de Embudo{" "}
             {submitted && !registro.embudo && (
@@ -784,14 +746,15 @@ function NIB() {
               </small>
             )}
           </label>
-          <InputText
-            type="number"
-            id="embudo"
-            value={registro.embudo}
-            onChange={(e) => onInputChange(e, "embudo")}
-            required
-            autoFocus
-          />
+          
+          <Dropdown
+                      value={registro.embudo}
+                      onChange={(e) => setRegistro({ ...registro, embudo: e.value })}
+                      options={embudos}
+                      optionLabel="name"
+                      placeholder="Selecciona un # de Embudo"
+                      className="w-full md:w-14rem"
+                    />
           <br />
 
           <label htmlFor="gm_colectados" className="font-bold">
@@ -869,7 +832,7 @@ function NIB() {
 
           <br />
           <label htmlFor="temp_ambiental" className="font-bold">
-            Temperatura Ambiental{" "}
+            Temperatura Ambiental (°C){" "}
             {submitted && !registro.temp_ambiental && (
               <small className="p-error">Requerido.</small>
             )}
@@ -885,7 +848,7 @@ function NIB() {
 
           <br />
           <label htmlFor="hum_ambiental" className="font-bold">
-            Humedad Ambiental{" "}
+            Humedad Ambiental (%){" "}
             {submitted && !registro.hum_ambiental && (
               <small className="p-error">Requerido.</small>
             )}

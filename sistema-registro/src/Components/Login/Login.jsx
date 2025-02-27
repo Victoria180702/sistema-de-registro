@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import logo from '../../assets/Pronuvo_logos_sin_fondo_6.png green.png';
 import logo2 from '../../assets/mosca.png';
 import supabase from '../../supabaseClient';
+import { Password } from 'primereact/password';
 
 function App() {
   const [usuarios, setUsuarios] = useState([]);
@@ -84,14 +85,8 @@ function App() {
           </div>
           <div>
             <label htmlFor="password">Contraseña:</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Ingrese su contraseña"
-              required
-            />
+            <Password id='password' 
+            required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Ingrese su contraseña" feedback={false} tabIndex={1} toggleMask/>
           </div>
           <button type="submit">Iniciar Sesión</button>
         </form>

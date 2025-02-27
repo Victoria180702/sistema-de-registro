@@ -32,26 +32,14 @@ function Cosecha() {
               1- Control de Rendimiento Cosecha y Frass
             </button>
             
-            {/* <button
-              onClick={() => navigate("/Coseccha/")}
+             <button
+              onClick={() => navigate("/ControlTiempos")}
               className="back-button"
             >
-              2-
+              2-Control de Tiempos Perdidos
             </button>
 
-            <button
-              onClick={() => navigate("/Coseccha/")}
-              className="back-button"
-            >
-              3- 
-            </button>
-
-            <button
-              onClick={() => navigate("/Coseccha/")}
-              className="back-button"
-            >
-              4- 
-            </button> */}
+            
 
             <button onClick={() => navigate(-1)} className="back-button">
               Volver al Menú Principal

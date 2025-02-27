@@ -402,10 +402,10 @@ function ControlCalidadCosecha() {
   const cols = [
     { field: "lote_id", header: "Lote ID" },
     { field: "dias_rezago", header: "Días Rezago" },
-    { field: "temp_ambiental", header: "Temp Ambiental" },
-    { field: "hum_ambiental", header: "Hum Ambiental" },
-    { field: "hum_frass", header: "Hum Frass" },
-    { field: "temp_frass", header: "Temp Frass" },
+    { field: "temp_ambiental", header: "Temperatura Ambiental (°C)" },
+    { field: "hum_ambiental", header: "Humedad Ambiental (%)" },
+    { field: "hum_frass", header: "Humedad Frass (%)" },
+    { field: "temp_frass", header: "Temperatura Frass (°C)" },
     { field: "color", header: "Color" },
     { field: "tamano", header: "Tamaño" },
     { field: "peso", header: "Peso" },
@@ -559,10 +559,10 @@ function ControlCalidadCosecha() {
             <Column selectionMode="multiple" exportable={false}></Column>
             <Column field="lote_id" header="Lote ID" sortable />
             <Column field="dias_rezago" header="Días Rezago" editor={(options) => numberEditor(options)} sortable/>
-            <Column field="temp_ambiental" header="Temp Ambiental" editor={(options) => floatEditor(options)} sortable />
-            <Column field="hum_ambiental" header="Hum Ambiental" editor={(options) => floatEditor(options)} sortable />
-            <Column field="hum_frass" header="Hum Frass" editor={(options) => floatEditor(options)} sortable />
-            <Column field="temp_frass" header="Temp Frass" editor={(options) => floatEditor(options)} sortable />
+            <Column field="temp_ambiental" header="Temperatura Ambiental (°C)" editor={(options) => floatEditor(options)} sortable />
+            <Column field="hum_ambiental" header="Humedad Ambiental (%)" editor={(options) => floatEditor(options)} sortable />
+            <Column field="hum_frass" header="Humedad Frass (%)" editor={(options) => floatEditor(options)} sortable />
+            <Column field="temp_frass" header="Temperaturas Frass (°C)" editor={(options) => floatEditor(options)} sortable />
             <Column field="color" header="Color" editor={(options) => textEditor(options)} sortable />
             <Column field="tamano" header="Tamaño" editor={(options) => floatEditor(options)} sortable />
             <Column field="peso" header="Peso" editor={(options) => floatEditor(options)} sortable />
@@ -630,7 +630,7 @@ function ControlCalidadCosecha() {
           />
           <br />
           <label htmlFor="temp_ambiental" className="font-bold">
-            Temp Ambiental{" "}
+            Temperatura Ambiental °C{" "}
             {submitted && !registro.temp_ambiental && (
               <small className="p-error">Requerido.</small>
             )}
@@ -645,7 +645,7 @@ function ControlCalidadCosecha() {
           />
           <br />
           <label htmlFor="hum_ambiental" className="font-bold">
-            Hum Ambiental{" "}
+            Humedad Ambiental %{" "}
             {submitted && !registro.hum_ambiental && (
               <small className="p-error">Requerido.</small>
             )}
@@ -659,7 +659,7 @@ function ControlCalidadCosecha() {
           />
           <br />
           <label htmlFor="hum_frass" className="font-bold">
-            Hum Frass{" "}
+            Humedad Frass %{" "}
             {submitted && !registro.hum_frass && (
               <small className="p-error">Requerido.</small>
             )}
@@ -673,7 +673,7 @@ function ControlCalidadCosecha() {
           />
           <br />
           <label htmlFor="temp_frass" className="font-bold">
-            Temp Frass{" "}
+            Temperatura Frass °C{" "}
             {submitted && !registro.temp_frass && (
               <small className="p-error">Requerido.</small>
             )}

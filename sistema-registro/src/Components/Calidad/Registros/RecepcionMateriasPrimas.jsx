@@ -115,8 +115,8 @@ function RecepcionMateriasPrimas() {
     setSubmitted(true);
 
     // Validar los campos
-    const isMuestraInvalido = registro.muestra < 31;
-    const isHumedadInvalido = registro.humedad > 5;
+    const isMuestraInvalido = registro.muestra < 5;
+    const isHumedadInvalido = registro.humedad > 13;
 
     // Actualizar el estado de errores
     setErroresValidacion({

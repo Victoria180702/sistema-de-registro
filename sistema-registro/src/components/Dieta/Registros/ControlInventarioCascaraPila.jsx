@@ -133,7 +133,7 @@ function ControlInventarioCascaraPila() {
           currentY += rowHeight;
         }
     
-        doc.save("Control Calidad Cosecha.pdf");
+        doc.save("Control Inventario Cáscara Pila.pdf");
       };
   
     const exportXlsx = () => {
@@ -475,12 +475,6 @@ function ControlInventarioCascaraPila() {
             header={header}
           >
             <Column selectionMode="multiple" exportable={false}></Column>
-            <Column
-              field="id"
-              header="ID"
-              sortable
-              style={{ minWidth: "3rem" }}
-            />
             <Column
               field="fecha"
               header="Fecha"

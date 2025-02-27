@@ -15,6 +15,7 @@ import { Dropdown } from "primereact/dropdown";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import logo2 from "../../../assets/mosca.png";
 
 function ControlRendimientoSecadoHornoMultilevel() {
   let emptyRegister = {
@@ -468,7 +469,10 @@ function ControlRendimientoSecadoHornoMultilevel() {
     <>
       <div className="controltiempos-container">
         <Toast ref={toast} />
-        <h1>Control Rendimiento Secado Horno Microondas</h1>
+        <h1>
+          <img src={logo2} alt="mosca" className="logo2" />
+          Control Rendimiento Secado Horno Microondas
+        </h1>
         <div className="welcome-message">
           <p>
             Bienvenido al sistema de Control Rendimiento Secado Horno
@@ -804,7 +808,7 @@ function ControlRendimientoSecadoHornoMultilevel() {
           />
           <br />
           <label htmlFor="tipo_control" className="font-bold">
-            Hora Fin{" "}
+            Tipo Control{" "}
             {submitted && !registro.tipo_control && (
               <small className="p-error">Requerido.</small>
             )}

@@ -117,32 +117,33 @@ function ControlRendimientoCosechayFrass() {
 
   const saveRegistro = async () => {
     setSubmitted(true);
-
-    function isInvalid(value, min, max) {
-      return value < min || value > max;
-    }
-    
-    const isCantidadCajasCosechadasInvalido = isInvalid(registro.cant_cajas_cosechadas, 500, 2000);
-    const isKgLarvaFrescaInvalido = isInvalid(registro.kg_larva_fresca, 0, 12000);
-    const isCajasDesechadasInvalido = isInvalid(registro.cant_cajas_desechadas, 0, 0);
-    const isKgTotalFrassInvalido = isInvalid(registro.kg_total_frass, 0, 6000);
-    const isKgMaterialGruesoInvalido = isInvalid(registro.kg_material_grueso, 0, 6000);
-
-    setErroresValidacion({
-      cant_cajas_cosechadas: isCantidadCajasCosechadasInvalido,
+  
+    // Validar los campos
+    const isCantCajasCosechadasInvalido =
+      registro.cant_cajas_cosechadas < 500 || registro.cant_cajas_cosechadas > 2000;
+    const isKgLarvaFrescaInvalido =
+      registro.kg_larva_fresca < 0 || registro.kg_larva_fresca > 12000;
+    const isCantCajasDesechadasInvalido = registro.cant_cajas_desechadas === 0;
+    const isKgTotalFrassInvalido =
+      registro.kg_total_frass < 0 || registro.kg_total_frass > 6000;
+    const isKgMaterialGruesoInvalido =
+      registro.kg_material_grueso < 0 || registro.kg_material_grueso > 6000;
+  
+    // Actualizar el estado de errores
+    const erroresValidacion = {
+      cant_cajas_cosechadas: isCantCajasCosechadasInvalido,
       kg_larva_fresca: isKgLarvaFrescaInvalido,
-      cajasDesechadas: isCajasDesechadasInvalido,
+      cant_cajas_desechadas: isCantCajasDesechadasInvalido,
       kg_total_frass: isKgTotalFrassInvalido,
       kg_material_grueso: isKgMaterialGruesoInvalido,
-  });
-  const valoresFueraDeRango =
-    isCantidadCajasCosechadasInvalido ||
-    isKgLarvaFrescaInvalido ||
-    isCajasDesechadasInvalido ||
-    isKgTotalFrassInvalido ||
-    isKgMaterialGruesoInvalido;
-
-
+    };
+  
+    // Verificar si algún valor está fuera de rango
+    const valoresFueraDeRango = Object.values(erroresValidacion).some(
+      (error) => error
+    );
+  
+    // Validación principal
     if (
       !registro.fec_siembra ||
       !registro.fec_cosecha ||
@@ -156,89 +157,86 @@ function ControlRendimientoCosechayFrass() {
       !registro.fec_almacenaje_frass ||
       !registro.cant_sacos
     ) {
-      console.log(erroresValidacion);
       toast.current.show({
         severity: "error",
         summary: "Error",
-        detail: "Llena todos los campos ",
+        detail: "Llena todos los campos obligatorios.",
         life: 3000,
       });
       return;
     }
-
-    // Validación principal
+  
+    // Si algún valor está fuera de rango y no hay observaciones, mostrar error
     if (valoresFueraDeRango && !registro.observaciones) {
-      setObservacionesObligatorio(true);
-      const currentErrores = {
-        "Cantidad Cajas Cosechadas": isCantidadCajasCosechadasInvalido,
-        "Kg Larva Fresca": isKgLarvaFrescaInvalido,
-        "Cajas Desechadas": isCajasDesechadasInvalido,
-        "Kg Total Frass": isKgTotalFrassInvalido,
-        "Kg Material Grueso": isKgMaterialGruesoInvalido,
-      };
-
+      const camposInvalidos = Object.keys(erroresValidacion)
+        .filter((key) => erroresValidacion[key])
+        .map((key) => {
+          switch (key) {
+            case "cant_cajas_cosechadas":
+              return "Cajas Cosechadas (500 - 2000)";
+            case "kg_larva_fresca":
+              return "Larva Fresca (0 - 12000 KG)";
+            case "cant_cajas_desechadas":
+              return "Cajas Desechadas (debe ser 0)";
+            case "kg_total_frass":
+              return "Frass Fino Total (0 - 6000 KG)";
+            case "kg_material_grueso":
+              return "Material Grueso (0 - 6000 KG)";
+            default:
+              return "";
+          }
+        })
+        .join(", ");
+  
       toast.current.show({
         severity: "error",
         summary: "Error",
-        detail: `Debe agregar observaciones. Campos inválidos: ${Object.keys(
-          currentErrores
-        )
-          .filter((k) => currentErrores[k])
-          .join(", ")}`,
+        detail: `Debe agregar observaciones. Campos inválidos: ${camposInvalidos}`,
         life: 3000,
       });
       return;
     }
-
-    setObservacionesObligatorio(false);
-    setErroresValidacion({
-      cant_cajas_cosechadas: false,
-      kg_larva_fresca: false,
-      cajasDesechadas: false,
-      kg_total_frass: false,
-      kg_material_grueso: false,
-
-    });
-
+  
     try {
-      const currentDate = formatDateTime(new Date(), "DD/MM/YYYY"); // Fecha actual
-      const currentTime = formatDateTime(new Date(), "hh:mm A"); // Hora actual
-
+      const currentDate = formatDateTime(new Date(), "DD/MM/YYYY"); // Solo fecha
+      const currentTime = formatDateTime(new Date(), "hh:mm A"); // Fecha en formato ISO 8601
+  
       const { data, error } = await supabase
         .from("Control_Rendimiento_CosechayFrass")
         .insert([
           {
-            fec_siembra: convertirFecha(registro.fec_siembra),
-            fec_cosecha: convertirFecha(registro.fec_cosecha),
+            fec_siembra: registro.fec_siembra,
+            fec_cosecha: registro.fec_cosecha,
             cant_cajas_cosechadas: registro.cant_cajas_cosechadas,
             kg_larva_fresca: registro.kg_larva_fresca,
             cant_cajas_desechadas: registro.cant_cajas_desechadas,
             kg_total_frass: registro.kg_total_frass,
             kg_material_grueso: registro.kg_material_grueso,
-            fec_registro: currentDate, // Fecha de registro automática
-            hor_registro: currentTime, // Hora de registro automática
+            fec_registro: currentDate,
+            hor_registro: currentTime,
             observaciones: registro.observaciones,
-            fec_almacenaje_frass: convertirFecha(registro.fec_almacenaje_frass),
+            fec_almacenaje_frass: registro.fec_almacenaje_frass,
             cant_sacos: registro.cant_sacos,
             tipo_produccion: registro.tipo_produccion,
             tipo_control: registro.tipo_control,
           },
         ]);
-
+  
       if (error) {
         console.error("Error en Supabase:", error);
         throw new Error(
           error.message || "Error desconocido al guardar en Supabase"
         );
       }
-
+  
       toast.current.show({
         severity: "success",
         summary: "Exitoso",
         detail: "Registro guardado exitosamente",
         life: 3000,
       });
-
+  
+      // Limpia el estado
       setRegistro(emptyRegister);
       setRegistroDialog(false);
       setSubmitted(false);
@@ -247,7 +245,7 @@ function ControlRendimientoCosechayFrass() {
       toast.current.show({
         severity: "error",
         summary: "Error",
-        detail: error.message || "Ocurrió un error al crear el usuario",
+        detail: error.message || "Ocurrió un error al crear el registro",
         life: 3000,
       });
     }
@@ -508,7 +506,10 @@ function ControlRendimientoCosechayFrass() {
     <>
       <div className="controlrendcosechayfrass-container">
         <Toast ref={toast} />
-        <h1>Control de Rendimiento Cosecha y Frass</h1>
+        <h1>
+          <img src={logo2} alt="mosca" className="logo2" />
+          Control de Rendimiento Cosecha y Frass
+        </h1>
         <div className="welcome-message">
           <p>
             Bienvenido al sistema de Control de Rendimiento Cosecha y Frass.

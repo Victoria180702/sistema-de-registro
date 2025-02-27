@@ -33,6 +33,16 @@ function ControlRendimientoCosechaReproduccion() {
     peso_individual_pp_mg: "",
     cantidad_cajas: "",
     cantidad_camas_pupacion: "",
+    observaciones: "", // Nuevo campo no obligatorio
+    fec_registro: "", // Fecha de registro (automático)
+    hor_registro: "", // Hora de registro (automático)
+  };
+
+  const getCurrentDateTime = () => {
+    const now = new Date();
+    const fecha = now.toISOString().split("T")[0]; // Formato YYYY-MM-DD
+    const hora = now.toTimeString().split(" ")[0]; // Formato HH:MM:SS
+    return { fecha, hora };
   };
 
   const [registros, setRegistros] = useState([]);
@@ -67,33 +77,6 @@ function ControlRendimientoCosechaReproduccion() {
     fetchRegistros();
   }, []);
 
-  const formatDateTime = (date, format = "DD-MM-YYYY hh:mm A") => {
-    const options = {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    };
-    const formatter = new Intl.DateTimeFormat("en-US", options);
-    const parts = formatter.formatToParts(date);
-    const dateMap = parts.reduce((acc, part) => {
-      if (part.type !== "literal") {
-        acc[part.type] = part.value;
-      }
-      return acc;
-    }, {});
-    return format
-      .replace("DD", dateMap.day)
-      .replace("MM", dateMap.month)
-      .replace("YYYY", dateMap.year)
-      .replace("hh", dateMap.hour.padStart(2, "0"))
-      .replace("mm", dateMap.minute)
-      .replace("A", dateMap.dayPeriod || "AM");
-  };
-
-
   const exportPdf = () => {
     if (selectedRegistros.length === 0) {
       toast.current.show({
@@ -104,8 +87,7 @@ function ControlRendimientoCosechaReproduccion() {
       });
       return; // Detener la ejecución si no hay filas seleccionadas
     }
-  
-    // Resto del código para generar el PDF...
+
     const doc = new jsPDF();
 
     // Configuración del título
@@ -127,7 +109,6 @@ function ControlRendimientoCosechaReproduccion() {
     doc.save("Control_Rendimiento_Cosecha/Reproduccion.pdf");
   };
 
- 
   const exportXlsx = () => {
     if (selectedRegistros.length === 0) {
       toast.current.show({
@@ -138,14 +119,13 @@ function ControlRendimientoCosechaReproduccion() {
       });
       return; // Detener la ejecución si no hay filas seleccionadas
     }
-  
-    // Resto del código para generar el XLSX...
+
     // Obtener los encabezados de las columnas
-    const headers = cols.map((col) => col.header); // Mapear solo los encabezados de las columnas
+    const headers = cols.map((col) => col.header);
 
     // Obtener los datos seleccionados y mapearlos para las columnas
-    const rows = selectedRegistros.map(
-      (registro) => cols.map((col) => registro[col.field]) // Mapear los valores de cada fila por las columnas
+    const rows = selectedRegistros.map((registro) =>
+      cols.map((col) => registro[col.field])
     );
 
     // Agregar la fila de encabezados al principio de los datos
@@ -157,7 +137,7 @@ function ControlRendimientoCosechaReproduccion() {
     // Configurar el estilo de la hoja para asegurar la correcta separación de celdas
     const wscols = cols.map((col) => ({
       width: Math.max(col.header.length, 10),
-    })); // Ajustar el ancho de las columnas según los encabezados
+    }));
     ws["!cols"] = wscols;
 
     // Crear un libro de trabajo
@@ -167,8 +147,6 @@ function ControlRendimientoCosechaReproduccion() {
     // Exportar el archivo .xlsx
     XLSX.writeFile(wb, "Control_Rendimiento_Cosecha_Reproduccion.xlsx");
   };
-
-  
 
   const cols = [
     { field: "num_lote", header: "Número de Lote" },
@@ -186,6 +164,9 @@ function ControlRendimientoCosechaReproduccion() {
       field: "cantidad_camas_pupacion",
       header: "Cantidad de Camas de Pupación",
     },
+    { field: "observaciones", header: "Observaciones" }, // Nuevo campo
+    { field: "fec_registro", header: "Fecha de Registro" }, // Fecha de registro
+    { field: "hor_registro", header: "Hora de Registro" }, // Hora de registro
   ];
 
   const exportColumns = cols.map((col) => ({
@@ -256,15 +237,14 @@ function ControlRendimientoCosechaReproduccion() {
     );
   };
 
-
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses empiezan en 0
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Los meses empiezan en 0
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
-  
+
   const saveRegistro = async () => {
     setSubmitted(true);
     if (
@@ -284,21 +264,21 @@ function ControlRendimientoCosechaReproduccion() {
       toast.current.show({
         severity: "error",
         summary: "Error",
-        detail: "Llena todos los campos",
+        detail: "Llena todos los campos obligatorios",
         life: 3000,
       });
       return;
     }
   
-    // Formatear las fechas antes de guardar
-    const registroFormateado = {
-      ...registro,
-      fec_siembra: formatDate(registro.fec_siembra),
-      fec_cosecha: formatDate(registro.fec_cosecha),
-    };
-  
     try {
-      const { id, ...registroSinId } = registroFormateado;
+      const { fecha, hora } = getCurrentDateTime(); // Obtener fecha y hora actual
+      const registroConFechaHora = {
+        ...registro,
+        fec_registro: fecha, // Asignar fecha de registro
+        hor_registro: hora, // Asignar hora de registro
+      };
+  
+      const { id, ...registroSinId } = registroConFechaHora;
       const { data, error } = await supabase
         .from("Control_Rendimiento_Cosecha_Reproduccion")
         .insert([registroSinId]);
@@ -332,8 +312,6 @@ function ControlRendimientoCosechaReproduccion() {
     let val = e.target.value;
     if (e.target.type === "number") {
       val = val ? parseFloat(val) : "";
-    } else if (e.target.type === "date") {
-      val = formatDate(val); // Formatear la fecha al guardar
     }
     let _registro = { ...registro };
     _registro[name] = val; // Usar corchetes para acceder a la propiedad dinámica
@@ -465,12 +443,6 @@ function ControlRendimientoCosechaReproduccion() {
           >
             <Column selectionMode="multiple" exportable={false}></Column>
             <Column
-              field="id"
-              header="ID"
-              sortable
-              style={{ minWidth: "3rem" }}
-            />
-            <Column
               field="num_lote"
               header="Número de Lote"
               editor={(options) => numberEditor(options)}
@@ -551,6 +523,13 @@ function ControlRendimientoCosechaReproduccion() {
               field="cantidad_camas_pupacion"
               header="Cantidad de Camas de Pupación"
               editor={(options) => floatEditor(options)}
+              sortable
+              style={{ minWidth: "10rem" }}
+            />
+            <Column
+              field="observaciones"
+              header="Observaciones"
+              editor={(options) => textEditor(options)}
               sortable
               style={{ minWidth: "10rem" }}
             />
@@ -747,6 +726,16 @@ function ControlRendimientoCosechaReproduccion() {
             value={registro.cantidad_camas_pupacion}
             onChange={(e) => onInputChange(e, "cantidad_camas_pupacion")}
             required
+          />
+          <br />
+          <label htmlFor="observaciones" className="font-bold">
+            Observaciones
+          </label>
+          <InputText
+            type="text"
+            id="observaciones"
+            value={registro.observaciones}
+            onChange={(e) => onInputChange(e, "observaciones")}
           />
         </div>
       </Dialog>

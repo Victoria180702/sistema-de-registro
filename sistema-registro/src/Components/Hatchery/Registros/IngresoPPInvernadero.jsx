@@ -758,12 +758,7 @@ function IngresoPPInvernadero() {
             header={header}
           >
             <Column selectionMode="multiple" exportable={false}></Column>
-            <Column
-              field="id"
-              header="ID"
-              sortable
-              style={{ minWidth: "3rem" }}
-            ></Column>
+            
             <Column
               field="fec_ingreso_pp"
               header="Fecha Ingreso PP"

@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-//import "./LimpiezaDesinfeccionEquiposMaquinariaPesada.css";
 import supabase from "../../../supabaseClient";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primeicons/primeicons.css";
@@ -15,6 +14,7 @@ import { Dropdown } from "primereact/dropdown";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import logo2 from "../../../assets/mosca.png";
 
 function LimpiezaDesinfeccionEquiposMaquinariaPesada() {
   let emptyRegister = {
@@ -36,11 +36,22 @@ function LimpiezaDesinfeccionEquiposMaquinariaPesada() {
   const [registroDialog, setRegistroDialog] = useState(false);
   const navigate = useNavigate();
 
+  const equipos = [
+    { label: "Teletruk", value: "Teletruk" },
+    { label: "Montacargas", value: "Montacargas" },
+    { label: "Otro", value: "Otro" }
+  ];
+  
+  const supervisores = [
+    { label: "Juan", value: "Juan" },
+    { label: "Paco", value: "Paco" },
+    { label: "Ana", value: "Ana" }
+  ];
+
   const fetchRegistros = async () => {
     try {
       const { data, error } = await supabase.from("Limpieza_Desinfeccion_Equipos_Maquinaria_Pesada").select();
       if (data) {
-        // Formatear la fecha al formato día/mes/año
         const registrosFormateados = data.map((registro) => ({
           ...registro,
           fecha_registro: formatearFecha(registro.fecha_registro),
@@ -56,24 +67,21 @@ function LimpiezaDesinfeccionEquiposMaquinariaPesada() {
     fetchRegistros();
   }, []);
 
-  // Función para formatear la fecha en formato día/mes/año
   const formatearFecha = (fecha) => {
     if (!fecha) return "";
     const date = new Date(fecha);
     const dia = String(date.getDate()).padStart(2, "0");
-    const mes = String(date.getMonth() + 1).padStart(2, "0"); // Los meses comienzan en 0
+    const mes = String(date.getMonth() + 1).padStart(2, "0");
     const año = date.getFullYear();
     return `${dia}/${mes}/${año}`;
   };
 
-  // Función para convertir la fecha de día/mes/año a formato ISO (año-mes-día)
   const convertirFechaISO = (fecha) => {
     if (!fecha) return "";
     const [dia, mes, año] = fecha.split("/");
     return `${año}-${mes}-${dia}`;
   };
 
-  // Función para obtener la hora actual en formato HH:MM
   const obtenerHoraActual = () => {
     const ahora = new Date();
     const horas = String(ahora.getHours()).padStart(2, "0");
@@ -84,7 +92,6 @@ function LimpiezaDesinfeccionEquiposMaquinariaPesada() {
   const saveRegistro = async () => {
     setSubmitted(true);
 
-    // Validar campos obligatorios
     if (!registro.equipo || !registro.responsable || !registro.supervisor) {
       toast.current.show({
         severity: "error",
@@ -95,7 +102,6 @@ function LimpiezaDesinfeccionEquiposMaquinariaPesada() {
       return;
     }
 
-    // Obtener la fecha y hora actual
     const fechaISO = new Date().toISOString().split('T')[0];
     const horaActual = obtenerHoraActual();
 
@@ -196,7 +202,6 @@ function LimpiezaDesinfeccionEquiposMaquinariaPesada() {
     setRegistroDialog(false);
   };
 
-  // Función para verificar si todos los campos obligatorios están llenos
   const isFormValid = () => {
     return registro.equipo && registro.responsable && registro.supervisor;
   };
@@ -213,7 +218,7 @@ function LimpiezaDesinfeccionEquiposMaquinariaPesada() {
         label="Guardar"
         icon="pi pi-check"
         onClick={saveRegistro}
-        disabled={!isFormValid()} // Deshabilitar el botón si el formulario no es válido
+        disabled={!isFormValid()}
       />
     </React.Fragment>
   );
@@ -279,25 +284,116 @@ function LimpiezaDesinfeccionEquiposMaquinariaPesada() {
     XLSX.writeFile(wb, "Limpieza_Desinfeccion_Equipos_Maquinaria_Pesada.xlsx");
   };
 
+  // Funciones de edición
+  const dateEditor = (options) => {
+    const convertToInputFormat = (date) => {
+      if (!date) return "";
+      const [day, month, year] = date.split("/");
+      return `${year}-${month}-${day}`;
+    };
+    const convertToDatabaseFormat = (date) => {
+      if (!date) return "";
+      const [year, month, day] = date.split("-");
+      return `${day}/${month}/${year}`;
+    };
+
+    return (
+      <InputText
+        type="date"
+        value={convertToInputFormat(options.value)}
+        onChange={(e) => {
+          const selectedDate = e.target.value;
+          options.editorCallback(convertToDatabaseFormat(selectedDate));
+        }}
+      />
+    );
+  };
+
+  const timeEditor = (options) => {
+    return (
+      <InputText
+        type="time"
+        value={options.value}
+        onChange={(e) => options.editorCallback(e.target.value)}
+      />
+    );
+  };
+
+  const textEditor = (options) => {
+    return (
+      <InputText
+        type="text"
+        value={options.value}
+        onChange={(e) => options.editorCallback(e.target.value)}
+      />
+    );
+  };
+
+  const numberEditor = (options) => {
+    return (
+      <InputText
+        type="number"
+        value={options.value}
+        onChange={(e) => options.editorCallback(e.target.value)}
+      />
+    );
+  };
+
+  const floatEditor = (options) => {
+    return (
+      <InputText
+        type="number"
+        value={options.value}
+        onChange={(e) => options.editorCallback(e.target.value)}
+      />
+    );
+  };
+
+  const allowEdit = (rowData) => {
+    return true; // Permitir edición en todas las filas
+  };
+
+  const onRowEditComplete = async ({ newData }) => {
+    const { id, ...updatedData } = newData;
+    try {
+      const { error } = await supabase
+        .from("Limpieza_Desinfeccion_Equipos_Maquinaria_Pesada")
+        .update(updatedData)
+        .eq("id", id);
+
+      if (error) return console.error("Error al actualizar:", error.message);
+
+      setRegistros((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, ...newData } : n))
+      );
+    } catch (err) {
+      console.error("Error inesperado:", err);
+    }
+  };
+
   return (
     <>
       <div className="limpieza-desinfeccion-container">
         <Toast ref={toast} />
-        <h1>Limpieza y Desinfección de Equipos y Maquinaria Pesada</h1>
+        <h1>
+          <img src={logo2} alt="mosca" className="logo2" />
+          Limpieza y Desinfección de Equipos y Maquinaria Pesada
+        </h1>
         <div className="welcome-message">
           <p>
             Bienvenido al sistema de limpieza y desinfección de equipos y maquinaria pesada. Aquí puedes gestionar los registros de limpieza y desinfección.
           </p>
         </div>
-        <button onClick={() => navigate(-1)} className="return-button">
-          Volver
-        </button>
-        <br />
-        <br />
-        <button onClick={() => navigate(-2)} className="menu-button">
-          Menú principal
-        </button>
-
+        <div className="buttons-container">
+          <button onClick={() => navigate(-1)} className="return-button">
+            Volver
+          </button>
+          <br />
+          <br />
+          <button onClick={() => navigate(-2)} className="menu-button">
+            Menú principal
+          </button>
+        </div>
         <div className="tabla-scroll">
           <Toolbar
             className="mb-4"
@@ -305,6 +401,8 @@ function LimpiezaDesinfeccionEquiposMaquinariaPesada() {
             right={rightToolbarTemplate}
           ></Toolbar>
           <DataTable
+            editMode="row"
+            onRowEditComplete={onRowEditComplete}
             ref={dt}
             value={registros}
             selection={selectedRegistros}
@@ -318,12 +416,18 @@ function LimpiezaDesinfeccionEquiposMaquinariaPesada() {
             currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} Registros"
           >
             <Column selectionMode="multiple" exportable={false}></Column>
-            <Column field="fecha_registro" header="Fecha Registro" sortable />
-            <Column field="hora_registro" header="Hora Registro" sortable />
-            <Column field="equipo" header="Equipo" sortable />
-            <Column field="responsable" header="Responsable" sortable />
-            <Column field="supervisor" header="Supervisor" sortable />
-            <Column field="observaciones" header="Observaciones" sortable />
+            <Column field="fecha_registro" header="Fecha Registro" sortable editor={(options) => dateEditor(options)} />
+            <Column field="hora_registro" header="Hora Registro" sortable editor={(options) => timeEditor(options)} />
+            <Column field="equipo" header="Equipo" sortable editor={(options) => textEditor(options)} />
+            <Column field="responsable" header="Responsable" sortable editor={(options) => textEditor(options)} />
+            <Column field="supervisor" header="Supervisor" sortable editor={(options) => textEditor(options)} />
+            <Column field="observaciones" header="Observaciones" sortable editor={(options) => textEditor(options)} />
+            <Column
+              header="Herramientas"
+              rowEditor={allowEdit}
+              headerStyle={{ width: "10%", minWidth: "5rem" }}
+              bodyStyle={{ textAlign: "center" }}
+            ></Column>
           </DataTable>
         </div>
       </div>
@@ -339,44 +443,39 @@ function LimpiezaDesinfeccionEquiposMaquinariaPesada() {
       >
         <div className="field">
           <label htmlFor="equipo" className="font-bold">
-            Equipo{" "}
-            {submitted && !registro.equipo && (
-              <small className="p-error">Este campo es requerido.</small>
-            )}
+            Equipo
           </label>
-          <InputText
+          <Dropdown
             id="equipo"
             value={registro.equipo}
+            options={equipos}
             onChange={(e) => onInputChange(e, "equipo")}
-            required
-            autoFocus
+            placeholder="Seleccione un equipo"
           />
           <br />
+
           <label htmlFor="responsable" className="font-bold">
-            Responsable{" "}
-            {submitted && !registro.responsable && (
-              <small className="p-error">Este campo es requerido.</small>
-            )}
+            Responsable
           </label>
           <InputText
             id="responsable"
             value={registro.responsable}
             onChange={(e) => onInputChange(e, "responsable")}
-            required
           />
           <br />
+
           <label htmlFor="supervisor" className="font-bold">
-            Supervisor{" "}
-            {submitted && !registro.supervisor && (
-              <small className="p-error">Este campo es requerido.</small>
-            )}
+            Supervisor
           </label>
-          <InputText
+          <Dropdown
             id="supervisor"
             value={registro.supervisor}
+            options={supervisores}
             onChange={(e) => onInputChange(e, "supervisor")}
-            required
+            placeholder="Seleccione un supervisor"
           />
+          <br />
+
           <br />
           <label htmlFor="observaciones" className="font-bold">
             Observaciones{" "}

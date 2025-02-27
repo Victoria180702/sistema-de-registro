@@ -593,14 +593,16 @@ function NIB() {
             los registros de Neonatos Inoculados.
           </p>
         </div>
-        <button onClick={() => navigate(-1)} className="return-button">
-          Volver
-        </button>
-        <br />
-        <br />
-        <button onClick={() => navigate(-2)} className="menu-button">
-          Menú principal
-        </button>
+        <div className="buttons-container">
+          <button onClick={() => navigate(-1)} className="return-button">
+            Volver
+          </button>
+          <br />
+          <br />
+          <button onClick={() => navigate(-2)} className="menu-button">
+            Menú principal
+          </button>
+        </div>
         <div className="tabla-scroll">
           <Toolbar
             className="mb-4"

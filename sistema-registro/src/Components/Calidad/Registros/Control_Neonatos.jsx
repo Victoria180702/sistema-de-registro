@@ -16,6 +16,7 @@ import { Divider } from "primereact/divider";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import logo2 from "../../../assets/mosca.png";
 
 function Control_Neonatos() {
   let emptyRegister = {
@@ -489,7 +490,7 @@ function Control_Neonatos() {
         <Toast ref={toast} />
         <h1>         
           <img src={logo2} alt="mosca" className="logo2" />
-          Recepcion Materias Primas
+          Control Calidad Neonatos
         </h1>
         <div className="welcome-message">
           <p>

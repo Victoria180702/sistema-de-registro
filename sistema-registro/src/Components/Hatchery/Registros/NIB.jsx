@@ -779,7 +779,7 @@ function NIB() {
 
           <br />
           <label htmlFor="cajas_inoculadas_destino" className="font-bold">
-            Cajas Inoculadas / Destido{" "}
+            Cajas Inoculadas / Destino{" "}
             {submitted && !registro.cajas_inoculadas_destino && (
               <small className="p-error">Requerido.</small>
             )}

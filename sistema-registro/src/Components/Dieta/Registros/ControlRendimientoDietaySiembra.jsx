@@ -16,6 +16,7 @@ import { Divider } from 'primereact/divider';
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import logo2 from "../../../assets/mosca.png";
 
 function ControLRendimientoDietaySiembra() {
   let emptyRegister = {
@@ -581,7 +582,10 @@ function ControLRendimientoDietaySiembra() {
     <>
       <div className="controltiempos-container">
         <Toast ref={toast} />
-        <h1>Control Rendimiento Dieta y Siembra</h1>
+        <h1>
+          <img src={logo2} alt="mosca" className="logo2" />
+          Control Rendimiento Dieta y Siembra
+        </h1>
         <div className="welcome-message">
           <p>
             Bienvenido al sistema de Control Rendimiento Dieta y Siembra. Aquí
@@ -877,7 +881,7 @@ function ControLRendimientoDietaySiembra() {
           <br />
 
           <label htmlFor="lts_agua" className="font-bold">
-            Litos Agua{" "}
+            Litros Agua{" "}
             {submitted && !registro.lts_agua && (
               <small className="p-error">Requerido.</small>
             )}

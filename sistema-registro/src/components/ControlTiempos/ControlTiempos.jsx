@@ -15,6 +15,7 @@ import { Dropdown } from "primereact/dropdown";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import logo2 from "../../assets/mosca.png";
 
 function ControlTiempos() {
   let emptyRegister = {
@@ -461,7 +462,10 @@ function ControlTiempos() {
     <>
       <div className="controltiempos-container">
         <Toast ref={toast} />
-        <h1>Control de Tiempos</h1>
+        <h1>
+          <img src={logo2} alt="mosca" className="logo2" />
+          Control de Tiempos
+        </h1>
         <div className="welcome-message">
           <p>
             Bienvenido al sistema de control de tiempos. Aquí puedes gestionar los registros de paros y arranques.

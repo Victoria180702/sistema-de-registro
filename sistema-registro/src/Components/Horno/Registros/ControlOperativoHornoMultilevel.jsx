@@ -16,6 +16,7 @@ import { Divider } from "primereact/divider";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import logo2 from "../../../assets/mosca.png";
 
 const ControlOperativoHornoMultilevel = () => {
 

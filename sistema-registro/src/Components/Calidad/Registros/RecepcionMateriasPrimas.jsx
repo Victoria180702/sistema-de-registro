@@ -16,6 +16,7 @@ import { Divider } from "primereact/divider";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import logo2 from "../../../assets/mosca.png";
 
 function RecepcionMateriasPrimas() {
   let emptyRegister = {
@@ -586,7 +587,10 @@ function RecepcionMateriasPrimas() {
     <>
       <div className="controltiempos-container">
         <Toast ref={toast} />
-        <h1>Recepcion Materias Primas</h1>
+        <h1>
+          import logo2 from "../../../assets/mosca.png";
+          Recepcion Materias Primas
+        </h1>
         <div className="welcome-message">
           <p>
             Bienvenido al sistema de Calidad de Recepcion Materias Primas. Aquí

@@ -487,7 +487,10 @@ function Control_Neonatos() {
     <>
       <div className="controltiempos-container">
         <Toast ref={toast} />
-        <h1>Recepcion Materias Primas</h1>
+        <h1>         
+          <img src={logo2} alt="mosca" className="logo2" />
+          Recepcion Materias Primas
+        </h1>
         <div className="welcome-message">
           <p>
             Bienvenido al sistema de Calidad de Control de Neonatos. Aquí puedes

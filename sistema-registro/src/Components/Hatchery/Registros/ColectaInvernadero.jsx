@@ -53,7 +53,7 @@ function ColectaInvernadero() {
   const [deleteeggieDialog, setDeleteeggieDialog] = useState(false); //Variable de estado que guarda si se muestra el dialogo de eliminar usuario
   const [deleteeggiesDialog, setDeleteeggiesDialog] = useState(false); //Variable de estado que guarda si se muestra el dialogo de eliminar usuarios
   const navigate = useNavigate(); //Variable de navegación
-  const [selectedRegistros, setSelectedRegistros] = useState([]);
+  
   const [observacionesObligatorio, setObservacionesObligatorio] =
     useState(false);
   const [erroresValidacion, setErroresValidacion] = useState({
@@ -135,7 +135,7 @@ function ColectaInvernadero() {
       }));
     
       const exportPdf = () => {
-        if (selectedRegistros.length === 0) {
+        if (selectedeggies.length === 0) {
           toast.current.show({
             severity: "warn",
             summary: "Advertencia",
@@ -149,7 +149,7 @@ function ColectaInvernadero() {
         doc.setFontSize(18);
         doc.text("Registros de Control Rendimiento Cosecha y Frass", 14, 22);
     
-        const exportData = selectedRegistros.map(({ fec_registro, hor_registro, ...row }) => ({
+        const exportData = selectedeggies.map(({ fec_registro, hor_registro, ...row }) => ({
           ...row,
           registrado: `${fec_registro || ""} ${hor_registro || ""}`,
         }));
@@ -188,7 +188,7 @@ function ColectaInvernadero() {
       };
   
     const exportXlsx = () => {
-        if (selectedRegistros.length === 0) {
+        if (selectedeggies.length === 0) {
           toast.current.show({
             severity: "warn",
             summary: "Advertencia",
@@ -199,7 +199,7 @@ function ColectaInvernadero() {
         }
     
         const headers = cols.map(col => col.header);
-        const exportData = selectedRegistros.map(({ fec_registro, hor_registro, ...registro }) => ({
+        const exportData = selectedeggies.map(({ fec_registro, hor_registro, ...registro }) => ({
           ...registro,
           registrado: `${fec_registro || ""} ${hor_registro || ""}`,
         }));
@@ -565,12 +565,7 @@ const { data, error } = await supabase
             header={header}
           >
             <Column selectionMode="multiple" exportable={false}></Column>
-            <Column
-              field="id"
-              header="ID"
-              sortable
-              style={{ minWidth: "3rem" }}
-            ></Column>
+            
             <Column
               field="fec_colocacion"
               header="Colocación"

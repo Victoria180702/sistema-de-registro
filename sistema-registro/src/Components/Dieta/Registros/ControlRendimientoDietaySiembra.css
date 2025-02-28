@@ -1,0 +1,11 @@
+.exportar-container{
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    margin-bottom: 5px;
+  }
+
+  h3{
+    text-decoration: underline;
+    text-align: center;
+  }

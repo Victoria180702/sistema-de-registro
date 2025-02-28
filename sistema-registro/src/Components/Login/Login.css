@@ -1,0 +1,89 @@
+.Login {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh; /* Altura mínima igual a la ventana */
+  margin: 0;
+  background-color: #f2f7f1; /* Fondo verde musgo claro */
+  font-family: Arial, sans-serif;
+  height: 100%; /* Asegura que el contenido ocupe toda la altura de la pantalla */
+}
+
+.login-containers {
+  width: 100%;
+  max-width: 500px; /* Tamaño más grande */
+  padding: 30px;
+  border: 2px solid rgb(85, 107, 47); /* Borde verde musgo oscuro */
+  border-radius: 12px; /* Bordes redondeados */
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2); /* Sombra para profundidad */
+  background-color: #fafaf5; /* Fondo blanco con un toque verde */
+  margin: auto; /* Asegura que el contenedor esté centrado */
+}
+
+.login-container h1 {
+  margin-bottom: 25px;
+  font-size: 28px; /* Título más grande */
+  color: #6b8e23; /* Verde oliva */
+  text-align: center;
+}
+
+.login-container label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: #556b2f; /* Verde musgo oscuro */
+}
+
+.login-container input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #a9ba9d; /* Borde verde suave */
+  border-radius: 6px; /* Bordes suaves */
+  font-size: 16px; /* Texto más grande */
+}
+
+.login-container input:focus {
+  outline: none;
+  border-color: #6b8e23; /* Verde oliva al enfocar */
+  box-shadow: 0px 0px 5px rgba(107, 142, 35, 0.5); /* Efecto de enfoque */
+}
+
+.login-container button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: #556b2f; /* Verde musgo oscuro */
+  color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.login-container button:hover {
+  background-color: #6b8e23; /* Verde oliva al pasar el mouse */
+}
+
+.mensaje {
+  margin-top: 20px;
+  font-size: 16px;
+  color: #556b2f; /* Verde musgo oscuro */
+  text-align: center;
+} 
+
+.logo {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 250px; /* Cambia este valor al tamaño deseado */
+  height: auto; /* Mantiene las proporciones */
+  z-index: 100;
+}
+
+.logo2 {
+  position:absolute;
+  width: 50px; /* Cambia este valor al tamaño deseado */
+  height: auto; 
+}

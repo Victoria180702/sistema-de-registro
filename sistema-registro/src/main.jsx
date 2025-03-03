@@ -32,6 +32,7 @@ import Horno from './pages/Horno/PagesHorno.jsx';
 import ControlRendimientoSecadoHornoMultilevel from './pages/Horno/Registros/PagesControlRendimientoSecadoHornoMultilevel.jsx';
 import ControlRendimientoSecadoHornoMicroondas from './pages/Horno/Registros/PagesControlRendimientoSecadoHornoMicroondas.jsx';
 import ControlOperativoHornoMultilevel from './pages/Horno/Registros/PagesControlOperativoHornoMultilevel.jsx';
+import ControlRendimientoProductoTerminado from './pages/Horno/Registros/PagesControlRendimientoProductoTerminado.jsx'
 
 //imports de paginas de Calidad
 import Calidad from './pages/Calidad/PagesCalidad.jsx';
@@ -142,6 +143,10 @@ const router = createBrowserRouter([{
       {
         path: `ControlOperativoHornoMultilevel`,
         element: <ControlOperativoHornoMultilevel />,
+      },
+      {
+        path: `ControlRendimientoProductoTerminado`,
+        element: <ControlRendimientoProductoTerminado />,
       },
     ],
   },

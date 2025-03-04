@@ -758,6 +758,16 @@ const ControlOperativoHornoMultilevel = () => {
                         editor={(options) => timeEditor(options)}
                       ></Column>
                       <Column
+                        field="fec_registro"
+                        header="Fecha Registro"
+                        
+                      ></Column>
+                      <Column
+                        field="hor_registro"
+                        header="Hora Registro"
+                        
+                      ></Column>
+                      <Column
                         field="observaciones"
                         header="Observaciones"
                         editor={(options) => textEditor(options)}

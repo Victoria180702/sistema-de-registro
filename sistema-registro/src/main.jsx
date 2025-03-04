@@ -232,7 +232,7 @@ const router = createBrowserRouter([{
 
     
 ]
-}])
+}],{ basename: "/ProNuvo" } ) // 👈 Importante: Se establece la base para todas las rutas )
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

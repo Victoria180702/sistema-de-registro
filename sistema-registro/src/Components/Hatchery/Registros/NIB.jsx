@@ -59,6 +59,7 @@ function NIB() {
     { name: "8", value: "8" },
     { name: "9", value: "9" },
     { name: "10", value: "10" },
+    
   ];
 
   const [registros, setRegistros] = useState([]);
@@ -198,6 +199,8 @@ function NIB() {
             operario: registro.operario,
             fec_colecta: currentDate,
             hor_colecta: currentTime,
+            fec_registro: currentDate,
+            hor_registro: currentTime,
             observaciones: registro.observaciones,
             lote_id: registro.lote_id,
           },
@@ -707,12 +710,27 @@ function NIB() {
               sortable
               style={{ minWidth: "8rem" }}
             ></Column>
+
             <Column
               field="lote_id"
               header="Lote"
               // editor={(options) => textEditor(options)}
               sortable
               style={{ minWidth: "8rem" }}
+            ></Column>
+<Column
+              field="fec_registro"
+              header="Fecha Registro"
+              // editor={(options) => textEditor(options)}
+              sortable
+              style={{ minWidth: "14rem" }}
+            ></Column>
+            <Column
+              field="hor_registro"
+              header="Hora Registro"
+              // editor={(options) => textEditor(options)}
+              sortable
+              style={{ minWidth: "14rem" }}
             ></Column>
             <Column
               header="Herramientas"

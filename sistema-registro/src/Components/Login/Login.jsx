@@ -11,13 +11,13 @@ function App() {
 
   const getUsuarios = async () => {
     const { data, error } = await supabase
-      .from('Usuarios')
-      .select();
+    .from('Usuarios')
+    .select()
 
-    setUsuarios(data);
-    console.log(data);
-  };
+    setUsuarios(data)
 
+  }
+    
   useEffect(() => {
     getUsuarios();
   }, []);

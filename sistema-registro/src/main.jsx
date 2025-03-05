@@ -14,11 +14,13 @@ import ColectaInvernadero from './pages/Hatchery/Registros/PagesColectaInvernade
 import IngresoPPInvernadero from './pages/Hatchery/Registros/PagesIngresoPPInvernadero.jsx';
 import NIB from './pages/Hatchery/Registros/PagesNIB.jsx';
 import ControlRendimientoCosechaReproduccion from './pages/Hatchery/Registros/PagesControlRendimientoCosechaReproduccion.jsx';
+import ControlDespachoLabPro from './pages/Hatchery/Registros/PagesControlDespachoLabPro.jsx';
 
 //imports paginas Dieta
 import Dieta from './pages/Dieta/PagesDieta.jsx';
 import ControlInventarioCascaraPila from './pages/Dieta/Registros/PagesControlInventarioCascaraPila.jsx';
 import ControlRendimientoDietaySiembra from './pages/Dieta/Registros/PagesControlRendimientoDietaySiembra.jsx';
+import ControlMovimientosCajasProceso from './pages/Dieta/Registros/PagesControlMovimientosCajasProceso.jsx';
 
 //imports paginas Gerencia
 import Gerencia from './pages/Gerencia/PagesGerencia.jsx';
@@ -92,6 +94,10 @@ const router = createBrowserRouter([{
           path: `ControlRendimientoCosechaReproduccion`,
           element: <ControlRendimientoCosechaReproduccion />,
         },
+        {
+          path: `ControlDespachoLabPro`,
+          element: <ControlDespachoLabPro />,
+        },
       ],
     },
 
@@ -108,6 +114,10 @@ const router = createBrowserRouter([{
         {
           path: `ControlRendimientoDietaySiembra`,
           element: <ControlRendimientoDietaySiembra />,
+        },
+        {
+          path: `ControlMovimientosCajasProceso`,
+          element: <ControlMovimientosCajasProceso />,
         },
       ],
     },

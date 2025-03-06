@@ -562,7 +562,7 @@ const ControlOperativoHornoMultilevel = () => {
               <Toast ref={toast} />
               <h1>         
                 <img src={logo2} alt="mosca" className="logo2" />
-                Control Calidad Neonatos
+                Control Operativo Horno Multilevel
               </h1>
               <div className="welcome-message">
                 <p>

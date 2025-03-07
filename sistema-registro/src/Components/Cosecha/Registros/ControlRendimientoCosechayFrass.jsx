@@ -18,8 +18,6 @@ import { Column } from "primereact/column";
 import { Toast } from "primereact/toast";
 import { Button } from "primereact/button";
 import { Toolbar } from "primereact/toolbar";
-import { IconField } from "primereact/iconfield";
-import { InputIcon } from "primereact/inputicon";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
@@ -395,7 +393,10 @@ function ControlRendimientoCosechayFrass() {
         outlined
         onClick={hideDialog}
       />
-      <Button label="Guardar" icon="pi pi-check" onClick={saveRegistro} />
+      <Button 
+      label="Guardar" 
+      icon="pi pi-check" 
+      onClick={saveRegistro} />
     </React.Fragment>
   );
 

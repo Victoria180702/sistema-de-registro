@@ -38,7 +38,25 @@ function Calidad() {
               onClick={() => navigate("/Calidad/RecepcionMateriasPrimas")}
               className="back-button"
             >
-              3- Recepcion de Materias Priams
+              3- Recepcion de Materias Primas
+            </button>
+            <button
+              onClick={() => navigate("/Calidad/ControlCalidadEngordeHatchery")}
+              className="back-button"
+            >
+              4- Control Calidad Engorde Hatchery
+            </button>
+            <button
+              onClick={() => navigate("/Calidad/ControlCalidadEngorde")}
+              className="back-button"
+            >
+              5- Control Calidad Engorde 
+            </button>
+            <button
+              onClick={() => navigate("/Calidad/ControlCalidadHornoMicroondas")}
+              className="back-button"
+            >
+              6- Control Calidad Horno Microondas
             </button>
             
             <button onClick={() => navigate(-1)} className="back-button">

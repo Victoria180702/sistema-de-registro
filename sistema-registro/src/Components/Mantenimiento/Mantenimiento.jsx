@@ -28,6 +28,28 @@ function Mantenimiento() {
             >
               1- Limpieza y Desinfeccion de Equipos Maquinaria Pesada
             </button>
+
+            <button
+              onClick={() => navigate("/Mantenimiento/ReporteInspeccion")}
+              className="back-button"
+            >
+              2- Reporte de Inspección Diario de Montacargas
+            </button>
+
+            <button
+              onClick={() => navigate("/Mantenimiento/ReporteInspeccionSemanal")}
+              className="back-button"
+            >
+              2- Reporte de Inspección Semanal de Montacargas
+            </button>
+
+            
+            <button
+              onClick={() => navigate("/Mantenimiento/PreoperacionalTeletruk")}
+              className="back-button"
+            >
+              3- Registro PreoperacionalTeletruk
+            </button>
             
             <button onClick={() => navigate(-1)} className="back-button">
               Volver al Menú Principal

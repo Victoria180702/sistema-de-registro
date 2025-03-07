@@ -39,14 +39,20 @@ import Calidad from './pages/Calidad/PagesCalidad.jsx';
 import ControlCalidadCosecha from './pages/Calidad/Registros/PagesControlCalidadCosecha.jsx';
 import RecepcionMateriasPrimas from './pages/Calidad/Registros/PagesRecepcionMateriasPrimas.jsx';
 import ControlNeonatos from './pages/Calidad/Registros/PagesControlNeonatos.jsx';
+import ControlCalidadEngordeHatchery from './components/Calidad/Registros/ControlCalidadEngordeHatchery.jsx';
+import ControlCalidadEngorde from './components/Calidad/Registros/ControlCalidadEngorde.jsx';
+import ControlCalidadHornoMicroondas from './components/Calidad/Registros/ControlCalidadHornoMicroondas.jsx';
 
-//imports de paginas de Mantnimiento
+//imports de paginas de Mantenimiento
 import Mantenimiento from './pages/Mantenimiento/PagesMantenimiento.jsx';
 import LimpiezaDesinfeccionEquiposMaquinariaPesada from './pages/Mantenimiento/Registros/PagesLimpiezaDesinfeccionEquiposMaquinariaPesada.jsx';
+import ReporteInspeccion from './pages/Mantenimiento/Registros/PagesReporteInspeccion.jsx'
+import ReporteInspeccionSemanal from './pages/Mantenimiento/Registros/PagesReporteInspeccionSemanal.jsx'
+import PreoperacionalTeletruk from './pages/Mantenimiento/Registros/PagesPreoperacionalTeletruk.jsx'
 
 //imports de paginas de Cosecha
 import Cosecha from './pages/Cosecha/PagesCosecha.jsx';
-import ControlRendimientoCosechayFrass from './Components/Cosecha/Registros/ControlRendimientoCosechayFrass.jsx';
+import ControlRendimientoCosechayFrass from './pages/Cosecha/Registros/PagesControlRendimientoCosechayFrass.jsx'
 
 
 
@@ -169,7 +175,19 @@ const router = createBrowserRouter([{
         path: `ControlNeonatos`,
         element: <ControlNeonatos />,
       },
-      
+      {
+        path: `ControlCalidadEngordeHatchery`,
+        element: <ControlCalidadEngordeHatchery />,
+      },
+      {
+        path: `ControlCalidadEngorde`,
+        element: <ControlCalidadEngorde />,
+      },
+      {
+        path: `ControlCalidadHornoMicroondas`,
+        element: <ControlCalidadHornoMicroondas />,
+      }
+
     ],
   },
 
@@ -183,7 +201,20 @@ const router = createBrowserRouter([{
         path: `LimpiezaDesinfeccionEquiposMaquinariaPesada`,
         element: <LimpiezaDesinfeccionEquiposMaquinariaPesada />,
       },
-      
+      {
+        path: `ReporteInspeccion`,
+        element: <ReporteInspeccion />,
+      },
+      {
+        path: `ReporteInspeccionSemanal`,
+        element: <ReporteInspeccionSemanal />,
+      },
+      {
+        path: `PreoperacionalTeletruk`,
+        element: <PreoperacionalTeletruk/>,
+      }
+
+
     ],
   },
 

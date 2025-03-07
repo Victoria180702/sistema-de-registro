@@ -588,7 +588,8 @@ function RecepcionMateriasPrimas() {
       <div className="controltiempos-container">
         <Toast ref={toast} />
         <h1>
-        
+          <img src={logo2} alt="mosca" className="logo2" />
+          Recepción de Materias Primas
         
         </h1>
         <div className="welcome-message">

@@ -61,7 +61,7 @@ function ControlCalidadEngorde() {
 
   const tiposDieta = ["Producción", "Reproducción"];
   const tiposControl = ["Prueba", "Control"];
-  const colores = ["Amarillo", "Marrón", "Negro", "Blanco", "Otro"];
+  const colores = ["1", "2", "3", "4", "5", "5", "6", "7", "8"];
   const diasControl = Array.from({length: 8}, (_, i) => (i + 3).toString()); // 3-10
 
   const convertirFecha = (fecha) =>

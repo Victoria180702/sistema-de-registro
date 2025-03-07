@@ -40,11 +40,20 @@ function Horno() {
             >
               3- Control Operativo Horno Multilevel
             </button>
+
+            <button
+              onClick={() => navigate("/Horno/ControlRendimientoProductoTerminado")}
+              className="back-button"
+            >
+              4- Control Rendimiento Producto Terminado
+            </button>
+
+
             <button
               onClick={() => navigate("/ControlTiempos")}
               className="back-button"
             >
-              4- Control de Tiempos Perdidos
+              5- Control de Tiempos Perdidos
             </button>
             <button onClick={() => navigate(-1)} className="back-button">
               Volver al Menú Principal

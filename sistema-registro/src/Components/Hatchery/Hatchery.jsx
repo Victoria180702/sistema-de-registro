@@ -53,6 +53,13 @@ function Hatchery() {
               4- Control de Rendimiento Cosecha-Reproducción
             </button>
 
+            <button
+              onClick={() => navigate("/Hatchery/ControlDespachoLabPro")}
+              className="back-button"
+            >
+              5- Control Despacho Laboratorio Producción
+            </button>
+
             <button onClick={() => navigate(-1)} className="back-button">
               Volver al Menú Principal
             </button>

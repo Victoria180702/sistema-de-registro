@@ -14,11 +14,13 @@ import ColectaInvernadero from './pages/Hatchery/Registros/PagesColectaInvernade
 import IngresoPPInvernadero from './pages/Hatchery/Registros/PagesIngresoPPInvernadero.jsx';
 import NIB from './pages/Hatchery/Registros/PagesNIB.jsx';
 import ControlRendimientoCosechaReproduccion from './pages/Hatchery/Registros/PagesControlRendimientoCosechaReproduccion.jsx';
+import ControlDespachoLabPro from './pages/Hatchery/Registros/PagesControlDespachoLabPro.jsx';
 
 //imports paginas Dieta
 import Dieta from './pages/Dieta/PagesDieta.jsx';
 import ControlInventarioCascaraPila from './pages/Dieta/Registros/PagesControlInventarioCascaraPila.jsx';
 import ControlRendimientoDietaySiembra from './pages/Dieta/Registros/PagesControlRendimientoDietaySiembra.jsx';
+import ControlMovimientosCajasProceso from './pages/Dieta/Registros/PagesControlMovimientosCajasProceso.jsx';
 
 //imports paginas Gerencia
 import Gerencia from './pages/Gerencia/PagesGerencia.jsx';
@@ -42,6 +44,8 @@ import ControlNeonatos from './pages/Calidad/Registros/PagesControlNeonatos.jsx'
 import ControlCalidadEngordeHatchery from './components/Calidad/Registros/ControlCalidadEngordeHatchery.jsx';
 import ControlCalidadEngorde from './components/Calidad/Registros/ControlCalidadEngorde.jsx';
 import ControlCalidadHornoMicroondas from './components/Calidad/Registros/ControlCalidadHornoMicroondas.jsx';
+import ControlCalidadHornoMultilevel from './pages/Calidad/Registros/PagesControlCalidadHornoMultilevel.jsx';
+import ControlCalidadDietaSiembra from './pages/Calidad/Registros/PagesControlCalidadDietaSiembra.jsx';
 
 //imports de paginas de Mantenimiento
 import Mantenimiento from './pages/Mantenimiento/PagesMantenimiento.jsx';
@@ -92,6 +96,10 @@ const router = createBrowserRouter([{
           path: `ControlRendimientoCosechaReproduccion`,
           element: <ControlRendimientoCosechaReproduccion />,
         },
+        {
+          path: `ControlDespachoLabPro`,
+          element: <ControlDespachoLabPro />,
+        },
       ],
     },
 
@@ -108,6 +116,10 @@ const router = createBrowserRouter([{
         {
           path: `ControlRendimientoDietaySiembra`,
           element: <ControlRendimientoDietaySiembra />,
+        },
+        {
+          path: `ControlMovimientosCajasProceso`,
+          element: <ControlMovimientosCajasProceso />,
         },
       ],
     },
@@ -186,8 +198,17 @@ const router = createBrowserRouter([{
       {
         path: `ControlCalidadHornoMicroondas`,
         element: <ControlCalidadHornoMicroondas />,
-      }
+      },
 
+      {
+        path: `ControlCalidadHornoMultilevel`,
+        element: <ControlCalidadHornoMultilevel />,
+      },
+      {
+        path: `ControlCalidadDietaSiembra`,
+        element: <ControlCalidadDietaSiembra />,
+      },
+      
     ],
   },
 
@@ -232,7 +253,7 @@ const router = createBrowserRouter([{
 
     
 ]
-}])
+}],{ basename: "/ProNuvo" } ) // 👈 Importante: Se establece la base para todas las rutas )
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

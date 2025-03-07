@@ -40,10 +40,17 @@ function Dieta() {
             </button>
 
             <button
+              onClick={() => navigate("/Dieta/ControlMovimientosCajasProceso")}
+              className="back-button"
+            >
+              3- Control Movimientos Cajas en Proceso
+            </button>
+
+            <button
               onClick={() => navigate("/ControlTiempos")}
               className="back-button"
             >
-              3- Control de Tiempos Perdidos
+             4- Control de Tiempos Perdidos
             </button>
             
             

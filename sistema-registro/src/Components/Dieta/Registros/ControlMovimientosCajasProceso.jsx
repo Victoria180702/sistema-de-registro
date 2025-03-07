@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Control_Neonatos.css"; // Importa el CSS
+import "./ControlMovimientosCajasProceso.css"; // Importa el CSS
 import supabase from "../../../supabaseClient";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primeicons/primeicons.css";
@@ -18,28 +18,17 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 import logo2 from "../../../assets/mosca.png";
 
-function Control_Neonatos() {
+const RecepcionMateriasPrimas = () => {
   let emptyRegister = {
-    fecha_eclosion_huevos: "",
-    fecha_despacho: "",
-    temp_ambiental: "",
-    hum_ambiental: "",
-    temp_final_dieta: "",
-    hum_final_dieta: "",
-    peso_total_neonato: "",
-    cantidad_neonatos: "",
-    cantidad_neonatos_total: "",
-    tamano_neonatos: "",
-    cajas_sembradas: "",
-    cumple_nocumple: "",
-    tipo_control: "",
-    inspector_calidad: "",
-    encargado_inves_desa: "",
+    coordinador_planta: "",
+    tipo_dieta: "",
+    cantidad_tarimas: "",
+    total_cajas: "",
+    responsable: "",
     fecha_registro: "",
     hora_registro: "",
     observaciones: "",
   };
-
   const [registros, setRegistros] = useState([]);
   const [registro, setRegistro] = useState(emptyRegister);
   const toast = useRef(null);
@@ -50,16 +39,16 @@ function Control_Neonatos() {
   const [registroDialog, setRegistroDialog] = useState(false);
   const navigate = useNavigate();
 
-  // Opciones para el campo "linea_produc"
-  const requerimientos = ["Cumple", "No Cumple", "N/A"];
-  const tipoControl = ["Control", "Prueba"];
+  const tipoDieta = ["Producción", "Reproducción"];
 
   const convertirFecha = (fecha) =>
     fecha ? fecha.split("-").reverse().join("/") : "";
 
   const fetchRegistros = async () => {
     try {
-      const { data, error } = await supabase.from("Control_Neonatos").select();
+      const { data, error } = await supabase
+        .from("Control_Movimiento_Cajas_Proceso")
+        .select();
       if (data) {
         setRegistros(data);
       }
@@ -96,21 +85,11 @@ function Control_Neonatos() {
   const saveRegistro = async () => {
     setSubmitted(true);
     if (
-      !registro.fecha_eclosion_huevos ||
-      !registro.fecha_despacho ||
-      !registro.temp_ambiental ||
-      !registro.hum_ambiental ||
-      !registro.temp_final_dieta ||
-      !registro.hum_final_dieta ||
-      !registro.peso_total_neonato ||
-      !registro.cantidad_neonatos ||
-      !registro.cantidad_neonatos_total ||
-      !registro.tamano_neonatos ||
-      !registro.cajas_sembradas ||
-      !registro.cumple_nocumple ||
-      !registro.tipo_control ||
-      !registro.inspector_calidad ||
-      !registro.encargado_inves_desa
+      !registro.coordinador_planta ||
+      !registro.tipo_dieta ||
+      !registro.cantidad_tarimas ||
+      !registro.total_cajas ||
+      !registro.responsable
     ) {
       toast.current.show({
         severity: "error",
@@ -120,33 +99,24 @@ function Control_Neonatos() {
       });
       return;
     }
-
     try {
       const currentDate = formatDateTime(new Date(), "DD/MM/YYYY"); // Fecha actual
       const currentTime = formatDateTime(new Date(), "hh:mm A"); // Hora actual
 
-      const { data, error } = await supabase.from("Control_Neonatos").insert([
-        {
-          fecha_eclosion_huevos: convertirFecha(registro.fecha_eclosion_huevos),
-          fecha_despacho: convertirFecha(registro.fecha_despacho),
-          temp_ambiental: registro.temp_ambiental,
-          hum_ambiental: registro.hum_ambiental,
-          temp_final_dieta: registro.temp_final_dieta,
-          hum_final_dieta: registro.hum_final_dieta,
-          peso_total_neonato: registro.peso_total_neonato,
-          cantidad_neonatos: registro.cantidad_neonatos,
-          cantidad_neonatos_total: registro.cantidad_neonatos_total,
-          tamano_neonatos: registro.tamano_neonatos,
-          cajas_sembradas: registro.cajas_sembradas,
-          cumple_nocumple: registro.cumple_nocumple,
-          tipo_control: registro.tipo_control,
-          inspector_calidad: registro.inspector_calidad,
-          encargado_inves_desa: registro.encargado_inves_desa,
-          fecha_registro: currentDate,
-          hora_registro: currentTime,
-          observaciones: registro.observaciones,
-        },
-      ]);
+      const { data, error } = await supabase
+        .from("Control_Movimiento_Cajas_Proceso")
+        .insert([
+          {
+            coordinador_planta: registro.coordinador_planta,
+            tipo_dieta: registro.tipo_dieta,
+            cantidad_tarimas: registro.cantidad_tarimas,
+            total_cajas: registro.total_cajas,
+            responsable: registro.responsable,
+            fecha_registro: currentDate,
+            hora_registro: currentTime,
+            observaciones: registro.observaciones,
+          },
+        ]); //Cambiar aqui este insert y poner cada columna ya que las fechas se tienen que formatear
       if (error) {
         console.error("Error en Supabase:", error);
         throw new Error(
@@ -270,7 +240,7 @@ function Control_Neonatos() {
     const { id, ...updatedData } = newData;
     try {
       const { error } = await supabase
-        .from("Control_Neonatos")
+        .from("Control_Movimiento_Cajas_Proceso")
         .update(updatedData)
         .eq("id", id);
 
@@ -357,24 +327,11 @@ function Control_Neonatos() {
   );
 
   const cols = [
-    { field: "tipo_control", header: "Tipo Control" },
-    { field: "inspector_calidad", header: "Inspector Calidad" },
-    { field: "fecha_eclosion_huevos", header: "Fecha Eclosión Huevos" },
-    { field: "fecha_despacho", header: "Fecha Despacho" },
-    { field: "temp_ambiental", header: "Temperatura Ambiental (°C)" },
-    { field: "hum_ambiental", header: "Humedad Ambiental (%)" },
-    { field: "temp_final_dieta", header: "Temperatura Final Dieta (°C)" },
-    { field: "hum_final_dieta", header: "Humedad Final Dieta (%)" },
-    { field: "peso_total_neonato", header: "Peso Total Neonato" },
-    { field: "cantidad_neonatos", header: "Cantidad Neonatos" },
-    { field: "cantidad_neonatos_total", header: "Cantidad Neonatos Total" },
-    { field: "tamano_neonatos", header: "Tamaño Neonatos" },
-    { field: "cajas_sembradas", header: "Cajas Sembradas" },
-    { field: "cumple_nocumple", header: "Cumple/No Cumple" },
-    {
-      field: "encargado_inves_desa",
-      header: "Encargado Inv y Des",
-    },
+    { field: "coordinador_planta", header: "Coordinador de Planta" },
+    { field: "tipo_dieta", header: "Tipo de Dieta" },
+    { field: "cantidad_tarimas", header: "Cantidad de Tarimas" },
+    { field: "total_cajas", header: "Total de Cajas" },
+    { field: "responsable", header: "Responsable" },
     { field: "observaciones", header: "Observaciones" },
     { field: "registrado", header: "Registrado" },
   ];
@@ -397,12 +354,12 @@ function Control_Neonatos() {
 
     const doc = new jsPDF();
     doc.setFontSize(18);
-    doc.text("Registros de Control de Neonatos", 14, 22);
+    doc.text("Control_Movimiento_Cajas_Proceso", 14, 22);
 
     const exportData = selectedRegistros.map(
-      ({ fec_registro, hor_registro, ...row }) => ({
+      ({ fecha_registro, hora_registro, ...row }) => ({
         ...row,
-        registrado: `${fec_registro || ""} ${hor_registro || ""}`,
+        registrado: `${fecha_registro || ""} ${hora_registro || ""}`,
       })
     );
 
@@ -446,7 +403,7 @@ function Control_Neonatos() {
       currentY += rowHeight;
     }
 
-    doc.save("Control de Neonatos.pdf");
+    doc.save("Control_Movimiento_Cajas_Proceso.pdf");
   };
 
   const exportXlsx = () => {
@@ -462,9 +419,9 @@ function Control_Neonatos() {
 
     const headers = cols.map((col) => col.header);
     const exportData = selectedRegistros.map(
-      ({ fec_registro, hor_registro, ...registro }) => ({
+      ({ fecha_registro, hora_registro, ...registro }) => ({
         ...registro,
-        registrado: `${fec_registro || ""} ${hor_registro || ""}`,
+        registrado: `${fecha_registro || ""} ${hora_registro || ""}`,
       })
     );
 
@@ -481,21 +438,22 @@ function Control_Neonatos() {
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Registros");
-    XLSX.writeFile(wb, "Control de Neonatos.xlsx");
+    XLSX.writeFile(wb, "Control_Movimiento_Cajas_Proceso.xlsx");
   };
 
   return (
     <>
       <div className="controltiempos-container">
         <Toast ref={toast} />
-        <h1>         
+        <h1>
           <img src={logo2} alt="mosca" className="logo2" />
-          Control Calidad Neonatos
+          Control Movimientos Cajas en Proceso
         </h1>
         <div className="welcome-message">
           <p>
-            Bienvenido al sistema de Calidad de Control de Neonatos. Aquí puedes
-            gestionar los registros de Control de Neonatos.
+            Bienvenido al sistema de Control Movimientos Cajas en Proceso. Aquí
+            puedes gestionar los registros de Control Movimientos Cajas en
+            Proceso.
           </p>
         </div>
         <div className="buttons-container">
@@ -516,6 +474,7 @@ function Control_Neonatos() {
             right={rightToolbarTemplate}
           ></Toolbar>
           <DataTable
+          showGridlines
             editMode="row"
             onRowEditComplete={onRowEditComplete}
             ref={dt}
@@ -532,95 +491,46 @@ function Control_Neonatos() {
           >
             <Column selectionMode="multiple" exportable={false}></Column>
             <Column
-              field="fecha_eclosion_huevos"
-              header="Fecha Eclosión Huevos"
-              editor={(options) => dateEditor(options)}
+              field="coordinador_planta"
+              header="Coordinador de Planta"
+              editor={(options) => textEditor(options)}
             ></Column>
             <Column
-              field="fecha_despacho"
-              header="Fecha Despacho"
-              editor={(options) => dateEditor(options)}
-            ></Column>
-            <Column
-              field="temp_ambiental"
-              header="Temperatura Ambiental (°C)"
-              editor={(options) => floatEditor(options)}
-            ></Column>
-            <Column
-              field="hum_ambiental"
-              header="Humedad Ambiental (%)"
-              editor={(options) => floatEditor(options)}
-            ></Column>
-            <Column
-              field="temp_final_dieta"
-              header="Temperatura Final Dieta (°C)"
-              editor={(options) => floatEditor(options)}
-            ></Column>
-            <Column
-              field="hum_final_dieta"
-              header="Humedad Final Dieta (%)"
-              editor={(options) => floatEditor(options)}
-            ></Column>
-            <Column
-              field="peso_total_neonato"
-              header="Peso Total Neonato"
-              editor={(options) => floatEditor(options)}
-            ></Column>
-            <Column
-              field="cantidad_neonatos"
-              header="Cantidad Neonatos"
-              editor={(options) => floatEditor(options)}
-            ></Column>
-            <Column
-              field="cantidad_neonatos_total"
-              header="Cantidad Neonatos Total"
-              editor={(options) => floatEditor(options)}
-            ></Column>
-            <Column
-              field="tamano_neonatos"
-              header="Tamaño Neonatos"
-              editor={(options) => floatEditor(options)}
-            ></Column>
-            <Column
-              field="cajas_sembradas"
-              header="Cajas Sembradas"
-              editor={(options) => numberEditor(options)}
-            ></Column>
-            <Column
-              field="cumple_nocumple"
-              header="Cumple/No Cumple"
+              field="tipo_dieta"
+              header="Tipo de Dieta"
               editor={(options) =>
                 dropdownEditor({
                   ...options,
-                  options: requerimientos.map((req) => ({
-                    label: req,
-                    value: req,
+                  options: tipoDieta.map((dieta) => ({
+                    label: dieta,
+                    value: dieta,
                   })),
                 })
               }
             ></Column>
             <Column
-              field="tipo_control"
-              header="Tipo Control"
-              editor={(options) =>
-                dropdownEditor({
-                  ...options,
-                  options: tipoControl.map((tc) => ({ label: tc, value: tc })),
-                })
-              }
+              field="cantidad_tarimas"
+              header="Cantidad de Tarimas"
+              editor={(options) => numberEditor(options)}
             ></Column>
             <Column
-              field="inspector_calidad"
-              header="Inspector Calidad"
+              field="total_cajas"
+              header="Total de Cajas"
+              editor={(options) => numberEditor(options)}
+            ></Column>
+            <Column
+              field="responsable"
+              header="Responsable"
               editor={(options) => textEditor(options)}
             ></Column>
             <Column
-              field="encargado_inves_desa"
-              header="Encargado Investigación y Desarrollo"
-              editor={(options) => textEditor(options)}
+              field="fecha_registro"
+              header="Fecha de Registro"
             ></Column>
-            <Column field="fecha_registro" header="Fecha Registro"></Column>
-                        <Column field="hora_registro" header="Hora Registro"></Column>
+            <Column
+              field="hora_registro"
+              header="Hora de Registro"
+            ></Column>
             <Column
               field="observaciones"
               header="Observaciones"
@@ -645,231 +555,79 @@ function Control_Neonatos() {
         footer={registroDialogFooter}
         onHide={hideDialog}
       >
-        <div className="p-field">
-          <label htmlFor="inspector_calidad" className="font-bold">
-            Inspector de Calidad{" "}
-            {submitted && !registro.inspector_calidad && (
+        <div className="field">
+          <label htmlFor="coordinador_planta" className="font-bold">
+            Coordinador Planta{" "}
+            {submitted && !registro.coordinador_planta && (
               <small className="p-error">Requerido.</small>
             )}
           </label>
           <InputText
-            id="inspector_calidad"
-            value={registro.inspector_calidad}
-            onChange={(e) => onInputChange(e, "inspector_calidad")}
+            id="coordinador_planta"
+            value={registro.coordinador_planta}
+            onChange={(e) => onInputChange(e, "coordinador_planta")}
           />
 
           <br />
 
-          <label htmlFor="encargado_inves_desa" className="font-bold">
-            Encargado Investigación y Desarrollo{" "}
-            {submitted && !registro.encargado_inves_desa && (
-              <small className="p-error">Requerido.</small>
-            )}
-          </label>
-          <InputText
-            id="encargado_inves_desa"
-            value={registro.encargado_inves_desa}
-            onChange={(e) => onInputChange(e, "encargado_inves_desa")}
-          />
-
-          <br />
-
-          <label htmlFor="fecha_eclosion_huevos" className="font-bold">
-            Fecha Eclosion Huevos{" "}
-            {submitted && !registro.fecha_eclosion_huevos && (
-              <small className="p-error">Requerido.</small>
-            )}
-          </label>
-          <InputText
-            type="date"
-            id="fecha_eclosion_huevos"
-            value={registro.fecha_eclosion_huevos}
-            onChange={(e) => onInputChange(e, "fecha_eclosion_huevos")}
-          />
-
-          <br />
-
-          <label htmlFor="fecha_despacho" className="font-bold">
-            Fecha Despacho{" "}
-            {submitted && !registro.fecha_despacho && (
-              <small className="p-error">Requerido.</small>
-            )}
-          </label>
-          <InputText
-            type="date"
-            id="fecha_despacho"
-            value={registro.fecha_despacho}
-            onChange={(e) => onInputChange(e, "fecha_despacho")}
-          />
-
-          <br />
-
-          <label htmlFor="temp_ambiental" className="font-bold">
-            Temperatura Ambiental (°C){" "}
-            {submitted && !registro.temp_ambiental && (
-              <small className="p-error">Requerido.</small>
-            )}
-          </label>
-          <InputText
-            type="number"
-            id="temp_ambiental"
-            value={registro.temp_ambiental}
-            onChange={(e) => onInputChange(e, "temp_ambiental")}
-          />
-
-          <br />
-
-          <label htmlFor="hum_ambiental" className="font-bold">
-            Humedad Ambiental (%){" "}
-            {submitted && !registro.hum_ambiental && (
-              <small className="p-error">Requerido.</small>
-            )}
-          </label>
-          <InputText
-            type="number"
-            id="hum_ambiental"
-            value={registro.hum_ambiental}
-            onChange={(e) => onInputChange(e, "hum_ambiental")}
-          />
-
-          <br />
-
-          <label htmlFor="temp_final_dieta" className="font-bold">
-            Temperatura Final Dieta (°C){" "}
-            {submitted && !registro.temp_final_dieta && (
-              <small className="p-error">Requerido.</small>
-            )}
-          </label>
-          <InputText
-            type="number"
-            id="temp_final_dieta"
-            value={registro.temp_final_dieta}
-            onChange={(e) => onInputChange(e, "temp_final_dieta")}
-          />
-
-          <br />
-
-          <label htmlFor="hum_final_dieta" className="font-bold">
-            Humedad Final Dieta (%){" "}
-            {submitted && !registro.hum_final_dieta && (
-              <small className="p-error">Requerido.</small>
-            )}
-          </label>
-          <InputText
-            type="number"
-            id="hum_final_dieta"
-            value={registro.hum_final_dieta}
-            onChange={(e) => onInputChange(e, "hum_final_dieta")}
-          />
-
-          <br />
-
-          <label htmlFor="peso_total_neonato" className="font-bold">
-            Peso Total Neonato{" "}
-            {submitted && !registro.peso_total_neonato && (
-              <small className="p-error">Requerido.</small>
-            )}
-          </label>
-          <InputText
-            type="number"
-            id="peso_total_neonato"
-            value={registro.peso_total_neonato}
-            onChange={(e) => onInputChange(e, "peso_total_neonato")}
-          />
-
-          <br />
-
-          <label htmlFor="cantidad_neonatos" className="font-bold">
-            Cantidad Neonatos / g{" "}
-            {submitted && !registro.cantidad_neonatos && (
-              <small className="p-error">Requerido.</small>
-            )}
-          </label>
-          <InputText
-            type="number"
-            id="cantidad_neonatos"
-            value={registro.cantidad_neonatos}
-            onChange={(e) => onInputChange(e, "cantidad_neonatos")}
-          />
-
-          <br />
-
-          <label htmlFor="cantidad_neonatos_total" className="font-bold">
-            Total Cantidad Neonatos{" "}
-            {submitted && !registro.cantidad_neonatos_total && (
-              <small className="p-error">Requerido.</small>
-            )}
-          </label>
-          <InputText
-            type="number"
-            id="cantidad_neonatos_total"
-            value={registro.cantidad_neonatos_total}
-            onChange={(e) => onInputChange(e, "cantidad_neonatos_total")}
-          />
-
-          <br />
-
-          <label htmlFor="tamano_neonatos" className="font-bold">
-            Tamaño Neonatos{" "}
-            {submitted && !registro.tamano_neonatos && (
-              <small className="p-error">Requerido.</small>
-            )}
-          </label>
-          <InputText
-            type="number"
-            id="tamano_neonatos"
-            value={registro.tamano_neonatos}
-            onChange={(e) => onInputChange(e, "tamano_neonatos")}
-          />
-
-          <br />
-
-          <label htmlFor="cajas_sembradas" className="font-bold">
-            Cajas Sembradas{" "}
-            {submitted && !registro.cajas_sembradas && (
-              <small className="p-error">Requerido.</small>
-            )}
-          </label>
-          <InputText
-            type="number"
-            id="cajas_sembradas"
-            value={registro.cajas_sembradas}
-            onChange={(e) => onInputChange(e, "cajas_sembradas")}
-          />
-
-          <br />
-
-          <label htmlFor="cumple_nocumple" className="font-bold">
-            Cumple / No Cumple{" "}
-            {submitted && !registro.cumple_nocumple && (
+          <label htmlFor="tipo_dieta" className="font-bold">
+            Tipo Dieta{" "}
+            {submitted && !registro.tipo_dieta && (
               <small className="p-error">Requerido.</small>
             )}
           </label>
           <Dropdown
-            id="cumple_nocumple"
-            value={registro.cumple_nocumple}
-            options={requerimientos}
-            onChange={(e) => onInputChange(e, "cumple_nocumple")}
+            id="tipo_dieta"
+            value={registro.tipo_dieta}
+            options={tipoDieta}
+            onChange={(e) => onInputChange(e, "tipo_dieta")}
             placeholder="Selecciona una opción"
             required
           />
 
           <br />
 
-          <label htmlFor="tipo_control" className="font-bold">
-            Tipo Control{" "}
-            {submitted && !registro.tipo_control && (
+          <label htmlFor="cantidad_tarimas" className="font-bold">
+            Cantidad Tarimas{" "}
+            {submitted && !registro.cantidad_tarimas && (
               <small className="p-error">Requerido.</small>
             )}
           </label>
-          <Dropdown
-            id="tipo_control"
-            value={registro.tipo_control}
-            options={tipoControl}
-            onChange={(e) => onInputChange(e, "tipo_control")}
-            placeholder="Selecciona una opción"
-            required
+          <InputText
+            id="cantidad_tarimas"
+            value={registro.cantidad_tarimas}
+            onChange={(e) => onInputChange(e, "cantidad_tarimas")}
           />
+
+          <br />
+
+          <label htmlFor="total_cajas" className="font-bold">
+            Total Cajas{" "}
+            {submitted && !registro.total_cajas && (
+              <small className="p-error">Requerido.</small>
+            )}
+          </label>
+          <InputText
+            id="total_cajas"
+            value={registro.total_cajas}
+            onChange={(e) => onInputChange(e, "total_cajas")}
+          />
+
+          <br />
+
+          <label htmlFor="responsable" className="font-bold">
+            Responsable{" "}
+            {submitted && !registro.responsable && (
+              <small className="p-error">Requerido.</small>
+            )}
+          </label>
+          <InputText
+            id="responsable"
+            value={registro.responsable}
+            onChange={(e) => onInputChange(e, "responsable")}
+          />
+
+          <br />
 
           <label htmlFor="observaciones" className="font-bold">
             Observaciones{" "}
@@ -879,11 +637,10 @@ function Control_Neonatos() {
             value={registro.observaciones}
             onChange={(e) => onInputChange(e, "observaciones")}
           />
-
           <br />
         </div>
       </Dialog>
     </>
   );
-}
-export default Control_Neonatos;
+};
+export default RecepcionMateriasPrimas;

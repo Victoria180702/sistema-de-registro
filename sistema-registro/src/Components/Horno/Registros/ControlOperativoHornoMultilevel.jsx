@@ -562,7 +562,7 @@ const ControlOperativoHornoMultilevel = () => {
               <Toast ref={toast} />
               <h1>         
                 <img src={logo2} alt="mosca" className="logo2" />
-                Control Calidad Neonatos
+                Control Operativo Horno Multilevel
               </h1>
               <div className="welcome-message">
                 <p>
@@ -756,6 +756,16 @@ const ControlOperativoHornoMultilevel = () => {
                         field="hor_fin"
                         header="Hora de Fin"
                         editor={(options) => timeEditor(options)}
+                      ></Column>
+                      <Column
+                        field="fec_registro"
+                        header="Fecha Registro"
+                        
+                      ></Column>
+                      <Column
+                        field="hor_registro"
+                        header="Hora Registro"
+                        
                       ></Column>
                       <Column
                         field="observaciones"

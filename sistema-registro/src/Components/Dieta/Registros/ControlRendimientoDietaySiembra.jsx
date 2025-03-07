@@ -56,7 +56,7 @@ function ControLRendimientoDietaySiembra() {
   const navigate = useNavigate();
 
   // Opciones para el campo "linea_produc"
-  const tipoDieta = ["Producción", "Reproducción"];
+  const tipoDieta = ["Producción", "Reproducción", "Neonatos"];
   const tipoControl = ["Control", "Prueba"];
   //Errores de validación
   const [observacionesObligatorio, setObservacionesObligatorio] =

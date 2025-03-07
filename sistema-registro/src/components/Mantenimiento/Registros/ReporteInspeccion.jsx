@@ -182,7 +182,7 @@ function ReporteInspeccion() {
       const horaActual = formatTime(now);
 
       const { error } = await supabase
-        .from("Reporte_Inspeccion_Montacargas_Combustion_Interna")
+        .from("Reporte_Inspeccion_Montacargas_Combustion_Interna(diario)")
         .insert([{
           ...reporte,
           fecha_registro: fechaActual,

@@ -13,7 +13,7 @@ function Calidad() {
   return (
     <div className="calidad-container">
       {isRootPath && (
-        <>
+          <>
           <h1>
             <img src={logo2} alt="mosca" className="logo2" />
             Registros de Calidad
@@ -35,29 +35,41 @@ function Calidad() {
               2- Control de Calidad de Cosecha
             </button>
             <button
+              onClick={() => navigate("/Calidad/ControlCalidadHornoMultilevel")}
+              className="back-button"
+            >
+              3- Control Calidad Horno Multilevel
+            </button>
+            <button
+              onClick={() => navigate("/Calidad/ControlCalidadDietaSiembra")}
+              className="back-button"
+            >
+              4- Control Calidad Dieta-Siembral
+            </button>
+            <button
               onClick={() => navigate("/Calidad/RecepcionMateriasPrimas")}
               className="back-button"
             >
-              3- Recepcion de Materias Primas
+              5- Recepcion de Materias Primas
             </button>
             <button
               onClick={() => navigate("/Calidad/ControlCalidadEngordeHatchery")}
               className="back-button"
             >
-              4- Control Calidad Engorde Hatchery
+              6- Control Calidad Engorde Hatchery
             </button>
             <button
               onClick={() => navigate("/Calidad/ControlCalidadEngorde")}
               className="back-button"
             >
-              5- Control Calidad Engorde 
+              7- Control Calidad Engorde 
             </button>
             <button
               onClick={() => navigate("/Calidad/ControlCalidadHornoMicroondas")}
               className="back-button"
             >
-              6- Control Calidad Horno Microondas
-            </button>
+              8- Control Calidad Horno Microondas
+            </button>
             
             <button onClick={() => navigate(-1)} className="back-button">
               Volver al Menú Principal

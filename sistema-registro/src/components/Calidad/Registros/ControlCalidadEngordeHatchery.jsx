@@ -61,7 +61,7 @@ function ControlCalidadEngordeHatchery() {
 
   const tiposDieta = ["Producción", "Reproducción"];
   const tiposControl = ["Prueba", "Control"];
-  const colores = ["Amarillo", "Marrón", "Negro", "Blanco", "Otro"];
+  const colores = ["1", "2", "3", "4", "5", "5", "6", "7", "8"];
   const diasControl = Array.from({length: 12}, (_, i) => (i + 3).toString());
 
   const convertirFecha = (fecha) =>
